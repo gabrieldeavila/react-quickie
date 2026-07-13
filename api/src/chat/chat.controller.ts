@@ -5,6 +5,7 @@ import {
 import { Body, Controller, Post, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  isStepCount,
   ModelMessage,
   pipeUIMessageStreamToResponse,
   streamText,
@@ -46,6 +47,7 @@ export class ChatController {
       model,
       messages: body.messages || [],
       tools: this.chatService.getTools(),
+      stopWhen: isStepCount(5),
     });
 
     pipeUIMessageStreamToResponse({

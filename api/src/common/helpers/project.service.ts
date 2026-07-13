@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { spawn } from 'child_process';
 
 @Injectable()
 export class ProjectService {
+  constructor(private configService: ConfigService) {}
+
   createProject({
     projectName,
   }: {
     projectName: string;
   }): Promise<{ success: boolean; output?: string; error?: string }> {
     return new Promise((resolve) => {
-      const targetDir = '/Users/gabrielavila/code/react-quickie';
+      const targetDir = this.configService.get<string>('TARGET_DIR');
       const name = projectName || 'my-react-app';
 
       // O spawn separa o comando dos argumentos
