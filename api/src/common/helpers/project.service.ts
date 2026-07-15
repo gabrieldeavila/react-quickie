@@ -15,7 +15,6 @@ export class ProjectService {
       const targetDir = this.configService.get<string>('TARGET_DIR');
       const name = projectName || 'my-react-app';
 
-      // O spawn separa o comando dos argumentos
       const child = spawn(
         'npx',
         [
@@ -35,17 +34,14 @@ export class ProjectService {
       let stdoutData = '';
       let stderrData = '';
 
-      // Captura o fluxo de saída padrão
       child.stdout.on('data', (data) => {
         stdoutData += data.toString();
       });
 
-      // Captura o fluxo de erro
       child.stderr.on('data', (data) => {
         stderrData += data.toString();
       });
 
-      // Resolve quando o processo finaliza
       child.on('close', (code) => {
         if (code === 0) {
           resolve({ success: true, output: stdoutData });

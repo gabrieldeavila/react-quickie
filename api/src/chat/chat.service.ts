@@ -19,7 +19,7 @@ export class ChatService {
           name: z.string().describe('Nome do projeto'),
         }),
         execute: async ({ name }) => {
-          const project = this.projectService.createProject({
+          const project = await this.projectService.createProject({
             projectName: name,
           });
 
@@ -56,6 +56,36 @@ export class ChatService {
         }),
         execute: async ({ name }) => {
           return { success: true, message: `Arquivo criado: ${name}` };
+        },
+      }),
+      read_file: tool({
+        description: 'Lê o conteúdo de um arquivo',
+        inputSchema: z.object({
+          path: z.string().describe('Caminho do arquivo'),
+        }),
+        execute: async ({ path }) => {
+          const content = await this.storageService.readFile(path);
+          return { success: true, content };
+        },
+      }),
+      regex_search_files_content: tool({
+        description:
+          'Procura conteúdo em arquivos de um diretório que correspondam a um padrão regex',
+        inputSchema: z.object({
+          folderName: z.string().describe('Nome do diretório para busca'),
+          regexPattern: z.string().describe('Padrão regex para busca'),
+        }),
+        execute: async ({ regexPattern, folderName }) => {
+          console.log(
+            'Executando regex_search_files com padrão:',
+            regexPattern,
+          );
+
+          const files = await this.storageService.regexSearchForContentInFiles(
+            folderName,
+            regexPattern,
+          );
+          return { success: true, files };
         },
       }),
     };

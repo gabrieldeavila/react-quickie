@@ -81,6 +81,8 @@ export function ChatInterface() {
       .join("");
   };
 
+  console.log(messages);
+
   return (
     <div className="chat-container">
       <div className="chat-header">
