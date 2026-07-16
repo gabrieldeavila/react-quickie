@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { spawn } from 'child_process';
+import { LoggerService } from './logger.service';
 
 @Injectable()
 export class ProjectService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private readonly loggerService: LoggerService,
+  ) {}
 
   createProject({
     projectName,
@@ -44,6 +48,7 @@ export class ProjectService {
 
       child.on('close', (code) => {
         if (code === 0) {
+          this.loggerService.logDecision(`Created project ${projectName}`);
           resolve({ success: true, output: stdoutData });
         } else {
           resolve({
@@ -56,6 +61,43 @@ export class ProjectService {
       // Tratamento caso o comando nem consiga iniciar
       child.on('error', (err) => {
         resolve({ success: false, error: err.message });
+      });
+    });
+  }
+
+  getProjectsCreatedInDirectory(): Promise<string[]> {
+    const targetDir = this.configService.get<string>('TARGET_DIR')!;
+    return new Promise((resolve, reject) => {
+      const child = spawn('ls', ['-1'], {
+        cwd: targetDir,
+        shell: true,
+      });
+
+      let stdoutData = '';
+      let stderrData = '';
+
+      child.stdout.on('data', (data) => {
+        stdoutData += data.toString();
+      });
+
+      child.stderr.on('data', (data) => {
+        stderrData += data.toString();
+      });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          const projects = stdoutData
+            .split('\n')
+            .filter((line) => line.trim() !== '');
+          resolve(projects);
+        } else {
+          reject(stderrData || `Processo encerrado com código ${code}`);
+        }
+      });
+
+      // Tratamento caso o comando nem consiga iniciar
+      child.on('error', (err) => {
+        reject(err.message);
       });
     });
   }

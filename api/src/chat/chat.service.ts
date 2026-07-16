@@ -53,9 +53,51 @@ export class ChatService {
         description: 'Cria um novo arquivo',
         inputSchema: z.object({
           name: z.string().describe('Nome do arquivo'),
+          content: z.string().describe('Conteúdo do arquivo'),
+        }),
+        execute: async ({ name, content }) => {
+          await this.storageService.createFile(name, content || '');
+
+          return {
+            success: true,
+            message: `Arquivo "${name}" criado com sucesso.`,
+          };
+        },
+      }),
+      edit_file: tool({
+        description: 'Edita um arquivo existente',
+        inputSchema: z.object({
+          name: z.string().describe('Nome do arquivo'),
+          newContent: z.string().describe('Novo conteúdo do arquivo'),
+          lineStart: z.number().describe('Linha inicial para edição'),
+          lineEnd: z.number().describe('Linha final para edição'),
+        }),
+        execute: async ({ name, newContent, lineStart, lineEnd }) => {
+          await this.storageService.editFile(
+            name,
+            newContent,
+            lineStart,
+            lineEnd,
+          );
+
+          return {
+            success: true,
+            message: `Arquivo "${name}" editado com sucesso.`,
+          };
+        },
+      }),
+      delete_file: tool({
+        description: 'Deleta um arquivo existente',
+        inputSchema: z.object({
+          name: z.string().describe('Nome do arquivo'),
         }),
         execute: async ({ name }) => {
-          return { success: true, message: `Arquivo criado: ${name}` };
+          await this.storageService.deleteFile(name);
+
+          return {
+            success: true,
+            message: `Arquivo "${name}" deletado com sucesso.`,
+          };
         },
       }),
       read_file: tool({
@@ -86,6 +128,16 @@ export class ChatService {
             regexPattern,
           );
           return { success: true, files };
+        },
+      }),
+      creeated_projects: tool({
+        description: 'Lista os projetos criados no diretório principal',
+        inputSchema: z.object({}),
+        execute: async () => {
+          const projects =
+            await this.projectService.getProjectsCreatedInDirectory();
+
+          return { success: true, projects };
         },
       }),
     };
