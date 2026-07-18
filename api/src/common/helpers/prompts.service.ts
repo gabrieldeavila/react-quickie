@@ -16,6 +16,15 @@ export class PromptsService {
       },
       {
         role: 'system',
+        content:
+          'Apenas crie um novo projeto conforme confirmação do usuário, sempre prefira editar o já existente, peça para o usuário qual projeto será editado na seção e continue nele até o final',
+      },
+      {
+        role: 'system',
+        content: 'Crie componentes reutilizáveis em arquivos pequenos, seguindo uma estrutura de clean code. Verifique quais libs estão instaladas e se necessário peça para instalar novas',
+      },
+      {
+        role: 'system',
         content: `These are the previous decisions taken by you: ${logs}`,
       },
     ];

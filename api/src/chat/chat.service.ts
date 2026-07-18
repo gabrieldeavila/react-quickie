@@ -130,12 +130,29 @@ export class ChatService {
           return { success: true, files };
         },
       }),
-      creeated_projects: tool({
+      created_projects: tool({
         description: 'Lista os projetos criados no diretório principal',
         inputSchema: z.object({}),
         execute: async () => {
           const projects =
             await this.projectService.getProjectsCreatedInDirectory();
+
+          return { success: true, projects };
+        },
+      }),
+      install_depency: tool({
+        description: 'Instala uma nova dependência no projeto',
+        inputSchema: z.object({
+          projectName: z.string(),
+          dependecyName: z.string(),
+          isDev: z.boolean(),
+        }),
+        execute: async ({ projectName, dependecyName, isDev }) => {
+          const projects = await this.projectService.installDependency(
+            projectName,
+            dependecyName,
+            isDev,
+          );
 
           return { success: true, projects };
         },

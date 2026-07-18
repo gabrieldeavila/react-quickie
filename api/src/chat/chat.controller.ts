@@ -1,7 +1,5 @@
-import {
-  createOpenAI
-} from '@ai-sdk/openai';
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { createOpenAI } from '@ai-sdk/openai';
+import { Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   isStepCount,
@@ -10,21 +8,30 @@ import {
   streamText,
   toUIMessageStream,
 } from 'ai';
-import { exec } from 'child_process';
 import { type Response } from 'express';
 import { PromptsService } from 'src/common/helpers/prompts.service';
-import { promisify } from 'util';
 import { ChatService } from './chat.service';
+import { LoggerService } from 'src/common/helpers/logger.service';
 
-// Transforma a função baseada em callbacks do Node em uma Promise moderna
-const execAsync = promisify(exec);
 @Controller('chat')
 export class ChatController {
   constructor(
     private configService: ConfigService,
     private readonly promptsService: PromptsService,
     private readonly chatService: ChatService,
+    private readonly loggerService: LoggerService,
   ) {}
+
+  @Get()
+  async getChat() {
+    this.loggerService.logDecision(
+      'Read the file /Users/gabrielavila/code/react-quickie/projects/novo-projeto/app/layout.tsx \n',
+    );
+    this.loggerService.logDecision(
+      'Read the file /Users/gabrielavila/code/react-quickie/projects/novo-projeto/app/layout.tsx \n',
+    );
+    return { message: 'Chat endpoint is working!' };
+  }
 
   @Post()
   async chat(

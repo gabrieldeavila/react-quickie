@@ -101,4 +101,51 @@ export class ProjectService {
       });
     });
   }
+
+  async installDependency(
+    projectName: string,
+    dependency: string,
+    isDev = false,
+  ): Promise<{ success: boolean; output?: string; error?: string }> {
+    return new Promise((resolve) => {
+      const targetDir = this.configService.get<string>('TARGET_DIR');
+      const projectPath = `${targetDir}/${projectName}`;
+
+      // Argumentos: i, nome do pacote, e -D se for dev
+      const args = ['i', dependency];
+      if (isDev) {
+        args.push('-D');
+      }
+
+      const child = spawn('pnpm', args, {
+        cwd: projectPath,
+        shell: true,
+      });
+
+      let stdoutData = '';
+      let stderrData = '';
+
+      child.stdout.on('data', (data) => (stdoutData += data.toString()));
+      child.stderr.on('data', (data) => (stderrData += data.toString()));
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          this.loggerService.logDecision(
+            `Instalada dependência ${dependency} em ${projectName}`,
+          );
+          resolve({ success: true, output: stdoutData });
+        } else {
+          resolve({
+            success: false,
+            error:
+              stderrData || `Falha ao instalar ${dependency} (código ${code})`,
+          });
+        }
+      });
+
+      child.on('error', (err) => {
+        resolve({ success: false, error: err.message });
+      });
+    });
+  }
 }
