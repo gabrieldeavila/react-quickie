@@ -12,6 +12,7 @@ import { type Response } from 'express';
 import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ChatService } from './chat.service';
 import { LoggerService } from 'src/common/helpers/logger.service';
+import { MarkdownService } from 'src/common/helpers/markdown.module';
 
 @Controller('chat')
 export class ChatController {
@@ -19,18 +20,17 @@ export class ChatController {
     private configService: ConfigService,
     private readonly promptsService: PromptsService,
     private readonly chatService: ChatService,
-    private readonly loggerService: LoggerService,
+    private readonly markdownService: MarkdownService,
   ) {}
 
   @Get()
   async getChat() {
-    this.loggerService.logDecision(
-      'Read the file /Users/gabrielavila/code/react-quickie/projects/novo-projeto/app/layout.tsx \n',
-    );
-    this.loggerService.logDecision(
-      'Read the file /Users/gabrielavila/code/react-quickie/projects/novo-projeto/app/layout.tsx \n',
-    );
-    return { message: 'Chat endpoint is working!' };
+    return {
+      message: 'Chat endpoint is working!',
+      content: await this.markdownService.getMarkdownFile(
+        '../.agents/skills/awwwards-hero/SKILL',
+      ).html,
+    };
   }
 
   @Post()

@@ -22,8 +22,8 @@ export class LoggerService implements OnModuleInit {
       decision,
     };
 
-    console.log("Loggin decision");
-
+    console.log('Loggin decision');
+    return;
     // Lê o arquivo atual, faz o parse, adiciona o novo log e salva
     const data = await fs.readFile(this.logFilePath, 'utf-8');
     const logs = JSON.parse(data);
@@ -38,6 +38,6 @@ export class LoggerService implements OnModuleInit {
 
   async getLogs() {
     const data = await fs.readFile(this.logFilePath, 'utf-8');
-    return JSON.parse(data);
+    return [];
   }
 }

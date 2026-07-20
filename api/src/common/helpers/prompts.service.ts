@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Instructions, ModelMessage } from 'ai';
 import { LoggerService } from './logger.service';
+import { MarkdownService } from './markdown.module';
 
 @Injectable()
 export class PromptsService {
-  constructor(private loggerService: LoggerService) {}
+  constructor(
+    private loggerService: LoggerService,
+
+    private readonly markdownService: MarkdownService,
+  ) {}
 
   async getInstructions(): Promise<Instructions> {
     const logs = await this.loggerService.getLogs();
@@ -21,11 +26,14 @@ export class PromptsService {
       },
       {
         role: 'system',
-        content: 'Crie componentes reutilizáveis em arquivos pequenos, seguindo uma estrutura de clean code. Verifique quais libs estão instaladas e se necessário peça para instalar novas',
+        content:
+          'Crie componentes reutilizáveis em arquivos pequenos, seguindo uma estrutura de clean code. Verifique quais libs estão instaladas e se necessário peça para instalar novas',
       },
       {
         role: 'system',
-        content: `These are the previous decisions taken by you: ${logs}`,
+        content: await this.markdownService.getMarkdownFile(
+          '../.agents/skills/awwwards-hero/SKILL',
+        ).html,
       },
     ];
   }
