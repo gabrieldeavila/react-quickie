@@ -22,7 +22,7 @@ export class LoggerService implements OnModuleInit {
       decision,
     };
 
-    console.log('Loggin decision');
+    console.log(decision);
     return;
     // Lê o arquivo atual, faz o parse, adiciona o novo log e salva
     const data = await fs.readFile(this.logFilePath, 'utf-8');

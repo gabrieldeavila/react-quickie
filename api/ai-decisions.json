@@ -50,5 +50,21 @@
   {
     "timestamp": "2026-07-16T01:58:40.407Z",
     "decision": "Edited file meu-projeto-next/app/page.tsx from line 1 to 999"
+  },
+  {
+    "timestamp": "2026-07-17T01:40:25.603Z",
+    "decision": "Created project mouse"
+  },
+  {
+    "timestamp": "2026-07-19T23:48:15.318Z",
+    "decision": "Created project betdosguri"
+  },
+  {
+    "timestamp": "2026-07-19T23:48:51.896Z",
+    "decision": "Read the file /Users/gabrielavila/code/react-quickie/projects/betdosguri/package.json"
+  },
+  {
+    "timestamp": "2026-07-19T23:48:53.068Z",
+    "decision": "Read the file /Users/gabrielavila/code/react-quickie/projects/betdosguri/app/globals.css"
   }
 ]

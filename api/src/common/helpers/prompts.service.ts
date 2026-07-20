@@ -1,19 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Instructions, ModelMessage } from 'ai';
-import { LoggerService } from './logger.service';
+import { Instructions } from 'ai';
 import { MarkdownService } from './markdown.module';
 
 @Injectable()
 export class PromptsService {
-  constructor(
-    private loggerService: LoggerService,
-
-    private readonly markdownService: MarkdownService,
-  ) {}
+  constructor(private readonly markdownService: MarkdownService) {}
 
   async getInstructions(): Promise<Instructions> {
-    const logs = await this.loggerService.getLogs();
-
     return [
       {
         role: 'system',
