@@ -124,14 +124,24 @@ body {
   text-transform: uppercase;
 }
 
+.chat-modal__fields {
+  display: grid;
+  gap: 24px;
+}
+
 .chat-select,
 .chat-input--modal {
-  min-height: 44px;
+  min-height: 58px;
   border: 1px solid var(--chat-border-strong);
   background: rgba(6, 10, 15, 0.55);
   color: var(--chat-text);
-  padding: 12px 14px;
+  padding: 16px 14px;
   outline: none;
+  box-sizing: border-box;
+}
+
+.chat-select--modal {
+  height: 58px;
 }
 
 .chat-button {

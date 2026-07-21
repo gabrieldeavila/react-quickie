@@ -66,7 +66,7 @@ export class ChatController {
       messages: validMessages,
       tools: this.chatService.getTools(),
       instructions,
-      stopWhen: isStepCount(5),
+      stopWhen: isStepCount(10),
     });
 
     pipeUIMessageStreamToResponse({
