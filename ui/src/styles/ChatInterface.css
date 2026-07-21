@@ -52,16 +52,23 @@ body {
 
 .chat-header {
   flex: 0 0 auto;
-  padding: 26px 28px 20px;
+  padding: 22px 28px 18px;
   border-bottom: 1px solid var(--chat-border);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
 }
 
-.chat-header__top {
+.chat-header__top,
+.chat-header__controls {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+}
+
+.chat-header__controls {
+  margin-top: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
 }
 
 .chat-header__eyebrow {
@@ -80,13 +87,71 @@ body {
   color: var(--chat-text);
 }
 
-.chat-subtitle {
-  margin-top: 12px;
-  max-width: 60ch;
-  color: var(--chat-text-muted);
-  font-size: 0.98rem;
-  line-height: 1.6;
+.chat-status-pill,
+.chat-button,
+.chat-select,
+.chat-input {
+  border-radius: 12px;
 }
+
+.chat-button--icon {
+  border-radius: 10px;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.chat-button__icon {
+  display: inline-flex;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.chat-control {
+  display: grid;
+  gap: 8px;
+}
+
+.chat-control--full { width: 100%; }
+
+.chat-control__label {
+  color: var(--chat-text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chat-select,
+.chat-input--modal {
+  min-height: 44px;
+  border: 1px solid var(--chat-border-strong);
+  background: rgba(6, 10, 15, 0.55);
+  color: var(--chat-text);
+  padding: 12px 14px;
+  outline: none;
+}
+
+.chat-button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(124, 140, 255, 0.35);
+  color: #f5f7ff;
+  background: linear-gradient(135deg, rgba(124, 140, 255, 0.95), rgba(138, 92, 246, 0.92));
+  cursor: pointer;
+}
+
+.chat-button--ghost {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--chat-border-strong);
+  color: var(--chat-text);
+}
+
+.chat-button--small { min-height: 40px; }
+
+.chat-subtitle { display: none; }
 
 .chat-status-pill {
   display: inline-flex;
@@ -95,7 +160,6 @@ body {
   height: 36px;
   padding: 0 14px;
   border: 1px solid var(--chat-border-strong);
-  border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--chat-text);
   font-size: 0.85rem;
@@ -205,7 +269,6 @@ body {
   min-height: 58px;
   max-height: 160px;
   resize: none;
-  border-radius: 12px;
   border: 1px solid var(--chat-border-strong);
   background: rgba(6, 10, 15, 0.55);
   color: var(--chat-text);
@@ -238,11 +301,67 @@ body {
 .send-button:disabled { opacity: 0.45; cursor: not-allowed; }
 .send-button svg { width: 20px; height: 20px; }
 
+.chat-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(3, 6, 10, 0.6);
+  backdrop-filter: blur(6px);
+  z-index: 40;
+  padding: 20px;
+}
+
+.chat-modal {
+  width: min(520px, 100%);
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 16px;
+  background: rgba(10, 14, 20, 0.96);
+  box-shadow: var(--chat-shadow);
+  padding: 20px;
+}
+
+.chat-modal__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.chat-modal__header h2 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.chat-modal__header p {
+  margin: 0;
+  color: var(--chat-text-muted);
+}
+
+.chat-modal__close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--chat-text);
+  cursor: pointer;
+}
+
+.chat-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
 @media (max-width: 768px) {
   .chat-shell { padding: 0; }
   .chat-container { height: 100dvh; border-radius: 0; border-left: 0; border-right: 0; }
   .chat-header, .chat-messages, .chat-input-section { padding-left: 16px; padding-right: 16px; }
-  .chat-header__top { flex-direction: column; }
+  .chat-header__top { flex-direction: column; align-items: flex-start; }
+  .chat-header__controls { width: 100%; }
+  .chat-control--full, .chat-select { width: 100%; }
   .message-content { max-width: 86%; }
   .send-button { width: 52px; height: 52px; border-radius: 10px; }
 }

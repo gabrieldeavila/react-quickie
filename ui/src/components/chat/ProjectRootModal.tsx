@@ -1,0 +1,70 @@
+import { ChatModeSelector } from "./ChatModeSelector";
+
+type ChatMode = "Landing Pages" | "Forms";
+
+type ProjectRootModalProps = {
+  isOpen: boolean;
+  mode: ChatMode;
+  onModeChange: (value: ChatMode) => void;
+  value: string;
+  onChange: (value: string) => void;
+  onClose: () => void;
+  onSave: () => void;
+};
+
+export function ProjectRootModal({
+  isOpen,
+  mode,
+  onModeChange,
+  value,
+  onChange,
+  onClose,
+  onSave,
+}: ProjectRootModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="chat-modal__backdrop" role="presentation" onClick={onClose}>
+      <div
+        className="chat-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="project-root-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="chat-modal__header">
+          <div>
+            <h2 id="project-root-title">Configurar contexto do projeto</h2>
+            <p>Defina as informações base usadas pelo chat em qualquer projeto.</p>
+          </div>
+          <button type="button" className="chat-modal__close" onClick={onClose} aria-label="Fechar modal">
+            ×
+          </button>
+        </div>
+
+        <div className="chat-modal__fields">
+          <ChatModeSelector value={mode} onChange={onModeChange} />
+
+          <label className="chat-control chat-control--full">
+            <span className="chat-control__label">Caminho ou referência principal</span>
+            <input
+              className="chat-input chat-input--modal"
+              value={value}
+              onChange={(event) => onChange(event.target.value)}
+              placeholder="Ex: /src, app/frontend, nome do projeto"
+            />
+          </label>
+        </div>
+
+        <div className="chat-modal__actions">
+          <button type="button" className="chat-button chat-button--ghost" onClick={onClose}>
+            Cancelar
+          </button>
+          <button type="button" className="chat-button" onClick={onSave}>
+            Salvar configurações
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

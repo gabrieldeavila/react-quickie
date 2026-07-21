@@ -13,6 +13,7 @@ import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ChatService } from './chat.service';
 import { LoggerService } from 'src/common/helpers/logger.service';
 import { MarkdownService } from 'src/common/helpers/markdown.module';
+import { ProjectService } from 'src/common/helpers/project.service';
 
 @Controller('chat')
 export class ChatController {
@@ -21,10 +22,13 @@ export class ChatController {
     private readonly promptsService: PromptsService,
     private readonly chatService: ChatService,
     private readonly markdownService: MarkdownService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @Get()
   async getChat() {
+    await this.projectService.createProject({ projectName: 'amigos' });
+
     return {
       message: 'Chat endpoint is working!',
       content: await this.markdownService.getMarkdownFile(

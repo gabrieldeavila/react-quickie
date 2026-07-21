@@ -13,6 +13,11 @@ type ChatRequestBody = {
   }>;
 };
 
+type CreateChatTransportParams = {
+  projectRoot: string;
+  mode: string;
+};
+
 function normalizeMessage(message: ChatRequestBody["messages"][number]): ChatMessagePayload {
   let contentText = message.content ?? "";
 
@@ -29,16 +34,19 @@ function normalizeMessage(message: ChatRequestBody["messages"][number]): ChatMes
   };
 }
 
-export function createChatTransport() {
+export function createChatTransport({ projectRoot, mode }: CreateChatTransportParams) {
   return new DefaultChatTransport({
     api: "http://localhost:3000/chat",
     fetch: (url, options) => {
       if (options?.body) {
-        const body = JSON.parse(options.body as string) as ChatRequestBody;
+        const body = JSON.parse(options.body as string) as ChatRequestBody & { root?: string; chatMode?: string };
 
         if (body.messages) {
           body.messages = body.messages.map(normalizeMessage);
         }
+
+        body.root = projectRoot;
+        body.chatMode = mode;
 
         options.body = JSON.stringify(body);
       }
