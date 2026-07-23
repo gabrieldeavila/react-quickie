@@ -8,16 +8,17 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { glob } from 'fast-glob';
 import { LoggerService } from './logger.service';
+import { ContextService } from '../context/context.service';
 
 @Injectable()
 export class StorageService {
   constructor(
-    private configService: ConfigService,
     private readonly loggerService: LoggerService,
+    private readonly contextService: ContextService,
   ) {}
 
   async listFilesInDirectory(directoryPath: string): Promise<string[]> {
-    const targetDir = this.configService.get<string>('TARGET_DIR')!;
+    const targetDir = this.contextService.get('root')!;
     const repoPath = path.join(targetDir, directoryPath);
 
     const targetPath = path.resolve(repoPath);
@@ -45,7 +46,7 @@ export class StorageService {
   }
 
   async readFile(filePath: string): Promise<string> {
-    const targetDir = this.configService.get<string>('TARGET_DIR')!;
+    const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
 
     try {
@@ -73,7 +74,7 @@ export class StorageService {
   }
 
   async createFile(filePath: string, content: string): Promise<void> {
-    const targetDir = this.configService.get<string>('TARGET_DIR')!;
+    const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
 
     try {
@@ -91,7 +92,7 @@ export class StorageService {
   }
 
   async deleteFile(filePath: string): Promise<void> {
-    const targetDir = this.configService.get<string>('TARGET_DIR')!;
+    const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
 
     try {
@@ -122,7 +123,7 @@ export class StorageService {
     lineStart: number,
     lineEnd: number,
   ): Promise<void> {
-    const targetDir = this.configService.get<string>('TARGET_DIR')!;
+    const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
 
     try {
@@ -160,7 +161,7 @@ export class StorageService {
     folderName: string,
     regexPattern: string,
   ): Promise<string[]> {
-    const targetRepo = this.configService.get<string>('TARGET_DIR')!;
+    const targetRepo = this.contextService.get('root')!;
     const repoPath = path.join(targetRepo, folderName);
 
     const targetPath = path.resolve(repoPath);

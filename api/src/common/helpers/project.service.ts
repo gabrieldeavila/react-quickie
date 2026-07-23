@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { spawn } from 'child_process';
 import { LoggerService } from './logger.service';
+import { ContextService } from '../context/context.service';
 
 @Injectable()
 export class ProjectService {
   constructor(
-    private configService: ConfigService,
     private readonly loggerService: LoggerService,
+    private readonly contextService: ContextService,
   ) {}
 
   createProject({
@@ -15,8 +16,9 @@ export class ProjectService {
   }: {
     projectName: string;
   }): Promise<{ success: boolean; output?: string; error?: string }> {
+
     return new Promise((resolve) => {
-      const targetDir = this.configService.get<string>('TARGET_DIR');
+      const targetDir = this.contextService.get('root');
       const name = projectName || 'my-react-app';
 
       const child = spawn(
@@ -66,7 +68,7 @@ export class ProjectService {
   }
 
   getProjectsCreatedInDirectory(): Promise<string[]> {
-    const targetDir = this.configService.get<string>('TARGET_DIR')!;
+    const targetDir = this.contextService.get('root')!;
     return new Promise((resolve, reject) => {
       const child = spawn('ls', ['-1'], {
         cwd: targetDir,
@@ -108,7 +110,7 @@ export class ProjectService {
     isDev = false,
   ): Promise<{ success: boolean; output?: string; error?: string }> {
     return new Promise((resolve) => {
-      const targetDir = this.configService.get<string>('TARGET_DIR');
+      const targetDir = this.contextService.get('root');
       const projectPath = `${targetDir}/${projectName}`;
 
       // Argumentos: i, nome do pacote, e -D se for dev

@@ -1,5 +1,12 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Res,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   isStepCount,
@@ -14,7 +21,13 @@ import { ChatService } from './chat.service';
 import { LoggerService } from 'src/common/helpers/logger.service';
 import { MarkdownService } from 'src/common/helpers/markdown.module';
 import { ProjectService } from 'src/common/helpers/project.service';
+import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 
+@UseInterceptors(
+  BuildContextInterceptor((req) => ({
+    root: req.body?.root,
+  })),
+)
 @Controller('chat')
 export class ChatController {
   constructor(

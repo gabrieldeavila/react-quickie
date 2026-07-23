@@ -15,7 +15,7 @@ export class PromptsService {
       {
         role: 'system',
         content:
-          'Apenas crie um novo projeto conforme confirmação do usuário, sempre prefira editar o já existente, peça para o usuário qual projeto será editado na seção e continue nele até o final',
+          'O projeto do usuário está no caminho /Users/gabrielavila/code/react-quickie/ui/',
       },
       {
         role: 'system',
