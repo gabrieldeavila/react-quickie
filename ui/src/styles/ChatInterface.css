@@ -140,6 +140,15 @@ body {
   box-sizing: border-box;
 }
 
+.chat-folder-picker {
+  display: flex;
+  gap: 12px;
+}
+
+.chat-folder-picker .chat-input--modal {
+  flex: 1;
+}
+
 .chat-select--modal {
   height: 58px;
 }
@@ -365,6 +374,12 @@ body {
   margin-top: 18px;
 }
 
+.chat-modal__error {
+  margin: 0;
+  color: #f3b8b8;
+  font-size: 0.92rem;
+}
+
 @media (max-width: 768px) {
   .chat-shell { padding: 0; }
   .chat-container { height: 100dvh; border-radius: 0; border-left: 0; border-right: 0; }
@@ -372,6 +387,7 @@ body {
   .chat-header__top { flex-direction: column; align-items: flex-start; }
   .chat-header__controls { width: 100%; }
   .chat-control--full, .chat-select { width: 100%; }
+  .chat-folder-picker { flex-direction: column; }
   .message-content { max-width: 86%; }
   .send-button { width: 52px; height: 52px; border-radius: 10px; }
 }

@@ -4,6 +4,9 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './chat/chat.module';
 import { ContextModule } from './common/context/context.module';
+import { ProjectController } from './project/project.controller';
+import { ProjectService } from './common/helpers/project.service';
+import { LoggerService } from './common/helpers/logger.service';
 
 @Module({
   imports: [
@@ -14,7 +17,7 @@ import { ContextModule } from './common/context/context.module';
       envFilePath: ['.env.local', '.env'],
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, ProjectController],
+  providers: [AppService, ProjectService, LoggerService],
 })
 export class AppModule {}

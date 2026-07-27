@@ -13,6 +13,7 @@
     "@ai-sdk/react": "^4.0.23",
     "@tailwindcss/vite": "^4.3.3",
     "ai": "^7.0.22",
+    "axios": "^1.18.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },

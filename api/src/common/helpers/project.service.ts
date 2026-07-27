@@ -13,12 +13,13 @@ export class ProjectService {
 
   createProject({
     projectName,
+    path,
   }: {
     projectName: string;
+    path?: string;
   }): Promise<{ success: boolean; output?: string; error?: string }> {
-
     return new Promise((resolve) => {
-      const targetDir = this.contextService.get('root');
+      const targetDir = path || this.contextService.get('root');
       const name = projectName || 'my-react-app';
 
       const child = spawn(

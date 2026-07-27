@@ -4,9 +4,15 @@ type ChatHeaderProps = {
   title: string;
   status?: string;
   onOpenProjectRoot: () => void;
+  onOpenCreateProject: () => void;
 };
 
-export function ChatHeader({ title, status = "Online", onOpenProjectRoot }: ChatHeaderProps) {
+export function ChatHeader({
+  title,
+  status = "Online",
+  onOpenProjectRoot,
+  onOpenCreateProject,
+}: ChatHeaderProps) {
   return (
     <header className="chat-header">
       <div className="chat-header__top">
@@ -17,6 +23,15 @@ export function ChatHeader({ title, status = "Online", onOpenProjectRoot }: Chat
 
         <div className="chat-header__actions flex items-center gap-3">
           <ChatStatusPill label={status} />
+
+          <button
+            type="button"
+            className="chat-button chat-button--ghost"
+            onClick={onOpenCreateProject}
+          >
+            Novo projeto
+          </button>
+
           <button
             type="button"
             className="chat-button chat-button--icon"

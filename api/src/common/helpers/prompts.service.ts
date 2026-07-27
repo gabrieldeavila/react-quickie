@@ -31,10 +31,10 @@ export class PromptsService {
     ];
 
     if (mode && mode in paths) {
-      instructions.push({
-        role: 'system',
-        content: await this.markdownService.getMarkdownFile(paths[mode]).html,
-      });
+      // instructions.push({
+      //   role: 'system',
+      //   content: await this.markdownService.getMarkdownFile(paths[mode]).html,
+      // });
     }
 
     return instructions;
