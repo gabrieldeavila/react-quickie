@@ -1,11 +1,20 @@
-type ChatMode = "Landing Pages" | "Forms";
+import { ChatModeEnum } from "../../enum/chat.enum";
 
 type ChatModeSelectorProps = {
-  value: ChatMode;
-  onChange: (value: ChatMode) => void;
+  value: ChatModeEnum;
+  onChange: (value: ChatModeEnum) => void;
 };
 
-const options: ChatMode[] = ["Landing Pages", "Forms"];
+const options: { label: string; value: ChatModeEnum }[] = [
+  {
+    label: "Landing Pages",
+    value: ChatModeEnum.LANDING_PAGES,
+  },
+  {
+    label: "Forms",
+    value: ChatModeEnum.FORMS,
+  },
+];
 
 export function ChatModeSelector({ value, onChange }: ChatModeSelectorProps) {
   return (
@@ -14,11 +23,11 @@ export function ChatModeSelector({ value, onChange }: ChatModeSelectorProps) {
       <select
         className="chat-select chat-select--modal"
         value={value}
-        onChange={(event) => onChange(event.target.value as ChatMode)}
+        onChange={(event) => onChange(parseInt(event.target.value))}
       >
         {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
+          <option key={option.value} value={option.value}>
+            {option.label}
           </option>
         ))}
       </select>

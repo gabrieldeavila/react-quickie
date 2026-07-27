@@ -7,18 +7,17 @@ import { ProjectRootModal } from "./chat/ProjectRootModal";
 import { createChatTransport } from "./chat/chatTransport";
 import { useChatComposer } from "./chat/useChatComposer";
 import "../styles/ChatInterface.css";
-
-type ChatMode = "Landing Pages" | "Forms";
+import { ChatModeEnum } from "../enum/chat.enum";
 
 type ProjectContext = {
   reference: string;
-  mode: ChatMode;
+  mode: ChatModeEnum;
 };
 
 const PROJECT_CONTEXT_STORAGE_KEY = "project-context";
 const DEFAULT_PROJECT_CONTEXT: ProjectContext = {
   reference: "/src",
-  mode: "Landing Pages",
+  mode: ChatModeEnum.LANDING_PAGES,
 };
 
 function readProjectContext(): ProjectContext {
@@ -30,8 +29,11 @@ function readProjectContext(): ProjectContext {
 
     const parsed = JSON.parse(raw) as Partial<ProjectContext>;
     return {
-      reference: typeof parsed.reference === "string" && parsed.reference.trim() ? parsed.reference : DEFAULT_PROJECT_CONTEXT.reference,
-      mode: parsed.mode === "Forms" ? "Forms" : "Landing Pages",
+      reference:
+        typeof parsed.reference === "string" && parsed.reference.trim()
+          ? parsed.reference
+          : DEFAULT_PROJECT_CONTEXT.reference,
+      mode: parsed.mode ? parsed.mode : ChatModeEnum.FORMS,
     };
   } catch {
     return DEFAULT_PROJECT_CONTEXT;
@@ -42,8 +44,12 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { input, hasInput, setInput, clearInput } = useChatComposer();
   const [isRootModalOpen, setIsRootModalOpen] = useState(false);
-  const [projectContext, setProjectContext] = useState<ProjectContext>(DEFAULT_PROJECT_CONTEXT);
-  const [draftContext, setDraftContext] = useState<ProjectContext>(DEFAULT_PROJECT_CONTEXT);
+  const [projectContext, setProjectContext] = useState<ProjectContext>(
+    DEFAULT_PROJECT_CONTEXT,
+  );
+  const [draftContext, setDraftContext] = useState<ProjectContext>(
+    DEFAULT_PROJECT_CONTEXT,
+  );
 
   useEffect(() => {
     const storedContext = readProjectContext();
@@ -93,14 +99,18 @@ export function ChatInterface() {
 
   const handleSaveRoot = useCallback(() => {
     const nextContext = {
-      reference: draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
+      reference:
+        draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
       mode: draftContext.mode,
     };
 
     setProjectContext(nextContext);
 
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(PROJECT_CONTEXT_STORAGE_KEY, JSON.stringify(nextContext));
+      window.localStorage.setItem(
+        PROJECT_CONTEXT_STORAGE_KEY,
+        JSON.stringify(nextContext),
+      );
     }
 
     setIsRootModalOpen(false);
@@ -109,7 +119,11 @@ export function ChatInterface() {
   return (
     <main className="chat-shell">
       <section className="chat-container">
-        <ChatHeader title="Chat" status={status === "ready" ? "Online" : "Respondendo"} onOpenProjectRoot={handleOpenRootModal} />
+        <ChatHeader
+          title="Chat"
+          status={status === "ready" ? "Online" : "Respondendo"}
+          onOpenProjectRoot={handleOpenRootModal}
+        />
 
         <ChatMessageList messages={messages} isPending={status !== "ready"} />
 
@@ -127,9 +141,13 @@ export function ChatInterface() {
       <ProjectRootModal
         isOpen={isRootModalOpen}
         mode={draftContext.mode}
-        onModeChange={(value) => setDraftContext((current) => ({ ...current, mode: value }))}
+        onModeChange={(value) =>
+          setDraftContext((current) => ({ ...current, mode: value }))
+        }
         value={draftContext.reference}
-        onChange={(value) => setDraftContext((current) => ({ ...current, reference: value }))}
+        onChange={(value) =>
+          setDraftContext((current) => ({ ...current, reference: value }))
+        }
         onClose={() => setIsRootModalOpen(false)}
         onSave={handleSaveRoot}
       />

@@ -16,16 +16,16 @@ import {
   toUIMessageStream,
 } from 'ai';
 import { type Response } from 'express';
-import { PromptsService } from 'src/common/helpers/prompts.service';
-import { ChatService } from './chat.service';
-import { LoggerService } from 'src/common/helpers/logger.service';
+import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { MarkdownService } from 'src/common/helpers/markdown.module';
 import { ProjectService } from 'src/common/helpers/project.service';
-import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
+import { PromptsService } from 'src/common/helpers/prompts.service';
+import { ChatService } from './chat.service';
 
 @UseInterceptors(
   BuildContextInterceptor((req) => ({
     root: req.body?.root,
+    mode: req.body?.mode,
   })),
 )
 @Controller('chat')

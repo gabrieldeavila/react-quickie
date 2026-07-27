@@ -1,4 +1,5 @@
 import { DefaultChatTransport } from "ai";
+import type { ChatModeEnum } from "../../enum/chat.enum";
 
 type ChatMessagePayload = {
   role: string;
@@ -15,10 +16,12 @@ type ChatRequestBody = {
 
 type CreateChatTransportParams = {
   projectRoot: string;
-  mode: string;
+  mode: ChatModeEnum;
 };
 
-function normalizeMessage(message: ChatRequestBody["messages"][number]): ChatMessagePayload {
+function normalizeMessage(
+  message: NonNullable<ChatRequestBody["messages"]>[number],
+): ChatMessagePayload {
   let contentText = message.content ?? "";
 
   if (!contentText && message.parts?.length) {
@@ -34,12 +37,18 @@ function normalizeMessage(message: ChatRequestBody["messages"][number]): ChatMes
   };
 }
 
-export function createChatTransport({ projectRoot, mode }: CreateChatTransportParams) {
+export function createChatTransport({
+  projectRoot,
+  mode,
+}: CreateChatTransportParams) {
   return new DefaultChatTransport({
     api: "http://localhost:3000/chat",
     fetch: (url, options) => {
       if (options?.body) {
-        const body = JSON.parse(options.body as string) as ChatRequestBody & { root?: string; chatMode?: string };
+        const body = JSON.parse(options.body as string) as ChatRequestBody & {
+          root?: string;
+          chatMode?: ChatModeEnum;
+        };
 
         if (body.messages) {
           body.messages = body.messages.map(normalizeMessage);

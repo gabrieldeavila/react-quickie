@@ -1,11 +1,10 @@
+import type { ChatModeEnum } from "../../enum/chat.enum";
 import { ChatModeSelector } from "./ChatModeSelector";
-
-type ChatMode = "Landing Pages" | "Forms";
 
 type ProjectRootModalProps = {
   isOpen: boolean;
-  mode: ChatMode;
-  onModeChange: (value: ChatMode) => void;
+  mode: ChatModeEnum;
+  onModeChange: (value: ChatModeEnum) => void;
   value: string;
   onChange: (value: string) => void;
   onClose: () => void;

@@ -1,26 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { Instructions } from 'ai';
 import { MarkdownService } from './markdown.module';
+import { ContextService } from '../context/context.service';
 
 @Injectable()
 export class PromptsService {
-  constructor(private readonly markdownService: MarkdownService) {}
+  constructor(
+    private readonly markdownService: MarkdownService,
+    private readonly contextService: ContextService,
+  ) {}
 
   async getInstructions(): Promise<Instructions> {
-    return [
+    const paths: Record<number, string> = {
+      1: '../.agents/skills/awwwards-hero/SKILL',
+    };
+
+    const mode = this.contextService.get('mode');
+
+    const instructions: Instructions = [
       {
         role: 'system',
-        content: `Você é um assistente de desenvolvimento de software especializado em React, Next.js e Tailwind CSS.`,
-      },
-      {
-        role: 'system',
-        content:
-          'O projeto do usuário está no caminho /Users/gabrielavila/code/react-quickie/ui/',
-      },
-      {
-        role: 'system',
-        content:
-          'Crie componentes reutilizáveis em arquivos pequenos, seguindo uma estrutura de clean code. Verifique quais libs estão instaladas e se necessário peça para instalar novas',
+        content: `The user project is ${this.contextService.get('root')}`,
       },
       {
         role: 'system',
@@ -29,5 +29,14 @@ export class PromptsService {
         ).html,
       },
     ];
+
+    if (mode && mode in paths) {
+      instructions.push({
+        role: 'system',
+        content: await this.markdownService.getMarkdownFile(paths[mode]).html,
+      });
+    }
+
+    return instructions;
   }
 }
