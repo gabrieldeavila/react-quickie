@@ -12,8 +12,8 @@ export class PromptsService {
 
   async getInstructions(): Promise<Instructions> {
     const paths: Record<number, string> = {
-      1: '../.agents/skills/awwwards-hero/SKILL',
-      2: '../.agents/skills/landing-page/SKILL',
+      1: '../.agents/skills/ui/landing.skills',
+      2: '../.agents/skills/ui/forms.skills',
       3: '../.agents/skills/developer/backend',
       4: '../.agents/skills/developer/frontend',
     };
@@ -28,14 +28,23 @@ export class PromptsService {
       },
       {
         role: 'system',
-        content: await this.markdownService.getMarkdownFile(paths[1]).html,
+        content: await this.markdownService.getMarkdownFile(
+          '../.agents/skills/ui/design.system.skills',
+        ).html,
+      },
+      {
+        role: 'system',
+        content: await this.markdownService.getMarkdownFile(
+          '../.agents/skills/developer/agnostic',
+        ).html,
       },
     ];
 
     if (selectedPromptPath) {
       instructions.push({
         role: 'system',
-        content: await this.markdownService.getMarkdownFile(selectedPromptPath).html,
+        content:
+          await this.markdownService.getMarkdownFile(selectedPromptPath).html,
       });
     }
 
