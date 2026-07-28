@@ -46,8 +46,12 @@ export function ChatInterface() {
   const { input, hasInput, setInput, clearInput } = useChatComposer();
   const [isRootModalOpen, setIsRootModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [projectContext, setProjectContext] = useState<ProjectContext>(DEFAULT_PROJECT_CONTEXT);
-  const [draftContext, setDraftContext] = useState<ProjectContext>(DEFAULT_PROJECT_CONTEXT);
+  const [projectContext, setProjectContext] = useState<ProjectContext>(
+    DEFAULT_PROJECT_CONTEXT,
+  );
+  const [draftContext, setDraftContext] = useState<ProjectContext>(
+    DEFAULT_PROJECT_CONTEXT,
+  );
 
   useEffect(() => {
     const storedContext = readProjectContext();
@@ -97,14 +101,18 @@ export function ChatInterface() {
 
   const handleSaveRoot = useCallback(() => {
     const nextContext = {
-      reference: draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
+      reference:
+        draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
       mode: draftContext.mode,
     };
 
     setProjectContext(nextContext);
 
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(PROJECT_CONTEXT_STORAGE_KEY, JSON.stringify(nextContext));
+      window.localStorage.setItem(
+        PROJECT_CONTEXT_STORAGE_KEY,
+        JSON.stringify(nextContext),
+      );
     }
 
     setIsRootModalOpen(false);
@@ -136,14 +144,27 @@ export function ChatInterface() {
       <ProjectRootModal
         isOpen={isRootModalOpen}
         mode={draftContext.mode}
-        onModeChange={(value) => setDraftContext((current) => ({ ...current, mode: value }))}
+        onModeChange={(value) =>
+          setDraftContext((current) => ({ ...current, mode: value }))
+        }
         value={draftContext.reference}
-        onChange={(value) => setDraftContext((current) => ({ ...current, reference: value }))}
+        onChange={(value) =>
+          setDraftContext((current) => ({ ...current, reference: value }))
+        }
         onClose={() => setIsRootModalOpen(false)}
         onSave={handleSaveRoot}
       />
 
-      <ProjectCreateModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+      <ProjectCreateModal
+        isOpen={isCreateModalOpen}
+        onCreated={(value) => {
+          setDraftContext((current) => ({ ...current, reference: value }));
+          handleSaveRoot();
+        }}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+        }}
+      />
     </main>
   );
 }

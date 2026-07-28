@@ -17,8 +17,17 @@ export class ProjectService {
   }: {
     projectName: string;
     path?: string;
-  }): Promise<{ success: boolean; output?: string; error?: string }> {
+  }): Promise<{
+    success: boolean;
+    output?: string;
+    error?: string;
+    path?: string;
+  }> {
     return new Promise((resolve) => {
+      if (path && !path.startsWith('/')) {
+        path = `/${path}`;
+      }
+
       const targetDir = path || this.contextService.get('root');
       const name = projectName || 'my-react-app';
 
@@ -52,7 +61,11 @@ export class ProjectService {
       child.on('close', (code) => {
         if (code === 0) {
           this.loggerService.logDecision(`Created project ${projectName}`);
-          resolve({ success: true, output: stdoutData });
+          resolve({
+            success: true,
+            output: stdoutData,
+            path: `${targetDir}/${name}`,
+          });
         } else {
           resolve({
             success: false,
