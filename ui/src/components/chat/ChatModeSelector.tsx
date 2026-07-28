@@ -14,6 +14,14 @@ const options: { label: string; value: ChatModeEnum }[] = [
     label: "Forms",
     value: ChatModeEnum.FORMS,
   },
+  {
+    label: "Backend Developer",
+    value: ChatModeEnum.BACKEND_DEVELOPER,
+  },
+  {
+    label: "Frontend Developer",
+    value: ChatModeEnum.FRONTEND_DEVELOPER,
+  },
 ];
 
 export function ChatModeSelector({ value, onChange }: ChatModeSelectorProps) {

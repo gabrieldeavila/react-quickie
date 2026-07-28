@@ -117,6 +117,58 @@ export class StorageService {
     }
   }
 
+  async renamePath(currentPath: string, newPath: string): Promise<void> {
+    const targetDir = this.contextService.get('root')!;
+    const fullCurrentPath = path.join(targetDir, currentPath);
+    const fullNewPath = path.join(targetDir, newPath);
+
+    try {
+      const exists = await fs.pathExists(fullCurrentPath);
+      if (!exists) {
+        throw new NotFoundException(
+          `O arquivo ou diretório no caminho "${currentPath}" não foi encontrado.`,
+        );
+      }
+
+      await fs.move(fullCurrentPath, fullNewPath, { overwrite: false });
+      this.loggerService.logDecision(
+        `Renamed path ${currentPath} to ${newPath}`,
+      );
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException(
+        'Erro ao renomear o arquivo ou diretório no repositório.',
+      );
+    }
+  }
+
+  async movePath(sourcePath: string, destinationPath: string): Promise<void> {
+    const targetDir = this.contextService.get('root')!;
+    const fullSourcePath = path.join(targetDir, sourcePath);
+    const fullDestinationPath = path.join(targetDir, destinationPath);
+
+    try {
+      const exists = await fs.pathExists(fullSourcePath);
+      if (!exists) {
+        throw new NotFoundException(
+          `O arquivo ou diretório no caminho "${sourcePath}" não foi encontrado.`,
+        );
+      }
+
+      await fs.move(fullSourcePath, fullDestinationPath, { overwrite: false });
+      this.loggerService.logDecision(
+        `Moved path ${sourcePath} to ${destinationPath}`,
+      );
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException(
+        'Erro ao mover o arquivo ou diretório no repositório.',
+      );
+    }
+  }
+
   async editFile(
     filePath: string,
     newContent: string,

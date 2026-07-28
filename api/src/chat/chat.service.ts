@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { tool } from 'ai';
 import { ProjectService } from 'src/common/helpers/project.service';
 import { StorageService } from 'src/common/helpers/storage.service';
-import z from 'zod';
+import { createProjectTools, createStorageTools } from './tools';
 
 @Injectable()
 export class ChatService {
@@ -13,150 +12,8 @@ export class ChatService {
 
   getTools() {
     return {
-      create_project: tool({
-        description: 'Cria um novo projeto de react com tailwind next',
-        inputSchema: z.object({
-          name: z.string().describe('Nome do projeto'),
-        }),
-        execute: async ({ name }) => {
-          const project = await this.projectService.createProject({
-            projectName: name,
-          });
-
-          return { success: true, message: project };
-        },
-      }),
-      list_folders: tool({
-        description: 'Lista os diretórios no caminho especificado',
-        inputSchema: z.object({
-          parentPath: z.string().describe('Caminho do diretório pai'),
-        }),
-        inputExamples: [
-          {
-            input: {
-              parentPath: 'landing-pages',
-            },
-          },
-          {
-            input: {
-              parentPath: 'landing-pages/components',
-            },
-          },
-        ],
-        execute: async ({ parentPath }) => {
-          const files =
-            await this.storageService.listFilesInDirectory(parentPath);
-          return { success: true, files };
-        },
-      }),
-      create_file: tool({
-        description: 'Cria um novo arquivo',
-        inputSchema: z.object({
-          name: z.string().describe('Nome do arquivo'),
-          content: z.string().describe('Conteúdo do arquivo'),
-        }),
-        execute: async ({ name, content }) => {
-          await this.storageService.createFile(name, content || '');
-
-          return {
-            success: true,
-            message: `Arquivo "${name}" criado com sucesso.`,
-          };
-        },
-      }),
-      edit_file: tool({
-        description: 'Edita um arquivo existente',
-        inputSchema: z.object({
-          name: z.string().describe('Nome do arquivo'),
-          newContent: z.string().describe('Novo conteúdo do arquivo'),
-          lineStart: z.number().describe('Linha inicial para edição'),
-          lineEnd: z.number().describe('Linha final para edição'),
-        }),
-        execute: async ({ name, newContent, lineStart, lineEnd }) => {
-          await this.storageService.editFile(
-            name,
-            newContent,
-            lineStart,
-            lineEnd,
-          );
-
-          return {
-            success: true,
-            message: `Arquivo "${name}" editado com sucesso.`,
-          };
-        },
-      }),
-      delete_file: tool({
-        description: 'Deleta um arquivo existente',
-        inputSchema: z.object({
-          name: z.string().describe('Nome do arquivo'),
-        }),
-        execute: async ({ name }) => {
-          await this.storageService.deleteFile(name);
-
-          return {
-            success: true,
-            message: `Arquivo "${name}" deletado com sucesso.`,
-          };
-        },
-      }),
-      read_file: tool({
-        description: 'Lê o conteúdo de um arquivo',
-        inputSchema: z.object({
-          path: z.string().describe('Caminho do arquivo'),
-        }),
-        execute: async ({ path }) => {
-          const content = await this.storageService.readFile(path);
-          return { success: true, content };
-        },
-      }),
-      regex_search_files_content: tool({
-        description:
-          'Procura conteúdo em arquivos de um diretório que correspondam a um padrão regex',
-        inputSchema: z.object({
-          folderName: z.string().describe('Nome do diretório para busca'),
-          regexPattern: z.string().describe('Padrão regex para busca'),
-        }),
-        execute: async ({ regexPattern, folderName }) => {
-          console.log(
-            'Executando regex_search_files com padrão:',
-            regexPattern,
-          );
-
-          const files = await this.storageService.regexSearchForContentInFiles(
-            folderName,
-            regexPattern,
-          );
-          return { success: true, files };
-        },
-      }),
-      created_projects: tool({
-        description: 'Lista os projetos criados no diretório principal',
-        inputSchema: z.object({}),
-        execute: async () => {
-          const projects =
-            await this.projectService.getProjectsCreatedInDirectory();
-
-          return { success: true, projects };
-        },
-      }),
-      install_depency: tool({
-        description: 'Instala uma nova dependência no projeto',
-        inputSchema: z.object({
-          projectName: z.string(),
-          dependecyName: z.string(),
-          isDev: z.boolean(),
-        }),
-        execute: async ({ projectName, dependecyName, isDev }) => {
-          const projects = await this.projectService.installDependency(
-            projectName,
-            dependecyName,
-            isDev,
-          );
-
-          return { success: true, projects };
-        },
-      }),
+      ...createStorageTools(this.storageService),
+      ...createProjectTools(this.projectService),
     };
   }
 }

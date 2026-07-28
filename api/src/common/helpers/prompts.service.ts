@@ -13,9 +13,13 @@ export class PromptsService {
   async getInstructions(): Promise<Instructions> {
     const paths: Record<number, string> = {
       1: '../.agents/skills/awwwards-hero/SKILL',
+      2: '../.agents/skills/landing-page/SKILL',
+      3: '../.agents/skills/developer/backend',
+      4: '../.agents/skills/developer/frontend',
     };
 
     const mode = this.contextService.get('mode');
+    const selectedPromptPath = mode && mode in paths ? paths[mode] : paths[1];
 
     const instructions: Instructions = [
       {
@@ -24,17 +28,15 @@ export class PromptsService {
       },
       {
         role: 'system',
-        content: await this.markdownService.getMarkdownFile(
-          '../.agents/skills/awwwards-hero/SKILL',
-        ).html,
+        content: await this.markdownService.getMarkdownFile(paths[1]).html,
       },
     ];
 
-    if (mode && mode in paths) {
-      // instructions.push({
-      //   role: 'system',
-      //   content: await this.markdownService.getMarkdownFile(paths[mode]).html,
-      // });
+    if (selectedPromptPath) {
+      instructions.push({
+        role: 'system',
+        content: await this.markdownService.getMarkdownFile(selectedPromptPath).html,
+      });
     }
 
     return instructions;
