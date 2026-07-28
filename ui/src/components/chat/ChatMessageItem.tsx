@@ -17,7 +17,6 @@ export function ChatMessageItem({ message, isTyping = false }: ChatMessageItemPr
 
   return (
     <article className={`message ${roleClass}`}>
-      <div className="message-avatar">{message.role === "user" ? "U" : "AI"}</div>
       <div className="message-content">
         {isTyping ? (
           <div className="typing-indicator" aria-label="Assistant is typing">

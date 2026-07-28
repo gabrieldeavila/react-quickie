@@ -198,10 +198,11 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 28px;
+  padding: 20px 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  gap: 18px;
 }
 
 .chat-messages::-webkit-scrollbar { width: 10px; }
@@ -231,21 +232,23 @@ body {
 
 .message {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-end;
+  width: 100%;
+  max-width: 700px;
   animation: messageIn 0.35s ease-out;
 }
 
 @keyframes messageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .message-avatar {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--chat-text);
@@ -253,17 +256,21 @@ body {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.assistant-message { justify-content: flex-start; }
+.assistant-message .message-avatar { order: 0; }
+.assistant-message .message-content { background: var(--chat-surface-strong); color: var(--chat-text); border-radius: 10px 10px 10px 4px; }
+
 .user-message { justify-content: flex-end; }
 .user-message .message-avatar { order: 2; background: linear-gradient(135deg, rgba(124, 140, 255, 0.24), rgba(138, 92, 246, 0.24)); }
-.user-message .message-content { background: var(--chat-user); color: #f5f7ff; border-radius: 12px 12px 4px 12px; }
-.assistant-message .message-content { background: var(--chat-surface-strong); color: var(--chat-text); border-radius: 12px 12px 12px 4px; }
+.user-message .message-content { background: var(--chat-user); color: #f5f7ff; border-radius: 10px 10px 4px 10px; }
 
 .message-content {
-  max-width: min(72ch, 78%);
-  padding: 14px 16px;
+  max-width: 76%;
+  min-width: 0;
+  padding: 10px 12px;
   border: 1px solid var(--chat-border);
-  line-height: 1.6;
-  font-size: 0.96rem;
+  line-height: 1.45;
+  font-size: 0.9rem;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
@@ -279,9 +286,17 @@ body {
   padding: 18px 20px 22px;
   border-top: 1px solid var(--chat-border);
   background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.03));
+  display: flex;
+  justify-content: center;
 }
 
-.input-wrapper { display: flex; gap: 12px; align-items: flex-end; max-width: 100%; }
+.input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 700px;
+}
 
 .chat-input {
   flex: 1;
