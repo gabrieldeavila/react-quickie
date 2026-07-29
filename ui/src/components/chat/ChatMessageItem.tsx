@@ -1,4 +1,6 @@
 import type { UIMessage } from "@ai-sdk/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type ChatMessageItemProps = {
   message: UIMessage;
@@ -14,6 +16,7 @@ function getMessageText(message: UIMessage) {
 
 export function ChatMessageItem({ message, isTyping = false }: ChatMessageItemProps) {
   const roleClass = message.role === "user" ? "user-message" : "assistant-message";
+  const messageText = getMessageText(message);
 
   return (
     <article className={`message ${roleClass}`}>
@@ -24,8 +27,10 @@ export function ChatMessageItem({ message, isTyping = false }: ChatMessageItemPr
             <span />
             <span />
           </div>
+        ) : message.role === "assistant" ? (
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{messageText}</ReactMarkdown>
         ) : (
-          getMessageText(message)
+          messageText
         )}
       </div>
     </article>
