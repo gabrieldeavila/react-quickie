@@ -24,11 +24,7 @@ export function ChatHeader({
         <div className="chat-header__actions flex items-center gap-3">
           <ChatStatusPill label={status} />
 
-          <button
-            type="button"
-            className="chat-button chat-button--ghost"
-            onClick={onOpenCreateProject}
-          >
+          <button type="button" className="chat-button chat-button--ghost" onClick={onOpenCreateProject}>
             Novo projeto
           </button>
 
