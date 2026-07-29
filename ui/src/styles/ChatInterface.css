@@ -269,10 +269,26 @@ body {
   min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--chat-border);
-  line-height: 1.45;
-  font-size: 0.9rem;
+  line-height: 1.55;
+  font-size: 1.02rem;
   word-wrap: break-word;
   white-space: pre-wrap;
+}
+
+.message-content p,
+.message-content ul,
+.message-content ol {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.message-content p + p,
+.message-content ul + p,
+.message-content p + ul,
+.message-content ol + p,
+.message-content p + ol {
+  margin-top: 0.75rem;
 }
 
 .typing-indicator { display: flex; gap: 6px; align-items: center; min-height: 20px; }
@@ -403,7 +419,7 @@ body {
   .chat-header__controls { width: 100%; }
   .chat-control--full, .chat-select { width: 100%; }
   .chat-folder-picker { flex-direction: column; }
-  .message-content { max-width: 86%; }
+  .message-content { max-width: 86%; font-size: 1.05rem; }
   .send-button { width: 52px; height: 52px; border-radius: 10px; }
 }
 

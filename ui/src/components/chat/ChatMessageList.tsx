@@ -1,4 +1,5 @@
 import type { UIMessage } from "@ai-sdk/react";
+import { useEffect, useRef } from "react";
 import { ChatEmptyState } from "./ChatEmptyState";
 import { ChatMessageItem } from "./ChatMessageItem";
 
@@ -9,6 +10,11 @@ type ChatMessageListProps = {
 
 export function ChatMessageList({ messages, isPending }: ChatMessageListProps) {
   const isEmpty = messages.length === 0;
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length, isPending]);
 
   return (
     <div className="chat-messages" aria-live="polite" aria-relevant="additions text">
@@ -24,6 +30,8 @@ export function ChatMessageList({ messages, isPending }: ChatMessageListProps) {
           isTyping
         />
       ) : null}
+
+      <div ref={endRef} aria-hidden="true" />
     </div>
   );
 }

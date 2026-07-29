@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChatModeEnum } from "../enum/chat.enum";
 import "../styles/ChatInterface.css";
 import { ChatComposer } from "./chat/ChatComposer";
@@ -42,7 +42,6 @@ function readProjectContext(): ProjectContext {
 }
 
 export function ChatInterface() {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { input, hasInput, setInput, clearInput } = useChatComposer();
   const [isRootModalOpen, setIsRootModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -70,10 +69,6 @@ export function ChatInterface() {
       console.error("Error sending message:", error);
     },
   });
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, status]);
 
   const handleSendMessage = useCallback(() => {
     const trimmedInput = input.trim();
@@ -129,8 +124,6 @@ export function ChatInterface() {
         />
 
         <ChatMessageList messages={messages} isPending={status !== "ready"} />
-
-        <div ref={messagesEndRef} />
 
         <ChatComposer
           input={input}
