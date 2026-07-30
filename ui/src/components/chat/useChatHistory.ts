@@ -7,6 +7,7 @@ import {
   ensureConversation,
   listConversations,
   listMessagesByConversation,
+  migrateDefaultConversationTitles,
   type ChatConversation,
 } from "../../lib/chatDb";
 
@@ -36,6 +37,8 @@ export const useChatHistory = (): UseChatHistoryResult => {
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
   const reloadConversations = useCallback(async (): Promise<void> => {
+    await migrateDefaultConversationTitles();
+
     const data: ChatConversation[] = await listConversations();
     setConversations(data);
     setActiveConversationId((current) => current ?? data[0]?.id ?? null);

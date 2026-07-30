@@ -159,6 +159,7 @@ body {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.03);
   min-height: 0;
+  overflow: hidden;
 }
 
 .chat-sidebar__item--active {
@@ -185,6 +186,10 @@ body {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .chat-sidebar__item-meta {

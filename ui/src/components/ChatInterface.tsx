@@ -68,7 +68,7 @@ export function ChatInterface() {
   const { input, hasInput, setInput, clearInput } = useChatComposer();
   const [isRootModalOpen, setIsRootModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(readSidebarOpenState);
   const [projectContext, setProjectContext] = useState<ProjectContext>(DEFAULT_PROJECT_CONTEXT);
   const [draftContext, setDraftContext] = useState<ProjectContext>(DEFAULT_PROJECT_CONTEXT);
   const history = useChatHistory();
@@ -78,7 +78,6 @@ export function ChatInterface() {
     const storedContext = readProjectContext();
     setProjectContext(storedContext);
     setDraftContext(storedContext);
-    setIsSidebarOpen(readSidebarOpenState());
   }, []);
 
   useEffect(() => {
@@ -216,8 +215,6 @@ export function ChatInterface() {
             status={status === "ready" ? "Online" : "Respondendo"}
             onOpenProjectRoot={handleOpenRootModal}
             onOpenCreateProject={() => setIsCreateModalOpen(true)}
-            onToggleSidebar={handleToggleSidebar}
-            isSidebarOpen={isSidebarOpen}
           />
 
           <ChatMessageList messages={messages} isPending={status !== "ready"} />
