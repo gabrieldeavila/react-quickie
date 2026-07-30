@@ -120,13 +120,10 @@ export function ChatInterface() {
     if (!trimmedInput || status !== "ready") return;
 
     void (async (): Promise<void> => {
-      if (!history.activeConversationId) {
-        const conversationId = await history.createConversation(trimmedInput);
-        await history.persistUserMessage(conversationId, trimmedInput);
-      } else {
-        await history.persistUserMessage(history.activeConversationId, trimmedInput);
-      }
+      const conversationId = history.activeConversationId ?? (await history.createConversation(trimmedInput));
+      pendingConversationIdRef.current = conversationId;
 
+      await history.persistUserMessage(conversationId, trimmedInput);
       sendMessage({ text: trimmedInput });
       clearInput();
     })();
@@ -139,6 +136,7 @@ export function ChatInterface() {
     }
   }, [handleSendMessage]);
 
+  const pendingConversationIdRef = useRef<string | null>(null);
   const handleOpenRootModal = useCallback(() => {
     setDraftContext(projectContext);
     setIsRootModalOpen(true);
@@ -153,13 +151,16 @@ export function ChatInterface() {
     }
 
     setMessages(history.historyMessages);
-    assistantPersistedIdsRef.current = new Set(
-      history.historyMessages.filter((message) => message.role === "assistant").map((message) => message.id),
-    );
+    assistantPersistedIdsRef.current = new Set([
+      ...assistantPersistedIdsRef.current,
+      ...history.historyMessages
+        .filter((message) => message.role === "assistant")
+        .map((message) => message.id),
+    ]);
   }, [history.activeConversationId, history.historyMessages, setMessages]);
 
   useEffect(() => {
-    if (status !== "ready" || !history.activeConversationId) return;
+    if (status !== "ready") return;
 
     const assistantMessage = [...messages].reverse().find((message) => message.role === "assistant");
     if (!assistantMessage || assistantPersistedIdsRef.current.has(assistantMessage.id)) return;
@@ -167,9 +168,29 @@ export function ChatInterface() {
     const content = getMessageText(assistantMessage).trim();
     if (!content) return;
 
+    const assistantMessageId = assistantMessage.id;
+    if (assistantPersistedIdsRef.current.has(assistantMessageId)) return;
+
+    assistantPersistedIdsRef.current.add(assistantMessageId);
+
+    const targetConversationId = pendingConversationIdRef.current;
+    if (!targetConversationId) {
+      assistantPersistedIdsRef.current.delete(assistantMessageId);
+      return;
+    }
+
     void (async (): Promise<void> => {
-      await persistAssistantMessage(history.activeConversationId!, content);
-      assistantPersistedIdsRef.current.add(assistantMessage.id);
+      try {
+        await persistAssistantMessage(targetConversationId, content);
+      } catch (error) {
+        assistantPersistedIdsRef.current.delete(assistantMessageId);
+        console.error("Error persisting assistant message:", error);
+        return;
+      }
+
+      if (pendingConversationIdRef.current === targetConversationId) {
+        pendingConversationIdRef.current = null;
+      }
     })();
   }, [history.activeConversationId, messages, persistAssistantMessage, status]);
 
