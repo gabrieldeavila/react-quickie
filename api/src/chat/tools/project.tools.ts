@@ -1,6 +1,6 @@
-import { tool } from 'ai';
+import { tool, zodSchema } from 'ai';
 import { ProjectService } from 'src/common/helpers/project.service';
-import z from 'zod';
+import { z } from 'zod/v4';
 
 export function createProjectTools(projectService: ProjectService) {
   return {
@@ -11,6 +11,18 @@ export function createProjectTools(projectService: ProjectService) {
         const projects = await projectService.getProjectsCreatedInDirectory();
 
         return { success: true, projects };
+      },
+    }),
+    check_typescript_errors: tool({
+      description: 'Busca erros de TypeScript no projeto atual ou em um projeto informado',
+      inputSchema: zodSchema(
+        z.object({
+          projectName: z.string().optional().describe('Nome ou caminho do projeto opcional'),
+        }),
+      ) as any,
+      execute: async ({ projectName }: { projectName?: string }) => {
+        const result = await projectService.checkTypeScriptErrors(projectName);
+        return result;
       },
     }),
     install_depency: tool({

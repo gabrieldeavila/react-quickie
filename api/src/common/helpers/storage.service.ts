@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   InternalServerErrorException,
@@ -45,7 +46,11 @@ export class StorageService {
     }
   }
 
-  async readFile(filePath: string): Promise<string> {
+  async readFile(
+    filePath: string,
+    lineStart?: number,
+    lineEnd?: number,
+  ): Promise<string> {
     const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
 
@@ -60,11 +65,41 @@ export class StorageService {
 
       // Lê o conteúdo do arquivo
       const content = await fs.readFile(fullPath, 'utf-8');
+
+      if (lineStart !== undefined || lineEnd !== undefined) {
+        if (lineStart === undefined || lineEnd === undefined) {
+          throw new BadRequestException(
+            'É necessário informar tanto lineStart quanto lineEnd para ler apenas um bloco.',
+          );
+        }
+
+        if (lineStart < 1 || lineEnd < lineStart) {
+          throw new BadRequestException(
+            'Os valores de lineStart e lineEnd devem ser válidos e lineStart não pode ser maior que lineEnd.',
+          );
+        }
+
+        const lines = content.split(/\r?\n/);
+        const selectedLines = lines.slice(lineStart - 1, lineEnd);
+        const selectedContent = selectedLines.join('\n');
+
+        this.loggerService.logDecision(
+          `Read the file ${fullPath} from line ${lineStart} to ${lineEnd}`,
+        );
+
+        return selectedContent;
+      }
+
       this.loggerService.logDecision(`Read the file ${fullPath}`);
 
       return content;
     } catch (error) {
-      if (error instanceof NotFoundException) throw error;
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
 
       // Trata outros erros (ex: falta de permissão de leitura)
       throw new InternalServerErrorException(
@@ -187,6 +222,12 @@ export class StorageService {
         );
       }
 
+      if (lineStart < 1 || lineEnd < lineStart) {
+        throw new BadRequestException(
+          'Os valores de lineStart e lineEnd devem ser válidos e lineStart não pode ser maior que lineEnd.',
+        );
+      }
+
       // Lê o conteúdo atual do arquivo
       const currentContent = await fs.readFile(fullPath, 'utf-8');
       const lines = currentContent.split('\n');
@@ -200,7 +241,12 @@ export class StorageService {
       // Escreve o conteúdo atualizado de volta no arquivo
       await fs.writeFile(fullPath, lines.join('\n'), 'utf-8');
     } catch (error) {
-      if (error instanceof NotFoundException) throw error;
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
 
       // Trata outros erros (ex: falta de permissão de escrita)
       throw new InternalServerErrorException(

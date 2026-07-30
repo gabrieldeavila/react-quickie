@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { spawn } from 'child_process';
+import * as path from 'path';
 import { LoggerService } from './logger.service';
 import { ContextService } from '../context/context.service';
 
@@ -114,6 +115,44 @@ export class ProjectService {
       // Tratamento caso o comando nem consiga iniciar
       child.on('error', (err) => {
         reject(err.message);
+      });
+    });
+  }
+
+  async checkTypeScriptErrors(
+    projectName?: string,
+  ): Promise<{ success: boolean; hasErrors: boolean; output?: string; error?: string }> {
+    return new Promise((resolve) => {
+      const rootDir = this.contextService.get('root');
+      const targetDir = projectName
+        ? path.join(rootDir!, projectName)
+        : rootDir!;
+
+      const child = spawn('pnpm', ['exec', 'tsc', '--noEmit', '--pretty', 'false'], {
+        cwd: targetDir,
+        shell: true,
+      });
+
+      let stdoutData = '';
+      let stderrData = '';
+
+      child.stdout.on('data', (data) => (stdoutData += data.toString()));
+      child.stderr.on('data', (data) => (stderrData += data.toString()));
+
+      child.on('close', (code) => {
+        const output = `${stdoutData}${stderrData}`.trim();
+        const hasErrors = code !== 0;
+
+        resolve({
+          success: true,
+          hasErrors,
+          output: output || (hasErrors ? 'TypeScript found errors.' : 'No TypeScript errors found.'),
+          error: hasErrors ? output || undefined : undefined,
+        });
+      });
+
+      child.on('error', (err) => {
+        resolve({ success: false, hasErrors: true, output: err.message, error: err.message });
       });
     });
   }

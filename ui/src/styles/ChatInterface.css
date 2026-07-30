@@ -490,6 +490,15 @@ body {
   line-height: inherit;
 }
 
+.message-content li.li1 {
+  margin: 0.0px 0.0px 0.0px 0.0px;
+  font: 13.0px 'Helvetica Neue';
+}
+
+.message-content ul.ul1 {
+  list-style-type: circle;
+}
+
 .message-content p + p,
 .message-content ul + p,
 .message-content p + ul,

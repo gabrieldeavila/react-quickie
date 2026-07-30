@@ -1,6 +1,6 @@
-import { tool } from 'ai';
+import { tool, zodSchema } from 'ai';
 import { StorageService } from 'src/common/helpers/storage.service';
-import z from 'zod';
+import { z } from 'zod/v4';
 
 export function createStorageTools(storageService: StorageService) {
   return {
@@ -103,12 +103,16 @@ export function createStorageTools(storageService: StorageService) {
       },
     }),
     read_file: tool({
-      description: 'Lê o conteúdo de um arquivo',
-      inputSchema: z.object({
-        path: z.string().describe('Caminho do arquivo'),
-      }),
-      execute: async ({ path }) => {
-        const content = await storageService.readFile(path);
+      description: 'Lê o conteúdo de um arquivo inteiro ou apenas um bloco específico',
+      inputSchema: zodSchema(
+        z.object({
+          path: z.string().describe('Caminho do arquivo'),
+          lineStart: z.number().int().positive().optional().describe('Linha inicial opcional para ler apenas um bloco'),
+          lineEnd: z.number().int().positive().optional().describe('Linha final opcional para ler apenas um bloco'),
+        }),
+      ) as any,
+      execute: async ({ path, lineStart, lineEnd }: { path: string; lineStart?: number; lineEnd?: number }) => {
+        const content = await storageService.readFile(path, lineStart, lineEnd);
         return { success: true, content };
       },
     }),
