@@ -52,9 +52,7 @@ export function ChatSidebar({
         <div className="chat-sidebar__header">
           <div>
             <p className="chat-sidebar__title">Conversas</p>
-            <span className="chat-sidebar__subtitle">
-              Histórico local sincronizado
-            </span>
+            <span className="chat-sidebar__subtitle">Histórico local sincronizado</span>
           </div>
 
           <button
@@ -75,7 +73,8 @@ export function ChatSidebar({
             </div>
           ) : (
             conversations.map((conversation) => {
-              const isActive = conversation.id === activeConversationId;
+              const isActive: boolean = conversation.id === activeConversationId;
+
               return (
                 <article
                   key={conversation.id}
@@ -86,14 +85,17 @@ export function ChatSidebar({
                     className="chat-sidebar__item-button"
                     type="button"
                     onClick={() => onSelectConversation(conversation.id)}
+                    aria-label={`Abrir conversa ${conversation.title}`}
+                    title={`Abrir conversa ${conversation.title}`}
                   >
-                    <div className="chat-sidebar__item-title">
-                      {conversation.title}
-                    </div>
-                    <div className="chat-sidebar__item-meta">
-                      {formatTimestamp(conversation.lastMessageAt)}
+                    <div className="chat-sidebar__item-body">
+                      <div className="chat-sidebar__item-title">{conversation.title}</div>
+                      <div className="chat-sidebar__item-meta">
+                        {formatTimestamp(conversation.lastMessageAt)}
+                      </div>
                     </div>
                   </button>
+
                   <button
                     className="chat-sidebar__item-delete chat-button chat-button--ghost chat-button--x-small"
                     type="button"
@@ -101,11 +103,7 @@ export function ChatSidebar({
                     aria-label={`Excluir conversa ${conversation.title}`}
                     title={`Excluir conversa ${conversation.title}`}
                   >
-                    <span
-                      className="chat-sidebar__item-delete-icon"
-                    >
-                      x
-                    </span>
+                    <span className="chat-sidebar__item-delete-icon">x</span>
                   </button>
                 </article>
               );

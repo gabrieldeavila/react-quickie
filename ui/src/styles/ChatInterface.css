@@ -168,11 +168,12 @@ body {
 }
 
 .chat-sidebar__item {
+  position: relative;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 14px;
-  padding: 16px 16px 16px 18px;
+  gap: 12px;
+  padding: 12px;
   border: 1px solid var(--chat-border);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.03);
@@ -186,17 +187,38 @@ body {
 }
 
 .chat-sidebar__item-button {
+  flex: 1;
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 6px;
+  align-items: stretch;
   text-align: left;
   border: none;
   background: transparent;
   padding: 0;
   color: inherit;
   cursor: pointer;
+  border-radius: 12px;
+}
+
+.chat-sidebar__item-button:hover .chat-sidebar__item-title {
+  color: #ffffff;
+}
+
+.chat-sidebar__item-button:focus-visible,
+.chat-sidebar__item-delete:focus-visible,
+.chat-sidebar__toggle:focus-visible {
+  outline: 2px solid rgba(124, 140, 255, 0.9);
+  outline-offset: 2px;
+}
+
+.chat-sidebar__item-body {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 2px 4px 4px;
 }
 
 .chat-sidebar__item-title {
@@ -220,6 +242,9 @@ body {
 }
 
 .chat-button.chat-sidebar__item-delete {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
   width: 24px;
   height: 24px;
   min-width: 24px;
@@ -229,7 +254,7 @@ body {
   align-items: center;
   line-height: 1;
   font-size: 0.72rem;
-  padding: 2.5px;
+  margin-top: 2px;
 }
 
 .chat-sidebar__item-delete .chat-button__icon {
@@ -373,7 +398,6 @@ body {
 }
 
 .chat-button--small { min-height: 40px; }
-
 .chat-button--x-small { min-height: 20px; }
 
 .chat-subtitle { display: none; }
@@ -417,7 +441,6 @@ body {
 .chat-messages:hover::-webkit-scrollbar-thumb { background: rgba(124, 140, 255, 0.38); }
 
 .chat-empty {
-  min-height: 320px;
   display: grid;
   place-content: center;
   justify-items: center;
