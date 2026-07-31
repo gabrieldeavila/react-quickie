@@ -7,6 +7,7 @@ import { ContextModule } from './common/context/context.module';
 import { ProjectController } from './project/project.controller';
 import { ProjectService } from './common/helpers/project.service';
 import { LoggerService } from './common/helpers/logger.service';
+import { TsCheckerService } from './common/helpers/tschecker.service';
 
 @Module({
   imports: [
@@ -18,6 +19,6 @@ import { LoggerService } from './common/helpers/logger.service';
     }),
   ],
   controllers: [AppController, ProjectController],
-  providers: [AppService, ProjectService, LoggerService],
+  providers: [AppService, ProjectService, LoggerService, TsCheckerService],
 })
 export class AppModule {}

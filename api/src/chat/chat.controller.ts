@@ -21,6 +21,7 @@ import { MarkdownService } from 'src/common/helpers/markdown.module';
 import { ProjectService } from 'src/common/helpers/project.service';
 import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ChatService } from './chat.service';
+import { TsCheckerService } from 'src/common/helpers/tschecker.service';
 
 @UseInterceptors(
   BuildContextInterceptor((req) => ({
@@ -36,11 +37,14 @@ export class ChatController {
     private readonly chatService: ChatService,
     private readonly markdownService: MarkdownService,
     private readonly projectService: ProjectService,
+    private readonly tsCheckerService: TsCheckerService,
   ) {}
 
   @Get()
   async getChat() {
-    await this.projectService.createProject({ projectName: 'amigos' });
+    return await this.tsCheckerService.checkFileErrors(
+      'src/components/chat/ChatMessageList.tsx',
+    );
 
     return {
       message: 'Chat endpoint is working!',

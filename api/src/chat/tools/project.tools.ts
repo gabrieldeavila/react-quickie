@@ -13,15 +13,14 @@ export function createProjectTools(projectService: ProjectService) {
         return { success: true, projects };
       },
     }),
-    check_typescript_errors: tool({
-      description: 'Busca erros de TypeScript no projeto atual ou em um projeto informado',
-      inputSchema: zodSchema(
-        z.object({
-          projectName: z.string().optional().describe('Nome ou caminho do projeto opcional'),
-        }),
-      ) as any,
-      execute: async ({ projectName }: { projectName?: string }) => {
-        const result = await projectService.checkTypeScriptErrors(projectName);
+    check_typescript: tool({
+      description:
+        'Valida o código TypeScript do projeto, retornando erros caso existam',
+      inputSchema: z.object({
+        filePath: z.string().optional(),
+      }),
+      execute: async ({ filePath }: { filePath?: string }) => {
+        const result = await projectService.checkTypeScriptErrors(filePath);
         return result;
       },
     }),
