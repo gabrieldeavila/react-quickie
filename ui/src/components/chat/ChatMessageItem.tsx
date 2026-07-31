@@ -7,7 +7,7 @@ type ChatMessageItemProps = {
   isTyping?: boolean;
 };
 
-function getMessageText(message: UIMessage) {
+function getMessageText(message: UIMessage): string {
   return message.parts
     .filter((part) => part.type === "text")
     .map((part) => part.text)
@@ -15,12 +15,12 @@ function getMessageText(message: UIMessage) {
 }
 
 export function ChatMessageItem({ message, isTyping = false }: ChatMessageItemProps) {
-  const roleClass = message.role === "user" ? "user-message" : "assistant-message";
-  const messageText = getMessageText(message);
+  const roleClass: string = message.role === "user" ? "user-message" : "assistant-message";
+  const messageText: string = getMessageText(message);
 
   return (
     <article className={`message ${roleClass}`}>
-      <div className="message-content">
+      <div className="message-content markdown-content">
         {isTyping ? (
           <div className="typing-indicator" aria-label="Assistant is typing">
             <span />
@@ -28,7 +28,29 @@ export function ChatMessageItem({ message, isTyping = false }: ChatMessageItemPr
             <span />
           </div>
         ) : message.role === "assistant" ? (
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{messageText}</ReactMarkdown>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              p: ({ children }) => <p>{children}</p>,
+              code: ({ className, children }) => {
+                const isBlock: boolean = Boolean(className?.includes("language-"));
+
+                return isBlock ? (
+                  <code className={className}>{children}</code>
+                ) : (
+                  <code className="inline-code">{children}</code>
+                );
+              },
+              pre: ({ children }) => <pre className="markdown-pre">{children}</pre>,
+              a: ({ children, ...props }) => (
+                <a {...props} target="_blank" rel="noreferrer">
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {messageText}
+          </ReactMarkdown>
         ) : (
           messageText
         )}
