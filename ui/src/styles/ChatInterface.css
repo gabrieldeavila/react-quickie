@@ -82,6 +82,19 @@ body {
   background: transparent;
   padding: 0;
 }
+.chat-sidebar__create-button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+.chat-sidebar__create-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  line-height: 1;
+  color: #ffffff;
+  flex: 0 0 auto;
+}
 .chat-sidebar__toggle {
   position: absolute;
   top: 50%;

@@ -1,3 +1,4 @@
+import { FiPlus } from "react-icons/fi";
 import type { ChatConversation } from "../../lib/chatDb";
 
 type ChatSidebarProps = {
@@ -52,15 +53,19 @@ export function ChatSidebar({
         <div className="chat-sidebar__header">
           <div>
             <p className="chat-sidebar__title">Conversas</p>
-            <span className="chat-sidebar__subtitle">Histórico local sincronizado</span>
+            <span className="chat-sidebar__subtitle">
+              Histórico local sincronizado
+            </span>
           </div>
 
           <button
-            className="chat-button chat-button--small"
+            className="chat-button chat-button--small chat-sidebar__create-button"
             onClick={onCreateConversation}
             type="button"
+            aria-label="Nova conversa"
+            title="Nova conversa"
           >
-            Nova
+            <FiPlus className="chat-sidebar__create-icon" aria-hidden="true" />
           </button>
         </div>
 
@@ -73,7 +78,8 @@ export function ChatSidebar({
             </div>
           ) : (
             conversations.map((conversation) => {
-              const isActive: boolean = conversation.id === activeConversationId;
+              const isActive: boolean =
+                conversation.id === activeConversationId;
 
               return (
                 <article
@@ -89,7 +95,9 @@ export function ChatSidebar({
                     title={`Abrir conversa ${conversation.title}`}
                   >
                     <div className="chat-sidebar__item-body">
-                      <div className="chat-sidebar__item-title">{conversation.title}</div>
+                      <div className="chat-sidebar__item-title">
+                        {conversation.title}
+                      </div>
                       <div className="chat-sidebar__item-meta">
                         {formatTimestamp(conversation.lastMessageAt)}
                       </div>

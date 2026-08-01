@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
-import { FiCode, FiLayout, FiPackage } from "react-icons/fi";
+import { FiCode, FiLayout, FiMinusCircle, FiPackage } from "react-icons/fi";
 import { AgentFocusEnum, AgentSpecialtyEnum } from "../../enum/agent.enum";
 
 type FocusPopoverProps = {
@@ -21,6 +21,11 @@ const FOCUS_OPTIONS: Option<AgentFocusEnum>[] = [
 
 const SPECIALTY_OPTIONS: Option<AgentSpecialtyEnum>[] = [
   {
+    value: AgentSpecialtyEnum.NONE,
+    label: "Sem especialidade",
+    icon: FiMinusCircle,
+  },
+  {
     value: AgentSpecialtyEnum.LANDING_PAGES,
     label: "Landing Pages",
     icon: FiLayout,
@@ -33,25 +38,24 @@ function Popover<T extends string | number>({
   onChange,
   options,
   ariaLabel,
+  defaultIcon: DefaultIcon,
 }: {
   value: T;
   onChange: (value: T) => void;
   options: Option<T>[];
   ariaLabel: string;
+  defaultIcon?: IconType;
 }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [openDirection, setOpenDirection] = useState<"left" | "right">("right");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const currentOption: Option<T> = useMemo(
-    () => options.find((option) => option.value === value) ?? options[0],
-    [options, value],
-  );
+  const currentOption: Option<T> | undefined = useMemo(() => options.find((option) => option.value === value), [options, value]);
+  const TriggerIcon: IconType = currentOption?.icon ?? DefaultIcon ?? FiMinusCircle;
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent): void => {
-      if (!containerRef.current?.contains(event.target as Node))
-        setIsOpen(false);
+      if (!containerRef.current?.contains(event.target as Node)) setIsOpen(false);
     };
     const handleEscape = (event: KeyboardEvent): void => {
       if (event.key === "Escape") setIsOpen(false);
@@ -74,11 +78,7 @@ function Popover<T extends string | number>({
       const panelWidth = panel.offsetWidth || 220;
       const spaceRight = window.innerWidth - containerRect.left;
       const spaceLeft = containerRect.right;
-      setOpenDirection(
-        spaceRight < panelWidth + 16 && spaceLeft >= panelWidth
-          ? "left"
-          : "right",
-      );
+      setOpenDirection(spaceRight < panelWidth + 16 && spaceLeft >= panelWidth ? "left" : "right");
     };
     updateDirection();
     window.addEventListener("resize", updateDirection);
@@ -89,8 +89,6 @@ function Popover<T extends string | number>({
     };
   }, [isOpen]);
 
-  const CurrentIcon: IconType = currentOption.icon;
-
   return (
     <div className="chat-mode-popover" ref={containerRef}>
       <button
@@ -100,10 +98,10 @@ function Popover<T extends string | number>({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={ariaLabel}
-        title={currentOption.label}
+        title={currentOption?.label ?? ariaLabel}
       >
         <span className="chat-mode-popover__icon" aria-hidden="true">
-          <CurrentIcon className="chat-mode-popover__icon-svg" />
+          <TriggerIcon className="chat-mode-popover__icon-svg" />
         </span>
       </button>
       {isOpen ? (
@@ -118,25 +116,20 @@ function Popover<T extends string | number>({
             const OptionIcon: IconType = option.icon;
             return (
               <button
-                key={option.value}
+                key={String(option.value)}
                 type="button"
                 className={`chat-mode-popover__option ${isSelected ? "chat-mode-popover__option--selected" : ""}`}
                 onClick={() => {
-                  setIsOpen(false);
                   onChange(option.value);
+                  setIsOpen(false);
                 }}
                 role="option"
                 aria-selected={isSelected}
               >
-                <span
-                  className="chat-mode-popover__option-icon"
-                  aria-hidden="true"
-                >
+                <span className="chat-mode-popover__option-icon" aria-hidden="true">
                   <OptionIcon className="chat-mode-popover__option-icon-svg" />
                 </span>
-                <span className="chat-mode-popover__option-label">
-                  {option.label}
-                </span>
+                <span className="chat-mode-popover__option-label">{option.label}</span>
               </button>
             );
           })}
@@ -147,14 +140,7 @@ function Popover<T extends string | number>({
 }
 
 export function ChatModePopover({ value, onChange }: FocusPopoverProps) {
-  return (
-    <Popover
-      value={value}
-      onChange={onChange}
-      options={FOCUS_OPTIONS}
-      ariaLabel="Selecionar foco do agente"
-    />
-  );
+  return <Popover value={value} onChange={onChange} options={FOCUS_OPTIONS} ariaLabel="Selecionar foco do agente" defaultIcon={FiCode} />;
 }
 
 export function ChatSpecialtyPopover({
@@ -163,12 +149,5 @@ export function ChatSpecialtyPopover({
   focus,
 }: SpecialtyPopoverProps) {
   if (focus !== AgentFocusEnum.FRONTEND) return null;
-  return (
-    <Popover
-      value={value}
-      onChange={onChange}
-      options={SPECIALTY_OPTIONS}
-      ariaLabel="Selecionar especialidade do agente"
-    />
-  );
+  return <Popover value={value} onChange={onChange} options={SPECIALTY_OPTIONS} ariaLabel="Selecionar especialidade do agente" defaultIcon={FiMinusCircle} />;
 }
