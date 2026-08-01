@@ -1,6 +1,7 @@
 export enum AgentFocusEnum {
   FRONTEND = "frontend",
   BACKEND = "backend",
+  AGNOSTIC = "agnostic",
 }
 
 export enum AgentSpecialtyEnum {
