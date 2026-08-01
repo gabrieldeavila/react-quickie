@@ -83,7 +83,7 @@ export class ChatController {
       messages: validMessages,
       tools: this.chatService.getTools(),
       instructions,
-      stopWhen: isStepCount(10),
+      stopWhen: isStepCount(50),
     });
 
     pipeUIMessageStreamToResponse({

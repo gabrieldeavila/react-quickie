@@ -1,8 +1,12 @@
+import type { ChatModeEnum } from "../../enum/chat.enum";
+import { ChatModePopover } from "./ChatModePopover";
 import { ChatStatusPill } from "./ChatStatusPill";
 
 type ChatHeaderProps = {
   title: string;
   status?: string;
+  mode: ChatModeEnum;
+  onModeChange: (value: ChatModeEnum) => void;
   onOpenProjectRoot: () => void;
   onOpenCreateProject: () => void;
 };
@@ -10,6 +14,8 @@ type ChatHeaderProps = {
 export function ChatHeader({
   title,
   status = "Online",
+  mode,
+  onModeChange,
   onOpenProjectRoot,
   onOpenCreateProject,
 }: ChatHeaderProps) {
@@ -23,6 +29,7 @@ export function ChatHeader({
 
         <div className="chat-header__actions flex items-center gap-3">
           <ChatStatusPill label={status} />
+          <ChatModePopover value={mode} onChange={onModeChange} />
 
           <button type="button" className="chat-button chat-button--ghost" onClick={onOpenCreateProject}>
             Novo projeto

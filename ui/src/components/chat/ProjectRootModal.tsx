@@ -1,5 +1,5 @@
 import type { ChatModeEnum } from "../../enum/chat.enum";
-import { ChatModeSelector } from "./ChatModeSelector";
+import { ChatModePopover } from "./ChatModePopover";
 
 type ProjectRootModalProps = {
   isOpen: boolean;
@@ -42,7 +42,18 @@ export function ProjectRootModal({
         </div>
 
         <div className="chat-modal__fields">
-          <ChatModeSelector value={mode} onChange={onModeChange} />
+          <label className="chat-control chat-control--full">
+            <span className="chat-control__label">Modo</span>
+            <div className="chat-mode-inline">
+              <ChatModePopover value={mode} onChange={onModeChange} />
+              <input
+                className="chat-input chat-input--modal chat-input--mode"
+                value={mode}
+                readOnly
+                aria-label="Modo selecionado"
+              />
+            </div>
+          </label>
 
           <label className="chat-control chat-control--full">
             <span className="chat-control__label">Caminho ou referência principal</span>

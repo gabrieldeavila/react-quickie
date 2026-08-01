@@ -38,7 +38,10 @@ function readProjectContext(): ProjectContext {
         typeof parsed.reference === "string" && parsed.reference.trim()
           ? parsed.reference
           : DEFAULT_PROJECT_CONTEXT.reference,
-      mode: parsed.mode ? parsed.mode : ChatModeEnum.FORMS,
+      mode:
+        typeof parsed.mode === "number" && parsed.mode in ChatModeEnum
+          ? parsed.mode
+          : DEFAULT_PROJECT_CONTEXT.mode,
     };
   } catch {
     return DEFAULT_PROJECT_CONTEXT;
@@ -73,6 +76,8 @@ export function ChatInterface() {
   const [draftContext, setDraftContext] = useState<ProjectContext>(DEFAULT_PROJECT_CONTEXT);
   const history = useChatHistory();
   const { setActiveConversationId, persistAssistantMessage } = history;
+  const pendingConversationIdRef = useRef<string | null>(null);
+  const assistantPersistedIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const storedContext = readProjectContext();
@@ -122,7 +127,6 @@ export function ChatInterface() {
     void (async (): Promise<void> => {
       const conversationId = history.activeConversationId ?? (await history.createConversation(trimmedInput));
       pendingConversationIdRef.current = conversationId;
-
       await history.persistUserMessage(conversationId, trimmedInput);
       sendMessage({ text: trimmedInput });
       clearInput();
@@ -136,13 +140,10 @@ export function ChatInterface() {
     }
   }, [handleSendMessage]);
 
-  const pendingConversationIdRef = useRef<string | null>(null);
   const handleOpenRootModal = useCallback(() => {
     setDraftContext(projectContext);
     setIsRootModalOpen(true);
   }, [projectContext]);
-
-  const assistantPersistedIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!history.activeConversationId) {
@@ -153,9 +154,7 @@ export function ChatInterface() {
     setMessages(history.historyMessages);
     assistantPersistedIdsRef.current = new Set([
       ...assistantPersistedIdsRef.current,
-      ...history.historyMessages
-        .filter((message) => message.role === "assistant")
-        .map((message) => message.id),
+      ...history.historyMessages.filter((message) => message.role === "assistant").map((message) => message.id),
     ]);
   }, [history.activeConversationId, history.historyMessages, setMessages]);
 
@@ -192,14 +191,14 @@ export function ChatInterface() {
         pendingConversationIdRef.current = null;
       }
     })();
-  }, [history.activeConversationId, messages, persistAssistantMessage, status]);
+  }, [messages, persistAssistantMessage, status, history.activeConversationId]);
 
   const activeConversationTitle = history.conversations.find(
     (conversation) => conversation.id === history.activeConversationId,
   )?.title ?? "Chat";
 
   const handleSaveRoot = useCallback(() => {
-    const nextContext = {
+    const nextContext: ProjectContext = {
       reference: draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
       mode: draftContext.mode,
     };
@@ -234,6 +233,16 @@ export function ChatInterface() {
           <ChatHeader
             title={activeConversationTitle}
             status={status === "ready" ? "Online" : "Respondendo"}
+            mode={projectContext.mode}
+            onModeChange={(value) => {
+              setProjectContext((current) => {
+                const nextContext: ProjectContext = { ...current, mode: value };
+                if (typeof window !== "undefined") {
+                  window.localStorage.setItem(PROJECT_CONTEXT_STORAGE_KEY, JSON.stringify(nextContext));
+                }
+                return nextContext;
+              });
+            }}
             onOpenProjectRoot={handleOpenRootModal}
             onOpenCreateProject={() => setIsCreateModalOpen(true)}
           />
