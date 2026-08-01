@@ -9,18 +9,6 @@ export function createStorageTools(storageService: StorageService) {
       inputSchema: z.object({
         parentPath: z.string().describe('Caminho do diretório pai'),
       }),
-      inputExamples: [
-        {
-          input: {
-            parentPath: 'landing-pages',
-          },
-        },
-        {
-          input: {
-            parentPath: 'landing-pages/components',
-          },
-        },
-      ],
       execute: async ({ parentPath }) => {
         const files = await storageService.listFilesInDirectory(parentPath);
         return { success: true, files };
@@ -120,14 +108,12 @@ export function createStorageTools(storageService: StorageService) {
       description:
         'Procura conteúdo em arquivos de um diretório que correspondam a um padrão regex',
       inputSchema: z.object({
-        folderName: z.string().describe('Nome do diretório para busca'),
         regexPattern: z.string().describe('Padrão regex para busca'),
       }),
-      execute: async ({ regexPattern, folderName }) => {
+      execute: async ({ regexPattern }) => {
         console.log('Executando regex_search_files com padrão:', regexPattern);
 
         const files = await storageService.regexSearchForContentInFiles(
-          folderName,
           regexPattern,
         );
         return { success: true, files };

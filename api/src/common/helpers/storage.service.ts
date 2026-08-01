@@ -256,11 +256,10 @@ export class StorageService {
   }
 
   async regexSearchForContentInFiles(
-    folderName: string,
     regexPattern: string,
   ): Promise<string[]> {
     const targetRepo = this.contextService.get('root')!;
-    const repoPath = path.join(targetRepo, folderName);
+    const repoPath = path.join(targetRepo);
 
     const targetPath = path.resolve(repoPath);
 

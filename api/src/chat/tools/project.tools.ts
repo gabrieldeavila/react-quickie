@@ -25,15 +25,13 @@ export function createProjectTools(projectService: ProjectService) {
       },
     }),
     install_depency: tool({
-      description: 'Instala uma nova dependência no projeto',
+      description: 'Instala uma nova dependência',
       inputSchema: z.object({
-        projectName: z.string(),
         dependecyName: z.string(),
         isDev: z.boolean(),
       }),
-      execute: async ({ projectName, dependecyName, isDev }) => {
+      execute: async ({ dependecyName, isDev }) => {
         const projects = await projectService.installDependency(
-          projectName,
           dependecyName,
           isDev,
         );

@@ -129,13 +129,12 @@ export class ProjectService {
   }
 
   async installDependency(
-    projectName: string,
     dependency: string,
     isDev = false,
   ): Promise<{ success: boolean; output?: string; error?: string }> {
     return new Promise((resolve) => {
       const targetDir = this.contextService.get('root');
-      const projectPath = `${targetDir}/${projectName}`;
+      const projectPath = `${targetDir}`;
 
       // Argumentos: i, nome do pacote, e -D se for dev
       const args = ['i', dependency];
@@ -157,7 +156,7 @@ export class ProjectService {
       child.on('close', (code) => {
         if (code === 0) {
           this.loggerService.logDecision(
-            `Instalada dependência ${dependency} em ${projectName}`,
+            `Instalada dependência ${dependency} `,
           );
           resolve({ success: true, output: stdoutData });
         } else {
