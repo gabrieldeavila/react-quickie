@@ -1,6 +1,7 @@
 import type { ChatModeEnum } from "../../enum/chat.enum";
 import { ChatModePopover } from "./ChatModePopover";
 import { ChatStatusPill } from "./ChatStatusPill";
+import { FiPlus, FiSettings } from "react-icons/fi";
 
 type ChatHeaderProps = {
   title: string;
@@ -31,8 +32,15 @@ export function ChatHeader({
           <ChatStatusPill label={status} />
           <ChatModePopover value={mode} onChange={onModeChange} />
 
-          <button type="button" className="chat-button chat-button--ghost" onClick={onOpenCreateProject}>
-            Novo projeto
+          <button
+            type="button"
+            className="chat-button chat-button--ghost chat-header__action-button"
+            onClick={onOpenCreateProject}
+          >
+            <span className="chat-button__icon-wrap chat-header__action-icon-wrap" aria-hidden="true">
+              <FiPlus className="chat-button__icon chat-header__action-icon" />
+            </span>
+            <span>Novo projeto</span>
           </button>
 
           <button
@@ -42,8 +50,8 @@ export function ChatHeader({
             aria-label="Abrir configurações do projeto"
             title="Configurações"
           >
-            <span className="chat-button__icon" aria-hidden="true">
-              ⚙
+            <span className="chat-button__icon-wrap" aria-hidden="true">
+              <FiSettings className="chat-button__icon" />
             </span>
           </button>
         </div>

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { IconType } from "react-icons";
+import { FiCode, FiLayout, FiPackage, FiTool } from "react-icons/fi";
 import { ChatModeEnum } from "../../enum/chat.enum";
 
 type ChatModePopoverProps = {
@@ -9,30 +11,32 @@ type ChatModePopoverProps = {
 type ModeOption = {
   value: ChatModeEnum;
   label: string;
-  icon: string;
+  icon: IconType;
 };
 
 const MODE_OPTIONS: ModeOption[] = [
-  { value: ChatModeEnum.LANDING_PAGES, label: "Landing Pages", icon: "◫" },
-  { value: ChatModeEnum.FORMS, label: "Forms", icon: "▦" },
-  { value: ChatModeEnum.BACKEND_DEVELOPER, label: "Backend Developer", icon: "◌" },
-  { value: ChatModeEnum.FRONTEND_DEVELOPER, label: "Frontend Developer", icon: "◈" },
-];
-
-const MODE_ICON_BY_VALUE: Record<ChatModeEnum, string> = MODE_OPTIONS.reduce(
-  (accumulator: Record<ChatModeEnum, string>, option: ModeOption) => {
-    accumulator[option.value] = option.icon;
-    return accumulator;
+  { value: ChatModeEnum.LANDING_PAGES, label: "Landing Pages", icon: FiLayout },
+  { value: ChatModeEnum.FORMS, label: "Forms", icon: FiTool },
+  {
+    value: ChatModeEnum.BACKEND_DEVELOPER,
+    label: "Backend Developer",
+    icon: FiPackage,
   },
-  {} as Record<ChatModeEnum, string>,
-);
+  {
+    value: ChatModeEnum.FRONTEND_DEVELOPER,
+    label: "Frontend Developer",
+    icon: FiCode,
+  },
+];
 
 export function ChatModePopover({ value, onChange }: ChatModePopoverProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const currentOption: ModeOption = useMemo(
-    () => MODE_OPTIONS.find((option: ModeOption) => option.value === value) ?? MODE_OPTIONS[0],
+    () =>
+      MODE_OPTIONS.find((option: ModeOption) => option.value === value) ??
+      MODE_OPTIONS[0],
     [value],
   );
 
@@ -55,6 +59,8 @@ export function ChatModePopover({ value, onChange }: ChatModePopoverProps) {
     };
   }, []);
 
+  const CurrentIcon: IconType = currentOption.icon;
+
   return (
     <div className="chat-mode-popover" ref={containerRef}>
       <button
@@ -67,14 +73,19 @@ export function ChatModePopover({ value, onChange }: ChatModePopoverProps) {
         title={currentOption.label}
       >
         <span className="chat-mode-popover__icon" aria-hidden="true">
-          {MODE_ICON_BY_VALUE[value] ?? currentOption.icon}
+          <CurrentIcon className="chat-mode-popover__icon-svg" />
         </span>
       </button>
 
       {isOpen ? (
-        <div className="chat-mode-popover__panel" role="listbox" aria-label="Selecionar modo do projeto">
+        <div
+          className="chat-mode-popover__panel"
+          role="listbox"
+          aria-label="Selecionar modo do projeto"
+        >
           {MODE_OPTIONS.map((option: ModeOption) => {
             const isSelected: boolean = option.value === value;
+            const OptionIcon: IconType = option.icon;
 
             return (
               <button
@@ -89,9 +100,11 @@ export function ChatModePopover({ value, onChange }: ChatModePopoverProps) {
                 aria-selected={isSelected}
               >
                 <span className="chat-mode-popover__option-icon" aria-hidden="true">
-                  {option.icon}
+                  <OptionIcon className="chat-mode-popover__option-icon-svg" />
                 </span>
-                <span className="chat-mode-popover__option-label">{option.label}</span>
+                <span className="chat-mode-popover__option-label">
+                  {option.label}
+                </span>
               </button>
             );
           })}
