@@ -421,7 +421,6 @@ body {
 .chat-mode-popover__panel {
   position: absolute;
   top: calc(100% + 10px);
-  left: 0;
   z-index: 60;
   min-width: 220px;
   padding: 6px;
@@ -431,6 +430,12 @@ body {
   box-shadow: var(--chat-shadow);
   display: grid;
   gap: 4px;
+}
+.chat-mode-popover__panel--right {
+  left: 0;
+}
+.chat-mode-popover__panel--left {
+  right: 0;
 }
 .chat-mode-popover__option {
   width: 100%;
@@ -758,15 +763,10 @@ body {
   background: rgba(6, 10, 15, 0.55);
   color: var(--chat-text);
   padding: 16px;
-  font: inherit;
-  line-height: 1.5;
   outline: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease,
-    background 0.2s ease;
+  box-sizing: border-box;
 }
+
 .chat-input::placeholder {
   color: rgba(145, 160, 180, 0.8);
 }

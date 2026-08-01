@@ -1,56 +1,61 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
-import { FiCode, FiLayout, FiPackage, FiTool } from "react-icons/fi";
-import { ChatModeEnum } from "../../enum/chat.enum";
+import { FiCode, FiLayout, FiPackage } from "react-icons/fi";
+import { AgentFocusEnum, AgentSpecialtyEnum } from "../../enum/agent.enum";
 
-type ChatModePopoverProps = {
-  value: ChatModeEnum;
-  onChange: (value: ChatModeEnum) => void;
+type FocusPopoverProps = {
+  value: AgentFocusEnum;
+  onChange: (value: AgentFocusEnum) => void;
 };
-
-type ModeOption = {
-  value: ChatModeEnum;
-  label: string;
-  icon: IconType;
+type SpecialtyPopoverProps = {
+  value: AgentSpecialtyEnum;
+  onChange: (value: AgentSpecialtyEnum) => void;
+  focus: AgentFocusEnum;
 };
+type Option<T> = { value: T; label: string; icon: IconType };
 
-const MODE_OPTIONS: ModeOption[] = [
-  { value: ChatModeEnum.LANDING_PAGES, label: "Landing Pages", icon: FiLayout },
-  { value: ChatModeEnum.FORMS, label: "Forms", icon: FiTool },
-  {
-    value: ChatModeEnum.BACKEND_DEVELOPER,
-    label: "Backend Developer",
-    icon: FiPackage,
-  },
-  {
-    value: ChatModeEnum.FRONTEND_DEVELOPER,
-    label: "Frontend Developer",
-    icon: FiCode,
-  },
+const FOCUS_OPTIONS: Option<AgentFocusEnum>[] = [
+  { value: AgentFocusEnum.FRONTEND, label: "Frontend", icon: FiCode },
+  { value: AgentFocusEnum.BACKEND, label: "Backend", icon: FiPackage },
 ];
 
-export function ChatModePopover({ value, onChange }: ChatModePopoverProps) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+const SPECIALTY_OPTIONS: Option<AgentSpecialtyEnum>[] = [
+  {
+    value: AgentSpecialtyEnum.LANDING_PAGES,
+    label: "Landing Pages",
+    icon: FiLayout,
+  },
+  { value: AgentSpecialtyEnum.FORMS, label: "Forms", icon: FiPackage },
+];
 
-  const currentOption: ModeOption = useMemo(
-    () =>
-      MODE_OPTIONS.find((option: ModeOption) => option.value === value) ??
-      MODE_OPTIONS[0],
-    [value],
+function Popover<T extends string | number>({
+  value,
+  onChange,
+  options,
+  ariaLabel,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  options: Option<T>[];
+  ariaLabel: string;
+}) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [openDirection, setOpenDirection] = useState<"left" | "right">("right");
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const currentOption: Option<T> = useMemo(
+    () => options.find((option) => option.value === value) ?? options[0],
+    [options, value],
   );
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent): void => {
-      if (!containerRef.current?.contains(event.target as Node)) {
+      if (!containerRef.current?.contains(event.target as Node))
         setIsOpen(false);
-      }
     };
-
     const handleEscape = (event: KeyboardEvent): void => {
       if (event.key === "Escape") setIsOpen(false);
     };
-
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleEscape);
     return () => {
@@ -58,6 +63,31 @@ export function ChatModePopover({ value, onChange }: ChatModePopoverProps) {
       document.removeEventListener("keydown", handleEscape);
     };
   }, []);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const updateDirection = (): void => {
+      const container = containerRef.current;
+      const panel = panelRef.current;
+      if (!container || !panel) return;
+      const containerRect = container.getBoundingClientRect();
+      const panelWidth = panel.offsetWidth || 220;
+      const spaceRight = window.innerWidth - containerRect.left;
+      const spaceLeft = containerRect.right;
+      setOpenDirection(
+        spaceRight < panelWidth + 16 && spaceLeft >= panelWidth
+          ? "left"
+          : "right",
+      );
+    };
+    updateDirection();
+    window.addEventListener("resize", updateDirection);
+    window.addEventListener("scroll", updateDirection, true);
+    return () => {
+      window.removeEventListener("resize", updateDirection);
+      window.removeEventListener("scroll", updateDirection, true);
+    };
+  }, [isOpen]);
 
   const CurrentIcon: IconType = currentOption.icon;
 
@@ -69,37 +99,39 @@ export function ChatModePopover({ value, onChange }: ChatModePopoverProps) {
         onClick={() => setIsOpen((current: boolean) => !current)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-label={`Modo atual: ${currentOption.label}`}
+        aria-label={ariaLabel}
         title={currentOption.label}
       >
         <span className="chat-mode-popover__icon" aria-hidden="true">
           <CurrentIcon className="chat-mode-popover__icon-svg" />
         </span>
       </button>
-
       {isOpen ? (
         <div
-          className="chat-mode-popover__panel"
+          ref={panelRef}
+          className={`chat-mode-popover__panel chat-mode-popover__panel--${openDirection}`}
           role="listbox"
-          aria-label="Selecionar modo do projeto"
+          aria-label={ariaLabel}
         >
-          {MODE_OPTIONS.map((option: ModeOption) => {
+          {options.map((option) => {
             const isSelected: boolean = option.value === value;
             const OptionIcon: IconType = option.icon;
-
             return (
               <button
                 key={option.value}
                 type="button"
                 className={`chat-mode-popover__option ${isSelected ? "chat-mode-popover__option--selected" : ""}`}
                 onClick={() => {
-                  onChange(option.value);
                   setIsOpen(false);
+                  onChange(option.value);
                 }}
                 role="option"
                 aria-selected={isSelected}
               >
-                <span className="chat-mode-popover__option-icon" aria-hidden="true">
+                <span
+                  className="chat-mode-popover__option-icon"
+                  aria-hidden="true"
+                >
                   <OptionIcon className="chat-mode-popover__option-icon-svg" />
                 </span>
                 <span className="chat-mode-popover__option-label">
@@ -111,5 +143,32 @@ export function ChatModePopover({ value, onChange }: ChatModePopoverProps) {
         </div>
       ) : null}
     </div>
+  );
+}
+
+export function ChatModePopover({ value, onChange }: FocusPopoverProps) {
+  return (
+    <Popover
+      value={value}
+      onChange={onChange}
+      options={FOCUS_OPTIONS}
+      ariaLabel="Selecionar foco do agente"
+    />
+  );
+}
+
+export function ChatSpecialtyPopover({
+  value,
+  onChange,
+  focus,
+}: SpecialtyPopoverProps) {
+  if (focus !== AgentFocusEnum.FRONTEND) return null;
+  return (
+    <Popover
+      value={value}
+      onChange={onChange}
+      options={SPECIALTY_OPTIONS}
+      ariaLabel="Selecionar especialidade do agente"
+    />
   );
 }

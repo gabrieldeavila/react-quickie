@@ -1,6 +1,10 @@
 export enum ChatModeEnum {
-  LANDING_PAGES = 1,
-  FORMS = 2,
-  BACKEND_DEVELOPER = 3,
-  FRONTEND_DEVELOPER = 4,
+  FRONTEND = 1,
+  BACKEND = 2,
+}
+
+export enum ChatSpecialtyEnum {
+  NONE = 3,
+  LANDING_PAGES = 4,
+  FORMS = 5,
 }
