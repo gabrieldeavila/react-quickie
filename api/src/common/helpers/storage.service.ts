@@ -121,7 +121,6 @@ export class StorageService {
 
     try {
       // Cria o arquivo com o conteúdo fornecido
-
       await fs.outputFile(fullPath, content);
       await this.linterService.formatAndLintFile(fullPath);
 
