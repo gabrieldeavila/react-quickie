@@ -121,8 +121,9 @@ export class StorageService {
 
     try {
       // Cria o arquivo com o conteúdo fornecido
-      await fs.outputFile(fullPath, content);
-      await this.linterService.formatAndLintFile(fullPath);
+      await fs.outputFile(fullPath, content).then(async () => {
+        await this.linterService.formatAndLintFile(fullPath);
+      });
 
       this.loggerService.logDecision(`Created the file ${fullPath}`);
     } catch (error) {
@@ -215,7 +216,15 @@ export class StorageService {
     filePath: string,
     newContent: string,
     oldContent?: string,
+    overwrite?: boolean,
   ): Promise<void> {
+    console.log('Editando', {
+      filePath,
+      newContent,
+      oldContent,
+      overwrite,
+    });
+
     const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
 
@@ -227,11 +236,13 @@ export class StorageService {
         );
       }
 
-      if (!oldContent) {
+      if (!oldContent || overwrite) {
         this.loggerService.logDecision(
           `Edited file ${filePath}: Overwrote entire file`,
         );
-        await fs.writeFile(fullPath, newContent, 'utf-8');
+        await fs.writeFile(fullPath, newContent, 'utf-8').then(async () => {
+          await this.linterService.formatAndLintFile(fullPath);
+        });
         return;
       }
 
@@ -255,10 +266,12 @@ export class StorageService {
         `Edited file ${filePath}: Replaced targeted code block`,
       );
 
-      await fs.writeFile(fullPath, updatedContent, 'utf-8');
-
-      await this.linterService.formatAndLintFile(fullPath);
+      await fs.writeFile(fullPath, updatedContent, 'utf-8').then(async () => {
+        await this.linterService.formatAndLintFile(fullPath);
+      });
     } catch (error) {
+      console.log(error, `Erro ao editar o arquivo: ${filePath}`);
+
       if (
         error instanceof NotFoundException ||
         error instanceof BadRequestException
@@ -298,7 +311,7 @@ export class StorageService {
 
       for (const file of files) {
         const content = await fs.readFile(file, 'utf-8');
-        if (regex.test(content)) {
+        if (regex.test(content) || regex.test(path.basename(file))) {
           matchedFiles.push(file.replace(targetPath, ''));
         }
       }

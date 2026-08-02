@@ -153,9 +153,25 @@ export function ChatInterface(): React.JSX.Element {
   const { messages, setMessages, sendMessage, status } = useChat({
     transport,
     onError: (error: Error) => {
+      pendingConversationIdRef.current = null;
       console.error("Error sending message:", error);
     },
   });
+
+  const isChatPending: boolean =
+    status === "submitted" || status === "streaming";
+  const chatStatusLabel: string =
+    status === "error" ? "Erro" : status === "ready" ? "Online" : "Respondendo";
+
+  const handleCreateConversation = useCallback((): void => {
+    void (async (): Promise<void> => {
+      pendingConversationIdRef.current = null;
+      assistantPersistedIdsRef.current.clear();
+      clearInput();
+      setMessages([]);
+      await history.createConversation();
+    })();
+  }, [clearInput, history, setMessages]);
 
   const handleSendMessage = useCallback((): void => {
     const trimmedInput: string = input.trim();
@@ -229,8 +245,9 @@ export function ChatInterface(): React.JSX.Element {
         console.error("Error persisting assistant message:", error);
         return;
       }
-      if (pendingConversationIdRef.current === targetConversationId)
+      if (pendingConversationIdRef.current === targetConversationId) {
         pendingConversationIdRef.current = null;
+      }
     })();
   }, [messages, persistAssistantMessage, status, history.activeConversationId]);
 
@@ -244,63 +261,40 @@ export function ChatInterface(): React.JSX.Element {
       reference:
         draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
       focus: draftContext.focus,
-      specialty:
-        draftContext.focus === AgentFocusEnum.FRONTEND
-          ? draftContext.specialty
-          : AgentSpecialtyEnum.NONE,
+      specialty: draftContext.specialty,
     };
     setProjectContext(nextContext);
-    if (typeof window !== "undefined")
-      window.localStorage.setItem(
-        PROJECT_CONTEXT_STORAGE_KEY,
-        JSON.stringify(nextContext),
-      );
     setIsRootModalOpen(false);
-  }, [draftContext]);
-
-  const handleToggleSidebar = useCallback((): void => {
-    setIsSidebarOpen((current: boolean) => !current);
-  }, []);
+  }, [draftContext.focus, draftContext.reference, draftContext.specialty]);
 
   const handleFocusChange = useCallback((value: AgentFocusEnum): void => {
-    setProjectContext((current: ProjectContext) => {
-      const nextContext: ProjectContext = {
-        ...current,
-        focus: value,
-        specialty:
-          value === AgentFocusEnum.FRONTEND
-            ? current.specialty
-            : AgentSpecialtyEnum.NONE,
-      };
-      if (typeof window !== "undefined")
-        window.localStorage.setItem(
-          PROJECT_CONTEXT_STORAGE_KEY,
-          JSON.stringify(nextContext),
-        );
-      return nextContext;
-    });
+    setProjectContext((current: ProjectContext) => ({
+      ...current,
+      focus: value,
+    }));
+    setDraftContext((current: ProjectContext) => ({
+      ...current,
+      focus: value,
+    }));
   }, []);
 
   const handleSpecialtyChange = useCallback(
     (value: AgentSpecialtyEnum): void => {
-      setProjectContext((current: ProjectContext) => {
-        const nextContext: ProjectContext = {
-          ...current,
-          specialty:
-            current.focus === AgentFocusEnum.FRONTEND
-              ? value
-              : AgentSpecialtyEnum.NONE,
-        };
-        if (typeof window !== "undefined")
-          window.localStorage.setItem(
-            PROJECT_CONTEXT_STORAGE_KEY,
-            JSON.stringify(nextContext),
-          );
-        return nextContext;
-      });
+      setProjectContext((current: ProjectContext) => ({
+        ...current,
+        specialty: value,
+      }));
+      setDraftContext((current: ProjectContext) => ({
+        ...current,
+        specialty: value,
+      }));
     },
     [],
   );
+
+  const handleToggleSidebar = useCallback((): void => {
+    setIsSidebarOpen((current: boolean) => !current);
+  }, []);
 
   return (
     <main className="chat-shell">
@@ -320,15 +314,16 @@ export function ChatInterface(): React.JSX.Element {
         <section className="chat-main">
           <ChatHeader
             title={activeConversationTitle}
-            status={status === "ready" ? "Online" : "Respondendo"}
+            status={chatStatusLabel}
             focus={projectContext.focus}
             specialty={projectContext.specialty}
             onFocusChange={handleFocusChange}
             onSpecialtyChange={handleSpecialtyChange}
             onOpenProjectRoot={handleOpenRootModal}
             onOpenCreateProject={() => setIsCreateModalOpen(true)}
+            onCreateConversation={handleCreateConversation}
           />
-          <ChatMessageList messages={messages} isPending={status !== "ready"} />
+          <ChatMessageList messages={messages} isPending={isChatPending} />
           <ChatComposer
             input={input}
             isDisabled={!hasInput || status !== "ready"}
@@ -342,25 +337,18 @@ export function ChatInterface(): React.JSX.Element {
         isOpen={isRootModalOpen}
         mode={draftContext.focus}
         specialty={draftContext.specialty}
-        onModeChange={(value: AgentFocusEnum) =>
+        onModeChange={(value: AgentFocusEnum) => {
           setDraftContext((current: ProjectContext) => ({
             ...current,
             focus: value,
-            specialty:
-              value === AgentFocusEnum.FRONTEND
-                ? current.specialty
-                : AgentSpecialtyEnum.NONE,
-          }))
-        }
-        onSpecialtyChange={(value: AgentSpecialtyEnum) =>
+          }));
+        }}
+        onSpecialtyChange={(value: AgentSpecialtyEnum) => {
           setDraftContext((current: ProjectContext) => ({
             ...current,
-            specialty:
-              current.focus === AgentFocusEnum.FRONTEND
-                ? value
-                : AgentSpecialtyEnum.NONE,
-          }))
-        }
+            specialty: value,
+          }));
+        }}
         value={draftContext.reference}
         onChange={(value: string) =>
           setDraftContext((current: ProjectContext) => ({
@@ -373,15 +361,10 @@ export function ChatInterface(): React.JSX.Element {
       />
       <ProjectCreateModal
         isOpen={isCreateModalOpen}
-        onCreated={(value) => {
-          setDraftContext((current: ProjectContext) => ({
-            ...current,
-            reference: value,
-          }));
-          handleSaveRoot();
-        }}
-        onClose={() => {
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={(path: string) => {
           setIsCreateModalOpen(false);
+          console.log("Create project:", path);
         }}
       />
     </main>

@@ -48,8 +48,15 @@ export function createStorageTools(storageService: StorageService) {
           .describe('O novo código ou texto que será inserido no arquivo.'),
         oldContent: z
           .string()
+          .optional()
           .describe(
-            'O bloco de código exato que você deseja substituir. Deve corresponder perfeitamente ao que está no arquivo original. Se enviado vazio, o arquivo inteiro será sobrescrito pelo newContent.',
+            'O bloco de código exato que você deseja substituir. Deve corresponder perfeitamente ao que está no arquivo original.',
+          ),
+        overwrite: z
+          .boolean()
+          .optional()
+          .describe(
+            'Utilizado para sobrescrever o arquivo inteiro se o oldContent não corresponder ao conteúdo atual.',
           ),
       }),
       inputExamples: [
@@ -68,8 +75,18 @@ export function createStorageTools(storageService: StorageService) {
           },
         },
       ],
-      execute: async ({ name, newContent, oldContent }) => {
-        await storageService.editFile(name, oldContent, newContent);
+      execute: async ({
+        name,
+        newContent,
+        oldContent,
+        overwrite,
+      }: {
+        name: string;
+        newContent: string;
+        oldContent?: string;
+        overwrite?: boolean;
+      }) => {
+        await storageService.editFile(name, newContent, oldContent, overwrite);
 
         return {
           success: true,
@@ -174,7 +191,7 @@ export function createStorageTools(storageService: StorageService) {
           .string()
           .optional()
           .describe(
-            "Caminho relativo do diretório onde a busca será feita. Deixe vazio para buscar em todo o projeto.",
+            'Caminho relativo do diretório onde a busca será feita. Deixe vazio para buscar em todo o projeto.',
           ),
       }),
       execute: async ({
@@ -184,10 +201,16 @@ export function createStorageTools(storageService: StorageService) {
         regexPattern: string;
         targetPath?: string;
       }) => {
-        console.log('Executando regex_search_files com padrão:', regexPattern);
+        console.log(
+          'Executando regex_search_files com padrão:',
+          regexPattern,
+          targetPath,
+        );
 
-        const files =
-          await storageService.regexSearchForContentInFiles(regexPattern, targetPath);
+        const files = await storageService.regexSearchForContentInFiles(
+          regexPattern,
+          targetPath,
+        );
         return { success: true, files };
       },
     }),

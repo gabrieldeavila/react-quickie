@@ -25,20 +25,28 @@ export function ChatMessageList({ messages, isPending }: ChatMessageListProps) {
   }, [isEmpty, isPending, visibleMessages.length]);
 
   return (
-    <div className="chat-messages" aria-live="polite" aria-relevant="additions text">
+    <div
+      className="chat-messages"
+      aria-live="polite"
+      aria-relevant="additions text"
+    >
       {isEmpty ? (
         <ChatEmptyState />
       ) : (
-        visibleMessages.map((message) => <ChatMessageItem key={message.id} message={message} />)
+        visibleMessages.map((message) => (
+          <ChatMessageItem key={message.id} message={message} />
+        ))
       )}
 
       {isPending ? (
         <ChatMessageItem
-          message={{
-            id: "typing",
-            role: "assistant",
-            parts: [{ type: "text", text: "" }],
-          } as UIMessage}
+          message={
+            {
+              id: "typing",
+              role: "assistant",
+              parts: [{ type: "text", text: "" }],
+            } as UIMessage
+          }
           isTyping
         />
       ) : null}
