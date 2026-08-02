@@ -44,17 +44,19 @@ export class ChatController {
 
   @Get()
   async getChat() {
-    return await this.storageService.editFile("src/styles/ChatInterface.css", `@media (prefers-reduced-motion: reduce) {
-  .message,
-  .typing-indicator span {
-    animation: none;
-  }
-  .chat-input,
-  .send-button {
-    transition: none;
-  }
+    return await this.storageService.editFile(
+      'src/styles/ChatInterface.css',
+
+      `.chat-sidebar__header {display: flex;align-items: center;justify-content: space-between;gap: 12px;
+}`,
+  `.chat-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
-`,"// oi", );
+`,
+    );
 
     return {
       message: 'Chat endpoint is working!',

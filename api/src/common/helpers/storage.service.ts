@@ -10,12 +10,14 @@ import * as path from 'path';
 import { glob } from 'fast-glob';
 import { LoggerService } from './logger.service';
 import { ContextService } from '../context/context.service';
+import { LinterService } from './linter.service';
 
 @Injectable()
 export class StorageService {
   constructor(
     private readonly loggerService: LoggerService,
     private readonly contextService: ContextService,
+    private readonly linterService: LinterService,
   ) {}
 
   async listFilesInDirectory(directoryPath: string): Promise<string[]> {
@@ -121,6 +123,7 @@ export class StorageService {
       // Cria o arquivo com o conteúdo fornecido
 
       await fs.outputFile(fullPath, content);
+      await this.linterService.formatAndLintFile(fullPath);
 
       this.loggerService.logDecision(`Created the file ${fullPath}`);
     } catch (error) {
@@ -254,6 +257,8 @@ export class StorageService {
       );
 
       await fs.writeFile(fullPath, updatedContent, 'utf-8');
+
+      await this.linterService.formatAndLintFile(fullPath);
     } catch (error) {
       if (
         error instanceof NotFoundException ||
