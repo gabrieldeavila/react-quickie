@@ -22,6 +22,7 @@ import { ProjectService } from 'src/common/helpers/project.service';
 import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ChatService } from './chat.service';
 import { TsCheckerService } from 'src/common/helpers/tschecker.service';
+import { StorageService } from 'src/common/helpers/storage.service';
 
 @UseInterceptors(
   BuildContextInterceptor((req) => ({
@@ -37,14 +38,23 @@ export class ChatController {
     private readonly chatService: ChatService,
     private readonly markdownService: MarkdownService,
     private readonly projectService: ProjectService,
+    private readonly storageService: StorageService,
     private readonly tsCheckerService: TsCheckerService,
   ) {}
 
   @Get()
   async getChat() {
-    return await this.tsCheckerService.checkFileErrors(
-      'src/components/chat/ChatMessageList.tsx',
-    );
+    return await this.storageService.editFile("src/styles/ChatInterface.css", `@media (prefers-reduced-motion: reduce) {
+  .message,
+  .typing-indicator span {
+    animation: none;
+  }
+  .chat-input,
+  .send-button {
+    transition: none;
+  }
+}
+`,"// oi", );
 
     return {
       message: 'Chat endpoint is working!',
@@ -83,7 +93,7 @@ export class ChatController {
       messages: validMessages,
       tools: this.chatService.getTools(),
       instructions,
-      stopWhen: isStepCount(50),
+      stopWhen: isStepCount(25),
     });
 
     pipeUIMessageStreamToResponse({

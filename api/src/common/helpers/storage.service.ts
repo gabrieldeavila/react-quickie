@@ -20,6 +20,11 @@ export class StorageService {
 
   async listFilesInDirectory(directoryPath: string): Promise<string[]> {
     const targetDir = this.contextService.get('root')!;
+
+    if (directoryPath.includes(targetDir)) {
+      directoryPath = directoryPath.replace(targetDir, '');
+    }
+
     const repoPath = path.join(targetDir, directoryPath);
 
     const targetPath = path.resolve(repoPath);
@@ -207,14 +212,12 @@ export class StorageService {
   async editFile(
     filePath: string,
     newContent: string,
-    lineStart: number,
-    lineEnd: number,
+    oldContent?: string,
   ): Promise<void> {
     const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
 
     try {
-      // Verifica se o arquivo realmente existe antes de tentar editar
       const exists = await fs.pathExists(fullPath);
       if (!exists) {
         throw new NotFoundException(
@@ -222,24 +225,35 @@ export class StorageService {
         );
       }
 
-      if (lineStart < 1 || lineEnd < lineStart) {
+      if (!oldContent) {
+        this.loggerService.logDecision(
+          `Edited file ${filePath}: Overwrote entire file`,
+        );
+        await fs.writeFile(fullPath, newContent, 'utf-8');
+        return;
+      }
+
+      const rawCurrentContent = await fs.readFile(fullPath, 'utf-8');
+
+      const currentContent = rawCurrentContent.replace(/\r\n/g, '\n');
+      const normalizedOldContent = oldContent.replace(/\r\n/g, '\n');
+
+      if (!currentContent.includes(normalizedOldContent)) {
         throw new BadRequestException(
-          'Os valores de lineStart e lineEnd devem ser válidos e lineStart não pode ser maior que lineEnd.',
+          `O bloco de código fornecido em oldContent não foi encontrado no arquivo "${filePath}". Verifique a indentação, as quebras de linha ou se você incluiu contexto suficiente, e tente novamente.`,
         );
       }
 
-      // Lê o conteúdo atual do arquivo
-      const currentContent = await fs.readFile(fullPath, 'utf-8');
-      const lines = currentContent.split('\n');
-
-      // Substitui as linhas especificadas pelo novo conteúdo
-      lines.splice(lineStart - 1, lineEnd - lineStart + 1, newContent);
-      this.loggerService.logDecision(
-        `Edited file ${filePath} from line ${lineStart} to ${lineEnd}`,
+      const updatedContent = currentContent.replace(
+        normalizedOldContent,
+        newContent.replace(/\r\n/g, '\n'),
       );
 
-      // Escreve o conteúdo atualizado de volta no arquivo
-      await fs.writeFile(fullPath, lines.join('\n'), 'utf-8');
+      this.loggerService.logDecision(
+        `Edited file ${filePath}: Replaced targeted code block`,
+      );
+
+      await fs.writeFile(fullPath, updatedContent, 'utf-8');
     } catch (error) {
       if (
         error instanceof NotFoundException ||
@@ -257,15 +271,21 @@ export class StorageService {
 
   async regexSearchForContentInFiles(
     regexPattern: string,
+    folderName?: string,
   ): Promise<string[]> {
     const targetRepo = this.contextService.get('root')!;
-    const repoPath = path.join(targetRepo);
+    const repoPath = path.join(targetRepo, folderName || '');
 
     const targetPath = path.resolve(repoPath);
 
     try {
       const files = await glob(`${targetPath}/**/*`, {
-        ignore: ['**/node_modules/**', '**/.git/**'], // Pula o que não interessa
+        ignore: [
+          '**/node_modules/**',
+          '**/.git/**',
+          '**/dist/**',
+          '**/build/**',
+        ],
         absolute: true,
       });
 
@@ -290,9 +310,57 @@ export class StorageService {
       );
       if (error instanceof NotFoundException) throw error;
 
-      // Trata outros erros (ex: falta de permissão de leitura)
       throw new InternalServerErrorException(
         'Erro ao listar arquivos do repositório.',
+      );
+    }
+  }
+
+  async searchContentInFile(
+    filePath: string,
+    regexPattern: string,
+  ): Promise<{ line: number; content: string }[]> {
+    const targetDir = this.contextService.get('root')!;
+    const fullPath = path.join(targetDir, filePath);
+
+    try {
+      // 1. Verifica se o arquivo existe
+      const exists = await fs.pathExists(fullPath);
+      if (!exists) {
+        throw new NotFoundException(
+          `O arquivo no caminho "${filePath}" não foi encontrado.`,
+        );
+      }
+
+      // 2. Lê o arquivo e prepara a RegEx
+      const content = await fs.readFile(fullPath, 'utf-8');
+      const lines = content.split('\n');
+      const regex = new RegExp(regexPattern);
+
+      const matches: { line: number; content: string }[] = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        if (regex.test(lines[i])) {
+          matches.push({
+            line: i + 1,
+            content: lines[i].trim(),
+          });
+        }
+      }
+
+      this.loggerService.logDecision(
+        `Regex search for '${regexPattern}' in ${filePath} found ${matches.length} matches.`,
+      );
+
+      return matches;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      console.log(error, `Erro ao buscar conteúdo no arquivo: ${filePath}`);
+      throw new InternalServerErrorException(
+        `Erro ao buscar conteúdo no arquivo ${filePath}.`,
       );
     }
   }
