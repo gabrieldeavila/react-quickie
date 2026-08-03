@@ -27,7 +27,8 @@ import { StorageService } from 'src/common/helpers/storage.service';
 @UseInterceptors(
   BuildContextInterceptor((req) => ({
     root: req.body?.root,
-    mode: req.body?.mode,
+    mode: req.body?.chatMode,
+    specialty: req.body?.chatSpecialty,
   })),
 )
 @Controller('chat')

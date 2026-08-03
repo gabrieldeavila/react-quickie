@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Instructions } from 'ai';
 import { MarkdownService } from './markdown.module';
 import { ContextService } from '../context/context.service';
+import * as fs from 'fs-extra';
+import path from 'path';
 
 @Injectable()
 export class PromptsService {
@@ -9,42 +11,83 @@ export class PromptsService {
     private readonly markdownService: MarkdownService,
     private readonly contextService: ContextService,
   ) {}
+  private readonly contentPath = path.join(process.cwd(), 'src');
 
   async getInstructions(): Promise<Instructions> {
-    const paths: Record<number, string> = {
-      1: '../.agents/skills/ui/landing.skills',
-      2: '../.agents/skills/ui/forms.skills',
-      3: '../.agents/skills/developer/backend',
-      4: '../.agents/skills/developer/frontend',
-    };
-
-    const mode = this.contextService.get('mode');
-    const selectedPromptPath = mode && mode in paths ? paths[mode] : paths[1];
+    const modeSkills = await this.getModeSkills();
 
     const instructions: Instructions = [
       {
         role: 'system',
         content: `The user project is ${this.contextService.get('root')}`,
       },
-      {
-        role: 'system',
-        content: await this.markdownService.getMarkdownFile(
-          '../.agents/skills/ui/design.system.skills',
-        ).html,
-      },
-      {
-        role: 'system',
-        content: await this.markdownService.getMarkdownFile(
-          '../.agents/skills/developer/agnostic',
-        ).html,
-      },
     ];
 
-    if (selectedPromptPath) {
+    if (Array.isArray(modeSkills)) {
+      instructions.push(...modeSkills);
+    }
+
+    return instructions;
+  }
+
+  async getModeSkills(): Promise<Instructions | null> {
+    const mode = this.contextService.get('mode');
+
+    const pathSkills = `common/skills/${mode}`;
+    const pathSearch = path.join(this.contentPath, pathSkills);
+    const exists = await fs.pathExists(pathSearch);
+
+    if (!exists) {
+      return null;
+    }
+
+    const content = await this.markdownService.getMarkdownFile(
+      `${pathSearch}/index.md`,
+    )?.html;
+
+    const instructions: Instructions = [];
+
+    if (content.length) {
       instructions.push({
+        content,
         role: 'system',
-        content:
-          await this.markdownService.getMarkdownFile(selectedPromptPath).html,
+      });
+    }
+    const defaultPath = `${pathSearch}/default`;
+
+    const existsDefaultInstructions = await fs.pathExists(defaultPath);
+
+    if (existsDefaultInstructions) {
+      const files = await fs.readdir(defaultPath);
+
+      for (const file of files) {
+        const contentDefault = await this.markdownService.getMarkdownFile(
+          `${defaultPath}/${file}`,
+        )?.html;
+
+        instructions.push({
+          content: contentDefault,
+          role: 'system',
+        });
+      }
+    }
+
+    const specialty = this.contextService.get('specialty');
+
+    if (!specialty || specialty === 'none') {
+      return instructions;
+    }
+
+    const specialtyFilePath = `${pathSearch}/specialty/${specialty}.md`;
+    const existsSpecialtyInstructions = await fs.pathExists(specialtyFilePath);
+
+    if (existsSpecialtyInstructions) {
+      const contentSpecialty =
+        await this.markdownService.getMarkdownFile(specialtyFilePath)?.html;
+
+      instructions.push({
+        content: contentSpecialty,
+        role: 'system',
       });
     }
 

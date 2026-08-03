@@ -1,4 +1,4 @@
-import { tool, zodSchema } from 'ai';
+import { tool } from 'ai';
 import { ProjectService } from 'src/common/helpers/project.service';
 import { z } from 'zod/v4';
 

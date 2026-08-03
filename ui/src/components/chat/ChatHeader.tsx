@@ -26,6 +26,8 @@ export function ChatHeader({
   onOpenCreateProject,
   onCreateConversation,
 }: ChatHeaderProps) {
+  const isFrontendMode: boolean = focus === AgentFocusEnum.FRONTEND;
+
   return (
     <header className="chat-header">
       <div className="chat-header__top">
@@ -43,20 +45,22 @@ export function ChatHeader({
             focus={focus}
           />
 
-          <button
-            type="button"
-            className="chat-button chat-button--ghost chat-header__action-button"
-            onClick={onOpenCreateProject}
-            aria-label="Novo projeto"
-            title="Novo projeto"
-          >
-            <span
-              className="chat-button__icon-wrap chat-header__action-icon-wrap"
-              aria-hidden="true"
+          {isFrontendMode ? (
+            <button
+              type="button"
+              className="chat-button chat-button--ghost chat-header__action-button"
+              onClick={onOpenCreateProject}
+              aria-label="Novo projeto"
+              title="Novo projeto"
             >
-              <FiFolderPlus className="chat-button__icon chat-header__action-icon" />
-            </span>
-          </button>
+              <span
+                className="chat-button__icon-wrap chat-header__action-icon-wrap"
+                aria-hidden="true"
+              >
+                <FiFolderPlus className="chat-button__icon chat-header__action-icon" />
+              </span>
+            </button>
+          ) : null}
 
           <button
             type="button"

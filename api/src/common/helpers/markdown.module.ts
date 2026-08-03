@@ -6,10 +6,9 @@ import { marked } from 'marked';
 
 @Injectable()
 export class MarkdownService {
-  private readonly contentPath = path.join(process.cwd(), 'content');
-
   getMarkdownFile(filename: string) {
-    const filePath = path.join(this.contentPath, `${filename}.md`);
+    filename = filename.endsWith('.md') ? filename : `${filename}.md`;
+    const filePath = path.join(filename);
 
     const fileContent = fs.readFileSync(filePath, 'utf-8');
 

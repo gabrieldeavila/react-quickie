@@ -1,4 +1,5 @@
 export interface BaseRequestContext {
   root?: string;
-  mode?: number;
+  mode?: string;
+  specialty?: string;
 }

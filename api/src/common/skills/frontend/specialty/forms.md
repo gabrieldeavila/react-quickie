@@ -8,10 +8,6 @@
 > This skill governs the FORM ENGINEERING PIPELINE. It assumes you are working with a developer who needs a robust form implemented. Your ONLY goal is to deliver a production-ready, strictly typed form that handles edge cases flawlessly. It focuses on schema validation (e.g., Zod), efficient state management (e.g., React Hook Form), accessibility, and assertive technical decisions.
 
 ## The Pipeline
-
-Plaintext
-
-```
 ┌──────────────────────────────────────────────────────────────────────┐
 │                                                                      │
 │   REQUIREMENT  ──→ Phase 1: Schema & Rules ──→ Phase 2: Architecture │
@@ -27,8 +23,6 @@ Plaintext
 │   Each phase has a ✓ Quality Gate. Failing a gate blocks the next.   │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
-
-```
 
 ## **Phase 0: Global Execution Constraints (Mandatory)**
 
