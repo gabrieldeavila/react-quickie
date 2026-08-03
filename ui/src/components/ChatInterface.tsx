@@ -43,6 +43,19 @@ function isAgentSpecialty(value: unknown): value is AgentSpecialtyEnum {
   );
 }
 
+function normalizeStoredFocus(value: unknown): AgentFocusEnum {
+  if (typeof value === "number") {
+    return (
+      [
+        AgentFocusEnum.FRONTEND,
+        AgentFocusEnum.BACKEND,
+        AgentFocusEnum.AGNOSTIC,
+      ][value] ?? DEFAULT_PROJECT_CONTEXT.focus
+    );
+  }
+  return isAgentFocus(value) ? value : DEFAULT_PROJECT_CONTEXT.focus;
+}
+
 function readProjectContext(): ProjectContext {
   if (typeof window === "undefined") return DEFAULT_PROJECT_CONTEXT;
 
@@ -52,17 +65,14 @@ function readProjectContext(): ProjectContext {
     );
     if (!raw) return DEFAULT_PROJECT_CONTEXT;
 
-    const parsed: Partial<ProjectContext> = JSON.parse(
-      raw,
-    ) as Partial<ProjectContext>;
+    const parsed: Partial<ProjectContext & { focus: unknown }> =
+      JSON.parse(raw);
     return {
       reference:
         typeof parsed.reference === "string" && parsed.reference.trim()
           ? parsed.reference
           : DEFAULT_PROJECT_CONTEXT.reference,
-      focus: isAgentFocus(parsed.focus)
-        ? parsed.focus
-        : DEFAULT_PROJECT_CONTEXT.focus,
+      focus: normalizeStoredFocus(parsed.focus),
       specialty: isAgentSpecialty(parsed.specialty)
         ? parsed.specialty
         : DEFAULT_PROJECT_CONTEXT.specialty,
@@ -92,28 +102,28 @@ function getMessageText(message: UIMessage): string {
     .join("");
 }
 
+function serializeProjectContext(context: ProjectContext): string {
+  return JSON.stringify({
+    reference: context.reference,
+    focus: context.focus,
+    specialty: context.specialty,
+  });
+}
+
 export function ChatInterface(): React.JSX.Element {
   const { input, hasInput, setInput, clearInput } = useChatComposer();
   const [isRootModalOpen, setIsRootModalOpen] = useState<boolean>(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] =
     useState<boolean>(readSidebarOpenState);
-  const [projectContext, setProjectContext] = useState<ProjectContext>(
-    DEFAULT_PROJECT_CONTEXT,
-  );
-  const [draftContext, setDraftContext] = useState<ProjectContext>(
-    DEFAULT_PROJECT_CONTEXT,
-  );
+  const [projectContext, setProjectContext] =
+    useState<ProjectContext>(readProjectContext);
+  const [draftContext, setDraftContext] =
+    useState<ProjectContext>(readProjectContext);
   const history = useChatHistory();
   const { setActiveConversationId, persistAssistantMessage } = history;
   const pendingConversationIdRef = useRef<string | null>(null);
   const assistantPersistedIdsRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    const storedContext: ProjectContext = readProjectContext();
-    setProjectContext(storedContext);
-    setDraftContext(storedContext);
-  }, []);
 
   useEffect(() => {
     const storedConversationId: string | null = readActiveConversationId();
@@ -127,6 +137,18 @@ export function ChatInterface(): React.JSX.Element {
       String(isSidebarOpen),
     );
   }, [isSidebarOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      PROJECT_CONTEXT_STORAGE_KEY,
+      serializeProjectContext(projectContext),
+    );
+  }, [projectContext]);
+
+  useEffect(() => {
+    setDraftContext(projectContext);
+  }, [projectContext]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
