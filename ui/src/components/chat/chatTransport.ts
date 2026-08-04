@@ -18,6 +18,7 @@ type CreateChatTransportParams = {
   projectRoot: string;
   focus: AgentFocusEnum;
   specialty: AgentSpecialtyEnum;
+  planningModeEnabled: boolean;
 };
 
 function normalizeMessage(
@@ -37,6 +38,7 @@ export function createChatTransport({
   projectRoot,
   focus,
   specialty,
+  planningModeEnabled,
 }: CreateChatTransportParams) {
   return new DefaultChatTransport({
     api: "http://localhost:3000/chat",
@@ -46,11 +48,13 @@ export function createChatTransport({
           root?: string;
           chatMode?: AgentFocusEnum;
           chatSpecialty?: AgentSpecialtyEnum;
+          planningModeEnabled?: boolean;
         };
         if (body.messages) body.messages = body.messages.map(normalizeMessage);
         body.root = projectRoot;
         body.chatMode = focus;
         body.chatSpecialty = specialty;
+        body.planningModeEnabled = planningModeEnabled;
         options.body = JSON.stringify(body);
       }
       return fetch(url, options);

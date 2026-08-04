@@ -1,21 +1,21 @@
-import type { AgentFocusEnum, AgentSpecialtyEnum } from "../../enum/agent.enum";
+import { PlanningModeLabel } from "../../types/enum/planning-mode.enum";
 
 type ProjectRootModalProps = {
   isOpen: boolean;
-  mode: AgentFocusEnum;
-  specialty: AgentSpecialtyEnum;
-  onModeChange: (value: AgentFocusEnum) => void;
-  onSpecialtyChange: (value: AgentSpecialtyEnum) => void;
+  planningModeEnabled: boolean;
   value: string;
   onChange: (value: string) => void;
+  onPlanningModeChange: (enabled: boolean) => void;
   onClose: () => void;
   onSave: () => void;
 };
 
 export function ProjectRootModal({
   isOpen,
+  planningModeEnabled,
   value,
   onChange,
+  onPlanningModeChange,
   onClose,
   onSave,
 }: ProjectRootModalProps) {
@@ -57,6 +57,34 @@ export function ProjectRootModal({
               placeholder="Ex: /src, app/frontend, nome do projeto"
             />
           </label>
+
+          <div className="chat-toggle-card">
+            <div className="chat-toggle-card__copy">
+              <span className="chat-control__label">Modo de planejamento</span>
+              <p className="chat-toggle-card__description">
+                {planningModeEnabled
+                  ? "O chat vai priorizar organização, etapas e validação antes de agir."
+                  : "O chat vai responder de forma mais direta, sem a camada extra de planejamento."}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              role="switch"
+              aria-checked={planningModeEnabled}
+              aria-label={`Modo de planejamento ${planningModeEnabled ? "ligado" : "desligado"}`}
+              className={`chat-toggle-switch ${planningModeEnabled ? "chat-toggle-switch--on" : "chat-toggle-switch--off"}`}
+              onClick={() => onPlanningModeChange(!planningModeEnabled)}
+            >
+              <span className="chat-toggle-switch__track" aria-hidden="true" />
+              <span className="chat-toggle-switch__thumb" aria-hidden="true" />
+              <span className="chat-toggle-switch__state" aria-hidden="true">
+                {planningModeEnabled
+                  ? PlanningModeLabel.ON
+                  : PlanningModeLabel.OFF}
+              </span>
+            </button>
+          </div>
         </div>
         <div className="chat-modal__actions">
           <button

@@ -16,6 +16,7 @@ type ProjectContext = {
   reference: string;
   focus: AgentFocusEnum;
   specialty: AgentSpecialtyEnum;
+  planningModeEnabled: boolean;
 };
 
 const PROJECT_CONTEXT_STORAGE_KEY: string = "project-context";
@@ -25,6 +26,7 @@ const DEFAULT_PROJECT_CONTEXT: ProjectContext = {
   reference: "/src",
   focus: AgentFocusEnum.AGNOSTIC,
   specialty: AgentSpecialtyEnum.NONE,
+  planningModeEnabled: false,
 };
 
 function isAgentFocus(value: unknown): value is AgentFocusEnum {
@@ -76,6 +78,10 @@ function readProjectContext(): ProjectContext {
       specialty: isAgentSpecialty(parsed.specialty)
         ? parsed.specialty
         : DEFAULT_PROJECT_CONTEXT.specialty,
+      planningModeEnabled:
+        typeof parsed.planningModeEnabled === "boolean"
+          ? parsed.planningModeEnabled
+          : DEFAULT_PROJECT_CONTEXT.planningModeEnabled,
     };
   } catch {
     return DEFAULT_PROJECT_CONTEXT;
@@ -107,6 +113,7 @@ function serializeProjectContext(context: ProjectContext): string {
     reference: context.reference,
     focus: context.focus,
     specialty: context.specialty,
+    planningModeEnabled: context.planningModeEnabled,
   });
 }
 
@@ -168,8 +175,14 @@ export function ChatInterface(): React.JSX.Element {
         projectRoot: projectContext.reference,
         focus: projectContext.focus,
         specialty: projectContext.specialty,
+        planningModeEnabled: projectContext.planningModeEnabled,
       }),
-    [projectContext.focus, projectContext.reference, projectContext.specialty],
+    [
+      projectContext.focus,
+      projectContext.planningModeEnabled,
+      projectContext.reference,
+      projectContext.specialty,
+    ],
   );
 
   const { messages, setMessages, sendMessage, status } = useChat({
@@ -219,82 +232,33 @@ export function ChatInterface(): React.JSX.Element {
     [handleSendMessage],
   );
 
+  const handleToggleSidebar = useCallback((): void => {
+    setIsSidebarOpen((current: boolean) => !current);
+  }, []);
+
   const handleOpenRootModal = useCallback((): void => {
     setDraftContext(projectContext);
     setIsRootModalOpen(true);
   }, [projectContext]);
 
-  useEffect(() => {
-    if (!history.activeConversationId) {
-      setMessages([]);
-      return;
-    }
-    setMessages(history.historyMessages);
-    assistantPersistedIdsRef.current = new Set([
-      ...assistantPersistedIdsRef.current,
-      ...history.historyMessages
-        .filter((message) => message.role === "assistant")
-        .map((message) => message.id),
-    ]);
-  }, [history.activeConversationId, history.historyMessages, setMessages]);
-
-  useEffect(() => {
-    if (status !== "ready") return;
-    const assistantMessage: UIMessage | undefined = [...messages]
-      .reverse()
-      .find((message) => message.role === "assistant");
-    if (
-      !assistantMessage ||
-      assistantPersistedIdsRef.current.has(assistantMessage.id)
-    )
-      return;
-    const content: string = getMessageText(assistantMessage).trim();
-    if (!content) return;
-    const assistantMessageId: string = assistantMessage.id;
-    if (assistantPersistedIdsRef.current.has(assistantMessageId)) return;
-    assistantPersistedIdsRef.current.add(assistantMessageId);
-    const targetConversationId: string | null =
-      pendingConversationIdRef.current;
-    if (!targetConversationId) {
-      assistantPersistedIdsRef.current.delete(assistantMessageId);
-      return;
-    }
-    void (async (): Promise<void> => {
-      try {
-        await persistAssistantMessage(targetConversationId, content);
-      } catch (error) {
-        assistantPersistedIdsRef.current.delete(assistantMessageId);
-        console.error("Error persisting assistant message:", error);
-        return;
-      }
-      if (pendingConversationIdRef.current === targetConversationId) {
-        pendingConversationIdRef.current = null;
-      }
-    })();
-  }, [messages, persistAssistantMessage, status, history.activeConversationId]);
-
-  const activeConversationTitle: string =
-    history.conversations.find(
-      (conversation) => conversation.id === history.activeConversationId,
-    )?.title ?? "Chat";
-
   const handleSaveRoot = useCallback((): void => {
-    const nextContext: ProjectContext = {
+    setProjectContext({
       reference:
         draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
       focus: draftContext.focus,
       specialty: draftContext.specialty,
-    };
-    setProjectContext(nextContext);
+      planningModeEnabled: draftContext.planningModeEnabled,
+    });
     setIsRootModalOpen(false);
-  }, [draftContext.focus, draftContext.reference, draftContext.specialty]);
+  }, [
+    draftContext.focus,
+    draftContext.planningModeEnabled,
+    draftContext.reference,
+    draftContext.specialty,
+  ]);
 
   const handleFocusChange = useCallback((value: AgentFocusEnum): void => {
     setProjectContext((current: ProjectContext) => ({
-      ...current,
-      focus: value,
-    }));
-    setDraftContext((current: ProjectContext) => ({
       ...current,
       focus: value,
     }));
@@ -306,17 +270,12 @@ export function ChatInterface(): React.JSX.Element {
         ...current,
         specialty: value,
       }));
-      setDraftContext((current: ProjectContext) => ({
-        ...current,
-        specialty: value,
-      }));
     },
     [],
   );
 
-  const handleToggleSidebar = useCallback((): void => {
-    setIsSidebarOpen((current: boolean) => !current);
-  }, []);
+  const activeConversationTitle: string =
+    history.activeConversation?.title ?? "Nova conversa";
 
   return (
     <main className="chat-shell">
@@ -357,25 +316,18 @@ export function ChatInterface(): React.JSX.Element {
       </section>
       <ProjectRootModal
         isOpen={isRootModalOpen}
-        mode={draftContext.focus}
-        specialty={draftContext.specialty}
-        onModeChange={(value: AgentFocusEnum) => {
-          setDraftContext((current: ProjectContext) => ({
-            ...current,
-            focus: value,
-          }));
-        }}
-        onSpecialtyChange={(value: AgentSpecialtyEnum) => {
-          setDraftContext((current: ProjectContext) => ({
-            ...current,
-            specialty: value,
-          }));
-        }}
+        planningModeEnabled={draftContext.planningModeEnabled}
         value={draftContext.reference}
         onChange={(value: string) =>
           setDraftContext((current: ProjectContext) => ({
             ...current,
             reference: value,
+          }))
+        }
+        onPlanningModeChange={(enabled: boolean) =>
+          setDraftContext((current: ProjectContext) => ({
+            ...current,
+            planningModeEnabled: enabled,
           }))
         }
         onClose={() => setIsRootModalOpen(false)}
