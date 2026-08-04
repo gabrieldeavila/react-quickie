@@ -215,3 +215,5 @@ Confirm:
 **Encapsulation by Default.** Do not make everything globally available. If a module doesn't need to expose a service, keep it private. This prevents the "spaghetti graph" of dependencies as the application scales.
 
 **Program to Interfaces, not Implementations.** When relying on external providers (e.g., Payment Gateway, Email Service), inject an abstract interface or a base class. This allows you to easily mock the provider during testing or swap Stripe for PayPal without changing your core domain logic.
+
+Abolish God Files and God Objects. Never allow a single file, class, or component to become a centralized dumping ground for application logic. Adhere strictly to the Single Responsibility Principle (SRP). If a module requires a massive list of imports, manages multiple distinct domains, or grows exponentially in line count, it is an architectural liability. Fracture these monolithic structures into smaller, highly cohesive, and isolated units. A single file must do exactly one thing, own one responsibility, and do it well.

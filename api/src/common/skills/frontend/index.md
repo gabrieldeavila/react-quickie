@@ -236,3 +236,5 @@ Confirm:
 **Composition Over Configuration.** Don't build a `<Card/>` that takes 15 props (`title`, `subtitle`, `icon`, `footerText`). Build a `<Card>` that accepts `<Card.Header>`, `<Card.Body>`, and `<Card.Footer>` as children.
 
 **Module Over Page.** Build agnostic hooks and components. The "Page" is just an orchestration of these independent, reusable modules.
+
+Abolish God Files and God Objects. Never allow a single file, class, or component to become a centralized dumping ground for application logic. Adhere strictly to the Single Responsibility Principle (SRP). If a module requires a massive list of imports, manages multiple distinct domains, or grows exponentially in line count, it is an architectural liability. Fracture these monolithic structures into smaller, highly cohesive, and isolated units. A single file must do exactly one thing, own one responsibility, and do it well.

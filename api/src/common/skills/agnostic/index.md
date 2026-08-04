@@ -245,3 +245,5 @@ Confirm:
 **Inversion of Control.** High-level modules should not instantiate low-level modules. Pass dependencies (via props, context, or IoC containers) so the core application remains flexible.
 
 **Parse, Don't Validate.** Don't just check if data is valid; parse it into a strictly typed structure at the boundary. Once data enters the Domain layer, it should be trusted implicitly.
+
+Abolish God Files, God Objects or God Functions. Never allow a single file, class, or component to become a centralized dumping ground for application logic. Adhere strictly to the Single Responsibility Principle (SRP). If a module requires a massive list of imports, manages multiple distinct domains, or grows exponentially in line count, it is an architectural liability. Fracture these monolithic structures into smaller, highly cohesive, and isolated units. A single file must do exactly one thing, own one responsibility, and do it well.

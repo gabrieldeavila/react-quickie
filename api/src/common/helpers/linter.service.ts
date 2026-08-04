@@ -32,6 +32,7 @@ export class LinterService {
       console.warn(
         `Aviso: Falha ao rodar linter no arquivo ${fullPath}`,
         error.message,
+        error
       );
     }
   }
