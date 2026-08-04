@@ -1,5 +1,4 @@
 import type { AgentFocusEnum, AgentSpecialtyEnum } from "../../enum/agent.enum";
-import { ChatModePopover, ChatSpecialtyPopover } from "./ChatModePopover";
 
 type ProjectRootModalProps = {
   isOpen: boolean;
@@ -15,10 +14,6 @@ type ProjectRootModalProps = {
 
 export function ProjectRootModal({
   isOpen,
-  mode,
-  specialty,
-  onModeChange,
-  onSpecialtyChange,
   value,
   onChange,
   onClose,
@@ -51,34 +46,6 @@ export function ProjectRootModal({
           </button>
         </div>
         <div className="chat-modal__fields">
-          <label className="chat-control chat-control--full">
-            <span className="chat-control__label">Foco do agente</span>
-            <div className="chat-mode-inline">
-              <ChatModePopover value={mode} onChange={onModeChange} />
-              <input
-                className="chat-input chat-input--modal chat-input--mode"
-                value={mode}
-                readOnly
-                aria-label="Foco selecionado"
-              />
-            </div>
-          </label>
-          <label className="chat-control chat-control--full">
-            <span className="chat-control__label">Especialidade</span>
-            <div className="chat-mode-inline">
-              <ChatSpecialtyPopover
-                value={specialty}
-                onChange={onSpecialtyChange}
-                focus={mode}
-              />
-              <input
-                className="chat-input chat-input--modal chat-input--mode"
-                value={specialty}
-                readOnly
-                aria-label="Especialidade selecionada"
-              />
-            </div>
-          </label>
           <label className="chat-control chat-control--full">
             <span className="chat-control__label">
               Caminho ou referência principal
