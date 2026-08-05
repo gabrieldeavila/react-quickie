@@ -101,13 +101,6 @@ function readSidebarOpenState(): boolean {
   return storedValue === null ? true : storedValue === "true";
 }
 
-function getMessageText(message: UIMessage): string {
-  return message.parts
-    .filter((part) => part.type === "text")
-    .map((part) => part.text ?? "")
-    .join("");
-}
-
 function serializeProjectContext(context: ProjectContext): string {
   return JSON.stringify({
     reference: context.reference,
@@ -274,8 +267,10 @@ export function ChatInterface(): React.JSX.Element {
     [],
   );
 
-  const activeConversationTitle: string =
-    history.activeConversation?.title ?? "Nova conversa";
+  const activeConversationTitle: string = useMemo(
+    () => history.activeConversation?.title ?? "Nova conversa",
+    [history.activeConversation],
+  );
 
   return (
     <main className="chat-shell">

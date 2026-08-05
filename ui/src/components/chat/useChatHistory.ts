@@ -14,11 +14,15 @@ import {
 export interface UseChatHistoryResult {
   conversations: ChatConversation[];
   activeConversationId: string | null;
+  activeConversation: ChatConversation | undefined;
   setActiveConversationId: (conversationId: string | null) => void;
   historyMessages: UIMessage[];
   isHydrated: boolean;
   createConversation: (firstUserMessage?: string) => Promise<string>;
-  persistUserMessage: (conversationId: string, content: string) => Promise<void>;
+  persistUserMessage: (
+    conversationId: string,
+    content: string,
+  ) => Promise<void>;
   persistAssistantMessage: (
     conversationId: string,
     content: string,
@@ -30,9 +34,9 @@ export interface UseChatHistoryResult {
 
 export const useChatHistory = (): UseChatHistoryResult => {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(
-    null,
-  );
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
   const [historyMessages, setHistoryMessages] = useState<UIMessage[]>([]);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
@@ -75,7 +79,10 @@ export const useChatHistory = (): UseChatHistoryResult => {
 
   const createConversation = useCallback(
     async (firstUserMessage?: string): Promise<string> => {
-      const conversation = await ensureConversation(undefined, firstUserMessage);
+      const conversation = await ensureConversation(
+        undefined,
+        firstUserMessage,
+      );
       await reloadConversations();
       setActiveConversationId(conversation.id);
       return conversation.id;
@@ -104,8 +111,12 @@ export const useChatHistory = (): UseChatHistoryResult => {
   const deleteConversation = useCallback(
     async (conversationId: string): Promise<void> => {
       await deleteConversationCascade(conversationId);
-      setConversations((current) => current.filter((item) => item.id !== conversationId));
-      setActiveConversationId((current) => (current === conversationId ? null : current));
+      setConversations((current) =>
+        current.filter((item) => item.id !== conversationId),
+      );
+      setActiveConversationId((current) =>
+        current === conversationId ? null : current,
+      );
       await reloadConversations();
     },
     [reloadConversations],
@@ -118,10 +129,19 @@ export const useChatHistory = (): UseChatHistoryResult => {
     setHistoryMessages([]);
   }, []);
 
+  const activeConversation = useMemo(
+    () =>
+      conversations.find(
+        (conversation) => conversation.id === activeConversationId,
+      ),
+    [activeConversationId, conversations],
+  );
+
   return useMemo(
     () => ({
       conversations,
       activeConversationId,
+      activeConversation,
       setActiveConversationId,
       historyMessages,
       isHydrated,
@@ -133,6 +153,7 @@ export const useChatHistory = (): UseChatHistoryResult => {
       resetHistory,
     }),
     [
+      activeConversation,
       activeConversationId,
       conversations,
       createConversation,

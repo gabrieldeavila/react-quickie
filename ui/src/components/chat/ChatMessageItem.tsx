@@ -10,12 +10,16 @@ type ChatMessageItemProps = {
 function getMessageText(message: UIMessage): string {
   return message.parts
     .filter((part) => part.type === "text")
-    .map((part) => part.text)
+    .map((part) => part.text ?? "")
     .join("");
 }
 
-export function ChatMessageItem({ message, isTyping = false }: ChatMessageItemProps) {
-  const roleClass: string = message.role === "user" ? "user-message" : "assistant-message";
+export function ChatMessageItem({
+  message,
+  isTyping = false,
+}: ChatMessageItemProps) {
+  const roleClass: string =
+    message.role === "user" ? "user-message" : "assistant-message";
   const messageText: string = getMessageText(message);
 
   return (
@@ -33,7 +37,9 @@ export function ChatMessageItem({ message, isTyping = false }: ChatMessageItemPr
             components={{
               p: ({ children }) => <p>{children}</p>,
               code: ({ className, children }) => {
-                const isBlock: boolean = Boolean(className?.includes("language-"));
+                const isBlock: boolean = Boolean(
+                  className?.includes("language-"),
+                );
 
                 return isBlock ? (
                   <code className={className}>{children}</code>
@@ -41,7 +47,9 @@ export function ChatMessageItem({ message, isTyping = false }: ChatMessageItemPr
                   <code className="inline-code">{children}</code>
                 );
               },
-              pre: ({ children }) => <pre className="markdown-pre">{children}</pre>,
+              pre: ({ children }) => (
+                <pre className="markdown-pre">{children}</pre>
+              ),
               a: ({ children, ...props }) => (
                 <a {...props} target="_blank" rel="noreferrer">
                   {children}
