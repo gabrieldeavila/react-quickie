@@ -193,6 +193,22 @@ export function createStorageTools(storageService: StorageService) {
         return { success: true, content };
       },
     }),
+    get_lint_errors: tool({
+      description:
+        'Retorna os erros de lint para um arquivo ou diretório. Se nenhum caminho for informado, usa ".".',
+      inputSchema: z.object({
+        path: z
+          .string()
+          .optional()
+          .describe(
+            'Caminho relativo do arquivo ou diretório para verificar. Deixe vazio para usar ".".',
+          ),
+      }),
+      execute: async ({ path }: { path?: string }) => {
+        const errors = await storageService.getLintErrors(path || '.');
+        return { success: true, errors };
+      },
+    }),
     regex_search_files_content: tool({
       description:
         'Busca global (estilo "grep"): Procura por um padrão Regex no conteúdo de TODOS os arquivos dentro de um diretório. Útil para descobrir onde uma função é chamada, onde uma variável é usada no projeto todo, ou para mapear dependências cruzadas.',

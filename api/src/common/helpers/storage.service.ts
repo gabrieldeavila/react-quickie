@@ -1,16 +1,15 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { glob } from 'fast-glob';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { glob } from 'fast-glob';
-import { LoggerService } from './logger.service';
 import { ContextService } from '../context/context.service';
-import { LinterService } from './linter.service';
+import { LinterService, LintErrorResult } from './linter.service';
+import { LoggerService } from './logger.service';
 
 @Injectable()
 export class StorageService {
@@ -132,6 +131,10 @@ export class StorageService {
         'Erro ao criar o arquivo no repositório.',
       );
     }
+  }
+
+  async getLintErrors(pathToLint = '.'): Promise<LintErrorResult[]> {
+    return this.linterService.getLintErrors(pathToLint);
   }
 
   async deleteFile(filePath: string): Promise<void> {
@@ -363,7 +366,6 @@ export class StorageService {
     const fullPath = path.join(targetDir, filePath);
 
     try {
-      // 1. Verifica se o arquivo existe
       const exists = await fs.pathExists(fullPath);
       if (!exists) {
         throw new NotFoundException(
@@ -371,7 +373,6 @@ export class StorageService {
         );
       }
 
-      // 2. Lê o arquivo e prepara a RegEx
       const content = await fs.readFile(fullPath, 'utf-8');
       const lines = content.split('\n');
       const regex = new RegExp(regexPattern);

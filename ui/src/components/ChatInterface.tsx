@@ -1,4 +1,4 @@
-import { type UIMessage, useChat } from "@ai-sdk/react";
+import { useChat } from "@ai-sdk/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AgentFocusEnum, AgentSpecialtyEnum } from "../enum/agent.enum";
 import "../styles/ChatInterface.css";
@@ -121,7 +121,7 @@ export function ChatInterface(): React.JSX.Element {
   const [draftContext, setDraftContext] =
     useState<ProjectContext>(readProjectContext);
   const history = useChatHistory();
-  const { setActiveConversationId, persistAssistantMessage } = history;
+  const { setActiveConversationId } = history;
   const pendingConversationIdRef = useRef<string | null>(null);
   const assistantPersistedIdsRef = useRef<Set<string>>(new Set());
 
