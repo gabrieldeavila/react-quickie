@@ -36,61 +36,76 @@ export function createStorageTools(storageService: StorageService) {
     }),
     edit_file: tool({
       description:
-        'Edita um arquivo existente. Você pode fazer uma substituição cirúrgica de um bloco de código (Search & Replace) ou sobrescrever o arquivo inteiro. Prefira sempre substituir blocos específicos enviando o oldContent, pois gasta menos tokens e é mais seguro.',
+        'Edita um arquivo existente substituindo somente o bloco exato de código em oldContent. Prefira sempre esta opção para evitar sobrescrever o arquivo inteiro.',
       inputSchema: z.object({
         name: z
           .string()
           .describe(
             "Caminho relativo do arquivo a ser editado (ex: 'src/utils/format.ts').",
           ),
-        newContent: z
-          .string()
-          .describe('O novo código ou texto que será inserido no arquivo.'),
         oldContent: z
           .string()
-          .optional()
           .describe(
-            'O bloco de código exato que você deseja substituir. Deve corresponder perfeitamente ao que está no arquivo original.',
+            'O bloco de código exato que deve ser substituído no arquivo. Deve corresponder perfeitamente ao conteúdo atual.',
           ),
-        overwrite: z
-          .boolean()
-          .optional()
-          .describe(
-            'Utilizado para sobrescrever o arquivo inteiro se o oldContent não corresponder ao conteúdo atual.',
-          ),
+        newContent: z
+          .string()
+          .describe('O novo código ou texto que substituirá o bloco especificado.'),
       }),
       inputExamples: [
         {
           input: {
             name: 'PATH/FILE_NAME.extension',
-            newContent: `@media (prefers-reduced-motion: reduce) {`,
             oldContent: `@media (min-width: 768px) {`,
-          },
-        },
-        {
-          input: {
-            name: 'PATH/FILE_NAME.extension',
-            newContent: `some new content that will replace the entire file`,
-            oldContent: '',
+            newContent: `@media (prefers-reduced-motion: reduce) {`,
           },
         },
       ],
       execute: async ({
         name,
-        newContent,
         oldContent,
-        overwrite,
+        newContent,
       }: {
         name: string;
+        oldContent: string;
         newContent: string;
-        oldContent?: string;
-        overwrite?: boolean;
       }) => {
-        await storageService.editFile(name, newContent, oldContent, overwrite);
+        await storageService.replaceContentInFile(name, oldContent, newContent);
+
+        console.log("replacing code");
 
         return {
           success: true,
           message: `Arquivo "${name}" editado com sucesso.`,
+        };
+      },
+    }),
+    overwrite_file: tool({
+      description:
+        'Sobrescreve todo o conteúdo de um arquivo existente. Use somente quando não for possível aplicar uma alteração específica a um bloco de código.',
+      inputSchema: z.object({
+        name: z
+          .string()
+          .describe(
+            "Caminho relativo do arquivo a ser sobrescrito (ex: 'src/utils/format.ts').",
+          ),
+        newContent: z
+          .string()
+          .describe('O novo conteúdo completo do arquivo.'),
+      }),
+      execute: async ({
+        name,
+        newContent,
+      }: {
+        name: string;
+        newContent: string;
+      }) => {
+        await storageService.overwriteFile(name, newContent);
+        console.log("overwrite code");
+
+        return {
+          success: true,
+          message: `Arquivo "${name}" sobrescrito com sucesso.`,
         };
       },
     }),

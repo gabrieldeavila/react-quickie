@@ -46,16 +46,11 @@ export class ChatController {
   @Get()
   async getChat() {
     return await this.storageService.editFile(
-      'src/styles/ChatInterface.css',
+      'src/components/ChatInterface.tsx',
 
-      `.chat-sidebar__header {display: flex;align-items: center;justify-content: space-between;gap: 12px;
-}`,
-  `.chat-sidebar__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
+      `export function ChatInterface(): React.JSX.Element {
+`,
+  `export function ChatInterface(): React.JSX.Element {
 `,
     );
 

@@ -212,19 +212,7 @@ export class StorageService {
     }
   }
 
-  async editFile(
-    filePath: string,
-    newContent: string,
-    oldContent?: string,
-    overwrite?: boolean,
-  ): Promise<void> {
-    console.log('Editando', {
-      filePath,
-      newContent,
-      oldContent,
-      overwrite,
-    });
-
+  async overwriteFile(filePath: string, newContent: string): Promise<void> {
     const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
 
@@ -236,14 +224,37 @@ export class StorageService {
         );
       }
 
-      if (!oldContent || overwrite) {
-        this.loggerService.logDecision(
-          `Edited file ${filePath}: Overwrote entire file`,
+      await fs.writeFile(fullPath, newContent, 'utf-8');
+      await this.linterService.formatAndLintFile(fullPath);
+
+      this.loggerService.logDecision(
+        `Edited file ${filePath}: Overwrote entire file`,
+      );
+    } catch (error) {
+      console.log(error, `Erro ao sobrescrever o arquivo: ${filePath}`);
+
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException(
+        'Erro ao editar o arquivo no repositório.',
+      );
+    }
+  }
+
+  async replaceContentInFile(
+    filePath: string,
+    oldContent: string,
+    newContent: string,
+  ): Promise<void> {
+    const targetDir = this.contextService.get('root')!;
+    const fullPath = path.join(targetDir, filePath);
+
+    try {
+      const exists = await fs.pathExists(fullPath);
+      if (!exists) {
+        throw new NotFoundException(
+          `O arquivo no caminho "${filePath}" não foi encontrado.`,
         );
-        await fs.writeFile(fullPath, newContent, 'utf-8').then(async () => {
-          await this.linterService.formatAndLintFile(fullPath);
-        });
-        return;
       }
 
       const rawCurrentContent = await fs.readFile(fullPath, 'utf-8');
@@ -266,9 +277,8 @@ export class StorageService {
         `Edited file ${filePath}: Replaced targeted code block`,
       );
 
-      await fs.writeFile(fullPath, updatedContent, 'utf-8').then(async () => {
-        await this.linterService.formatAndLintFile(fullPath);
-      });
+      await fs.writeFile(fullPath, updatedContent, 'utf-8');
+      await this.linterService.formatAndLintFile(fullPath);
     } catch (error) {
       console.log(error, `Erro ao editar o arquivo: ${filePath}`);
 
@@ -279,11 +289,23 @@ export class StorageService {
         throw error;
       }
 
-      // Trata outros erros (ex: falta de permissão de escrita)
       throw new InternalServerErrorException(
         'Erro ao editar o arquivo no repositório.',
       );
     }
+  }
+
+  async editFile(
+    filePath: string,
+    newContent: string,
+    oldContent?: string,
+    overwrite?: boolean,
+  ): Promise<void> {
+    if (overwrite || !oldContent) {
+      return this.overwriteFile(filePath, newContent);
+    }
+
+    return this.replaceContentInFile(filePath, oldContent, newContent);
   }
 
   async regexSearchForContentInFiles(
