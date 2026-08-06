@@ -1,4 +1,4 @@
-import { useChat } from "@ai-sdk/react";
+import { useChat, type UIMessage } from "@ai-sdk/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AgentFocusEnum, AgentSpecialtyEnum } from "../enum/agent.enum";
 import "../styles/ChatInterface.css";
@@ -56,6 +56,13 @@ function normalizeStoredFocus(value: unknown): AgentFocusEnum {
     );
   }
   return isAgentFocus(value) ? value : DEFAULT_PROJECT_CONTEXT.focus;
+}
+
+function getMessageText(message: UIMessage): string {
+  return message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text ?? "")
+    .join("");
 }
 
 function readProjectContext(): ProjectContext {
@@ -124,6 +131,11 @@ export function ChatInterface(): React.JSX.Element {
   const { setActiveConversationId } = history;
   const pendingConversationIdRef = useRef<string | null>(null);
   const assistantPersistedIdsRef = useRef<Set<string>>(new Set());
+  const activeConversationIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    activeConversationIdRef.current = history.activeConversationId;
+  }, [history.activeConversationId]);
 
   useEffect(() => {
     const storedConversationId: string | null = readActiveConversationId();
@@ -152,6 +164,7 @@ export function ChatInterface(): React.JSX.Element {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     if (history.activeConversationId) {
       window.localStorage.setItem(
         ACTIVE_CHAT_STORAGE_KEY,
@@ -178,13 +191,50 @@ export function ChatInterface(): React.JSX.Element {
     ],
   );
 
-  const { messages, setMessages, sendMessage, status } = useChat({
+  const activeConversationId = history.activeConversationId;
+
+  const initialMessages = useMemo(() => {
+    if (!activeConversationId) return [];
+    return history.historyMessages;
+  }, [activeConversationId, history.historyMessages]);
+
+  const activeChatKey = activeConversationId ?? "no-active-chat";
+
+  const {
+    messages: chatMessages,
+    sendMessage,
+    status,
+    setMessages,
+  } = useChat({
     transport,
+    id: activeConversationId ?? undefined,
+    messages: initialMessages,
     onError: (error: Error) => {
       pendingConversationIdRef.current = null;
       console.error("Error sending message:", error);
     },
+    onFinish: ({ message, messages }) => {
+      const content = getMessageText(message).trim();
+      if (activeConversationId && content) {
+        history.persistAssistantMessage(activeConversationId, content);
+      }
+
+      console.log(message, messages);
+    },
   });
+
+  useEffect(() => {
+    console.log(initialMessages);
+
+    setMessages(initialMessages);
+  }, [initialMessages, setMessages, activeConversationId]);
+
+  const renderedMessages = useMemo(() => {
+    if (!activeConversationId) return [];
+    return chatMessages.filter(
+      (message) => message.id !== "typing" && message.id !== "error",
+    );
+  }, [chatMessages, activeConversationId]);
 
   const isChatPending: boolean =
     status === "submitted" || status === "streaming";
@@ -196,17 +246,18 @@ export function ChatInterface(): React.JSX.Element {
       pendingConversationIdRef.current = null;
       assistantPersistedIdsRef.current.clear();
       clearInput();
-      setMessages([]);
+      setActiveConversationId(null);
+      activeConversationIdRef.current = null;
       await history.createConversation();
     })();
-  }, [clearInput, history, setMessages]);
+  }, [clearInput, history, setActiveConversationId]);
 
   const handleSendMessage = useCallback((): void => {
     const trimmedInput: string = input.trim();
     if (!trimmedInput || status !== "ready") return;
     void (async (): Promise<void> => {
       const conversationId: string =
-        history.activeConversationId ??
+        activeConversationIdRef.current ??
         (await history.createConversation(trimmedInput));
       pendingConversationIdRef.current = conversationId;
       await history.persistUserMessage(conversationId, trimmedInput);
@@ -299,7 +350,11 @@ export function ChatInterface(): React.JSX.Element {
             onOpenCreateProject={() => setIsCreateModalOpen(true)}
             onCreateConversation={handleCreateConversation}
           />
-          <ChatMessageList messages={messages} isPending={isChatPending} />
+          <ChatMessageList
+            key={activeChatKey}
+            messages={renderedMessages}
+            isPending={isChatPending}
+          />
           <ChatComposer
             input={input}
             isDisabled={!hasInput || status !== "ready"}

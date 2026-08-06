@@ -32,11 +32,17 @@ export interface UseChatHistoryResult {
   resetHistory: () => Promise<void>;
 }
 
+const getActiveConversationId = () => {
+  if (typeof localStorage === "undefined") return null;
+
+  return localStorage.getItem("active-chat-conversation-id");
+};
+
 export const useChatHistory = (): UseChatHistoryResult => {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
-  >(null);
+  >(getActiveConversationId);
   const [historyMessages, setHistoryMessages] = useState<UIMessage[]>([]);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
@@ -45,7 +51,6 @@ export const useChatHistory = (): UseChatHistoryResult => {
 
     const data: ChatConversation[] = await listConversations();
     setConversations(data);
-    setActiveConversationId((current) => current ?? data[0]?.id ?? null);
   }, []);
 
   useEffect(() => {
@@ -58,13 +63,21 @@ export const useChatHistory = (): UseChatHistoryResult => {
   }, [reloadConversations]);
 
   useEffect(() => {
+    let isCancelled = false;
+
     const syncHistory = async (): Promise<void> => {
       if (!activeConversationId) {
         setHistoryMessages([]);
         return;
       }
 
-      const records = await listMessagesByConversation(activeConversationId);
+      const currentConversationId = activeConversationId;
+      const records = await listMessagesByConversation(currentConversationId);
+      console.log(activeConversationId, records);
+
+      if (isCancelled) return;
+      if (currentConversationId !== activeConversationId) return;
+
       setHistoryMessages(
         records.map((record) => ({
           id: record.id,
@@ -75,7 +88,29 @@ export const useChatHistory = (): UseChatHistoryResult => {
     };
 
     void syncHistory();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [activeConversationId]);
+
+  useEffect(() => {
+    if (conversations.length === 0) {
+      setActiveConversationId(null);
+      return;
+    }
+
+    setActiveConversationId((current) => {
+      if (
+        current &&
+        conversations.some((conversation) => conversation.id === current)
+      ) {
+        return current;
+      }
+
+      return current;
+    });
+  }, [conversations]);
 
   const createConversation = useCallback(
     async (firstUserMessage?: string): Promise<string> => {
