@@ -662,9 +662,9 @@ body {
 .message-content {
   max-width: 76%;
   min-width: 0;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border: 1px solid var(--chat-border);
-  line-height: 1.6;
+  line-height: 1.72;
   font-size: 0.98rem;
   word-wrap: break-word;
   overflow-wrap: anywhere;
@@ -673,7 +673,7 @@ body {
 .markdown-content {
   overflow-x: auto;
   max-width: 76%;
-  line-height: 1.6;
+  line-height: 1.72;
 }
 .markdown-content > * {
   min-width: 0;
@@ -681,32 +681,37 @@ body {
 .markdown-content p,
 .markdown-content ul,
 .markdown-content ol,
-.markdown-content li {
+.markdown-content li,
+.markdown-content blockquote {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 .markdown-content p,
 .markdown-content ul,
-.markdown-content ol {
+.markdown-content ol,
+.markdown-content blockquote {
   margin: 0;
 }
 .markdown-content p + p,
 .markdown-content p + ul,
 .markdown-content p + ol,
+.markdown-content p + blockquote,
 .markdown-content ul + p,
 .markdown-content ol + p,
+.markdown-content blockquote + p,
 .markdown-content ul + ul,
-.markdown-content ol + ol {
+.markdown-content ol + ol,
+.markdown-content blockquote + blockquote {
   margin-top: 0.7rem;
 }
 
 .markdown-content li + li {
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
 }
 
 .markdown-content ol,
 .markdown-content ul {
-  padding-left: 1.4rem;
+  padding-left: 1.5rem;
   margin-left: 0;
 }
 .markdown-content ol {
@@ -727,14 +732,40 @@ body {
 .markdown-content li > p + p,
 .markdown-content li > p + ul,
 .markdown-content li > p + ol {
-  margin-top: 0.35rem;
+  margin-top: 0.45rem;
+}
+.markdown-link {
+  color: var(--chat-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+}
+.markdown-link:hover {
+  color: #aab5ff;
+}
+.markdown-em {
+  font-style: italic;
+}
+.markdown-strong {
+  font-weight: 700;
+  color: #f3f6ff;
+}
+.markdown-blockquote {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid rgba(124, 140, 255, 0.55);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(231, 237, 245, 0.92);
+  border-radius: 0 12px 12px 0;
+}
+.markdown-blockquote p {
+  margin: 0;
 }
 .markdown-content pre {
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   white-space: pre;
-  margin: 0.85rem 0 0;
+  margin: 0.8rem 0 0;
 }
 .markdown-content code {
   white-space: pre-wrap;

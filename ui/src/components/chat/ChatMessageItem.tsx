@@ -36,9 +36,21 @@ export function ChatMessageItem({
             remarkPlugins={[remarkGfm]}
             components={{
               p: ({ children }) => <p>{children}</p>,
+              blockquote: ({ children }) => (
+                <blockquote className="markdown-blockquote">
+                  {children}
+                </blockquote>
+              ),
+              strong: ({ children }) => (
+                <strong className="markdown-strong">{children}</strong>
+              ),
+              b: ({ children }) => (
+                <strong className="markdown-strong">{children}</strong>
+              ),
               ol: ({ children }) => <ol className="markdown-ol">{children}</ol>,
               ul: ({ children }) => <ul className="markdown-ul">{children}</ul>,
               li: ({ children }) => <li className="markdown-li">{children}</li>,
+              em: ({ children }) => <em className="markdown-em">{children}</em>,
               code: ({ className, children }) => {
                 const isBlock: boolean = Boolean(
                   className?.includes("language-"),
@@ -54,7 +66,12 @@ export function ChatMessageItem({
                 <pre className="markdown-pre">{children}</pre>
               ),
               a: ({ children, ...props }) => (
-                <a {...props} target="_blank" rel="noreferrer">
+                <a
+                  {...props}
+                  className="markdown-link"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {children}
                 </a>
               ),
