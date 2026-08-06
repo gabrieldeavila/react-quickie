@@ -36,6 +36,9 @@ export function ChatMessageItem({
             remarkPlugins={[remarkGfm]}
             components={{
               p: ({ children }) => <p>{children}</p>,
+              ol: ({ children }) => <ol className="markdown-ol">{children}</ol>,
+              ul: ({ children }) => <ul className="markdown-ul">{children}</ul>,
+              li: ({ children }) => <li className="markdown-li">{children}</li>,
               code: ({ className, children }) => {
                 const isBlock: boolean = Boolean(
                   className?.includes("language-"),

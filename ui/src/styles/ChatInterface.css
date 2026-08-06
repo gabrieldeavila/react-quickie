@@ -662,17 +662,18 @@ body {
 .message-content {
   max-width: 76%;
   min-width: 0;
-  padding: 10px 12px;
+  padding: 14px 16px;
   border: 1px solid var(--chat-border);
-  line-height: 1.55;
-  font-size: 1.02rem;
+  line-height: 1.6;
+  font-size: 0.98rem;
   word-wrap: break-word;
   overflow-wrap: anywhere;
-  white-space: pre-wrap;
+  white-space: normal;
 }
 .markdown-content {
   overflow-x: auto;
   max-width: 76%;
+  line-height: 1.6;
 }
 .markdown-content > * {
   min-width: 0;
@@ -684,12 +685,56 @@ body {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+.markdown-content p,
+.markdown-content ul,
+.markdown-content ol {
+  margin: 0;
+}
+.markdown-content p + p,
+.markdown-content p + ul,
+.markdown-content p + ol,
+.markdown-content ul + p,
+.markdown-content ol + p,
+.markdown-content ul + ul,
+.markdown-content ol + ol {
+  margin-top: 0.7rem;
+}
+
+.markdown-content li + li {
+  margin-top: 0.25rem;
+}
+
+.markdown-content ol,
+.markdown-content ul {
+  padding-left: 1.4rem;
+  margin-left: 0;
+}
+.markdown-content ol {
+  list-style: decimal;
+  list-style-position: outside;
+}
+.markdown-content ul {
+  list-style: disc;
+  list-style-position: outside;
+}
+.markdown-content li {
+  padding-left: 0;
+  margin: 0;
+}
+.markdown-content li p {
+  margin: 0;
+}
+.markdown-content li > p + p,
+.markdown-content li > p + ul,
+.markdown-content li > p + ol {
+  margin-top: 0.35rem;
+}
 .markdown-content pre {
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   white-space: pre;
-  margin: 0;
+  margin: 0.85rem 0 0;
 }
 .markdown-content code {
   white-space: pre-wrap;
@@ -707,27 +752,6 @@ body {
   padding: 14px 16px;
   border-radius: 12px;
   background: rgba(3, 6, 10, 0.85);
-}
-.message-content p,
-.message-content ul,
-.message-content ol {
-  margin: 0;
-  font-size: inherit;
-  line-height: inherit;
-}
-.message-content li.li1 {
-  margin: 0px 0px 0px 0px;
-  font: 13px "Helvetica Neue";
-}
-.message-content ul.ul1 {
-  list-style-type: circle;
-}
-.message-content p + p,
-.message-content ul + p,
-.message-content p + ul,
-.message-content ol + p,
-.message-content p + ol {
-  margin-top: 0.75rem;
 }
 .typing-indicator {
   display: flex;
