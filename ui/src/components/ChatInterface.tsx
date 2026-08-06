@@ -132,6 +132,7 @@ export function ChatInterface(): React.JSX.Element {
   const pendingConversationIdRef = useRef<string | null>(null);
   const assistantPersistedIdsRef = useRef<Set<string>>(new Set());
   const activeConversationIdRef = useRef<string | null>(null);
+  const sendMessageRef = useRef<((message: { text: string }) => Promise<void>) | null>(null);
 
   useEffect(() => {
     activeConversationIdRef.current = history.activeConversationId;
@@ -224,6 +225,10 @@ export function ChatInterface(): React.JSX.Element {
   });
 
   useEffect(() => {
+    sendMessageRef.current = sendMessage;
+  }, [sendMessage]);
+
+  useEffect(() => {
     console.log(initialMessages);
 
     setMessages(initialMessages);
@@ -259,12 +264,13 @@ export function ChatInterface(): React.JSX.Element {
       const conversationId: string =
         activeConversationIdRef.current ??
         (await history.createConversation(trimmedInput));
+      activeConversationIdRef.current = conversationId;
       pendingConversationIdRef.current = conversationId;
       await history.persistUserMessage(conversationId, trimmedInput);
-      sendMessage({ text: trimmedInput });
+      sendMessageRef.current?.({ text: trimmedInput });
       clearInput();
     })();
-  }, [clearInput, history, input, sendMessage, status]);
+  }, [clearInput, history, input, status]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
@@ -331,7 +337,7 @@ export function ChatInterface(): React.JSX.Element {
         <ChatSidebar
           conversations={history.conversations}
           activeConversationId={history.activeConversationId}
-          onCreateConversation={() => void history.createConversation()}
+          onCreateConversation={handleCreateConversation}
           onDeleteConversation={history.deleteConversation}
           onSelectConversation={history.setActiveConversationId}
           isHydrated={history.isHydrated}
