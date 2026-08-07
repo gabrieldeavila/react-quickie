@@ -29,6 +29,7 @@ import { StorageService } from 'src/common/helpers/storage.service';
     root: req.body?.root,
     mode: req.body?.chatMode,
     specialty: req.body?.chatSpecialty,
+    planningModeEnabled: req.body?.planningModeEnabled
   })),
 )
 @Controller('chat')

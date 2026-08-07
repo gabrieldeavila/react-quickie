@@ -69,7 +69,7 @@ export class LinterService {
       this.loggerService.logDecision(
         `Collected lint errors for ${lintPath}: ${results.length} file(s) evaluated,`,
       );
-      console
+
       return results;
     } catch (error: any) {
       if (error?.stdout) {
@@ -78,6 +78,7 @@ export class LinterService {
           this.loggerService.logDecision(
             `Collected lint errors for ${lintPath}: ${results.length} file(s) evaluated`,
           );
+          console.log(results);
           return results;
         } catch {
           this.loggerService.logDecision(

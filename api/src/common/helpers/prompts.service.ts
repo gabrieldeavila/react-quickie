@@ -15,6 +15,7 @@ export class PromptsService {
 
   async getInstructions(): Promise<Instructions> {
     const modeSkills = await this.getModeSkills();
+    const isPlanning = this.contextService.get('planningModeEnabled');
 
     const instructions: Instructions = [
       {
@@ -25,6 +26,11 @@ export class PromptsService {
 
     if (Array.isArray(modeSkills)) {
       instructions.push(...modeSkills);
+    }
+
+    if (isPlanning) {
+      const planningSkills = await this.getPlanningSkills();
+      if (Array.isArray(planningSkills)) instructions.push(...planningSkills);
     }
 
     return instructions;
@@ -87,6 +93,29 @@ export class PromptsService {
 
       instructions.push({
         content: contentSpecialty,
+        role: 'system',
+      });
+    }
+
+    return instructions;
+  }
+
+  async getPlanningSkills(): Promise<Instructions | null> {
+    const pathPlanning = 'common/skills/planning.md';
+    const pathSearch = path.join(this.contentPath, pathPlanning);
+
+    const exists = await fs.pathExists(pathSearch);
+
+    if (!exists) return null;
+
+    const content =
+      await this.markdownService.getMarkdownFile(pathSearch)?.html;
+
+    const instructions: Instructions = [];
+
+    if (content.length) {
+      instructions.push({
+        content,
         role: 'system',
       });
     }
