@@ -5,7 +5,8 @@ import {
   FiLayout,
   FiMinusCircle,
   FiPackage,
-  FiShuffle
+  FiShuffle,
+  FiTool,
 } from "react-icons/fi";
 import { AgentFocusEnum, AgentSpecialtyEnum } from "../../enum/agent.enum";
 import { FaPalette } from "react-icons/fa";
@@ -49,6 +50,7 @@ const SPECIALTY_OPTIONS: Option<AgentSpecialtyEnum>[] = [
     icon: FiLayout,
   },
   { value: AgentSpecialtyEnum.FORMS, label: "Forms", icon: FiPackage },
+  { value: AgentSpecialtyEnum.REFACTOR, label: "Refatoracao", icon: FiTool },
 ];
 
 function Popover<T extends string | number>({

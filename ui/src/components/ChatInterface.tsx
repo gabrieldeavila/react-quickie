@@ -41,7 +41,8 @@ function isAgentSpecialty(value: unknown): value is AgentSpecialtyEnum {
   return (
     value === AgentSpecialtyEnum.NONE ||
     value === AgentSpecialtyEnum.LANDING_PAGES ||
-    value === AgentSpecialtyEnum.FORMS
+    value === AgentSpecialtyEnum.FORMS ||
+    value === AgentSpecialtyEnum.REFACTOR
   );
 }
 

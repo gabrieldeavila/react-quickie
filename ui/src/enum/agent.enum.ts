@@ -8,4 +8,5 @@ export enum AgentSpecialtyEnum {
   NONE = "none",
   LANDING_PAGES = "landing_pages",
   FORMS = "forms",
+  REFACTOR = "refactor",
 }
