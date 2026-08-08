@@ -4,8 +4,7 @@ import { ChatEmptyState } from "./ChatEmptyState";
 import { ChatMessageItem } from "./ChatMessageItem";
 
 import type { ChatMessageListProps } from "../../types/interface/chat-message-list.interface";
-
-const MAX_VISIBLE_MESSAGES = 500;
+import { MAX_VISIBLE_MESSAGES } from "../../types/consts/project.const";
 
 export function ChatMessageList({ messages, isPending }: ChatMessageListProps) {
   const isEmpty: boolean = messages.length === 0;
