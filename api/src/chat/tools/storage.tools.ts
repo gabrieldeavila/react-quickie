@@ -50,7 +50,9 @@ export function createStorageTools(storageService: StorageService) {
           ),
         newContent: z
           .string()
-          .describe('O novo código ou texto que substituirá o bloco especificado.'),
+          .describe(
+            'O novo código ou texto que substituirá o bloco especificado.',
+          ),
       }),
       inputExamples: [
         {
@@ -72,7 +74,7 @@ export function createStorageTools(storageService: StorageService) {
       }) => {
         await storageService.replaceContentInFile(name, oldContent, newContent);
 
-        console.log("replacing code");
+        console.log('replacing code');
 
         return {
           success: true,
@@ -89,9 +91,7 @@ export function createStorageTools(storageService: StorageService) {
           .describe(
             "Caminho relativo do arquivo a ser sobrescrito (ex: 'src/utils/format.ts').",
           ),
-        newContent: z
-          .string()
-          .describe('O novo conteúdo completo do arquivo.'),
+        newContent: z.string().describe('O novo conteúdo completo do arquivo.'),
       }),
       execute: async ({
         name,
@@ -101,7 +101,7 @@ export function createStorageTools(storageService: StorageService) {
         newContent: string;
       }) => {
         await storageService.overwriteFile(name, newContent);
-        console.log("overwrite code");
+        console.log('overwrite code');
 
         return {
           success: true,
@@ -216,7 +216,7 @@ export function createStorageTools(storageService: StorageService) {
         regexPattern: z
           .string()
           .describe(
-            "Padrão Regex para varrer o código-fonte (ex: 'import.*from.*react' ou 'UserService'). Evite padrões excessivamente genéricos para não poluir o contexto da resposta.",
+            "O padrão Regex. REGRA DE OURO: Como este padrão será trafegado em JSON, NUNCA use '\\s', '\\w' ou '\\d', pois o escape falhará. Para buscar espaços em branco, use OBRIGATORIAMENTE '[ \\t]'. Exemplo: em vez de '^\\s*const\\s+', envie '^[ \\t]*const[ \\t]+'.",
           ),
         targetPath: z
           .string()
@@ -257,7 +257,7 @@ export function createStorageTools(storageService: StorageService) {
         regexPattern: z
           .string()
           .describe(
-            "Expressão regular para a busca. Use padrões simples se quiser apenas encontrar palavras exatas (ex: 'function getHello' ou 'export class').",
+            "O padrão Regex. REGRA DE OURO: Como este padrão será trafegado em JSON, NUNCA use '\\s', '\\w' ou '\\d', pois o escape falhará. Para buscar espaços em branco, use OBRIGATORIAMENTE '[ \\t]'. Exemplo: em vez de '^\\s*const\\s+', envie '^[ \\t]*const[ \\t]+'.",
           ),
       }),
       execute: async ({ filePath, regexPattern }) => {

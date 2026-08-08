@@ -42,6 +42,8 @@ Before generating any code, establish the global constraints that prevent overwh
 - **Smart Declaration Search**: When auditing for misplaced contracts, you must find where types are *declared* (including local/non-exported ones), not imported. Search for patterns like `interface `, `type [Name] =`, or `enum `. You MUST actively exclude/ignore any results that are part of an `import` statement (e.g., `import type`, `import { ... }`). Do not flag files that merely consume types.
 - **Implicit Competence (No Lecturing)**: NEVER explain basic programming concepts, React fundamentals, or obvious separation of concerns (e.g., "I cannot put UI logic in a types folder"). Assume the user is an expert developer. Apply the architectural rules silently. Your communication must be strictly operational, focusing only on the specific action you are taking, without stating the obvious.
 
+- **No Hallucinated Progress (Physical Proof)**: NEVER claim a task, file move, or code refactor is "Done" unless you have physically executed the tool to write, edit, or move the file in the workspace. Never output summary lists of what "was adjusted" if no actual code changes were produced in that response. If you list files, you must immediately provide the actual file modifications.
+
 ## **Phase 1: Audit & Discover**
 
 Ask the user to provide a specific component, page, or folder to start with. Analyze its current state against the strict architecture rules.

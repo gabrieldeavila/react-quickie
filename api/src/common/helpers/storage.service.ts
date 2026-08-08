@@ -317,7 +317,6 @@ export class StorageService {
   ): Promise<string[]> {
     const targetRepo = this.contextService.get('root')!;
     const repoPath = path.join(targetRepo, folderName || '');
-
     const targetPath = path.resolve(repoPath);
 
     try {
@@ -329,9 +328,10 @@ export class StorageService {
           '**/build/**',
         ],
         absolute: true,
+        onlyFiles: true,
       });
 
-      const regex = new RegExp(regexPattern);
+      const regex = new RegExp(regexPattern, 'm');
       const matchedFiles: string[] = [];
 
       for (const file of files) {

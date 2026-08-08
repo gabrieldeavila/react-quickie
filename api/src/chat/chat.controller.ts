@@ -46,8 +46,9 @@ export class ChatController {
 
   @Get()
   async getChat() {
-    return await this.storageService.getLintErrors(
-      'src/components/chat/',
+    return await this.storageService.regexSearchForContentInFiles(
+      "^[ \t]*const[ \t]+[A-Z][A-Z0-9_]+[ \t]*=",
+      'src/components/chat',
     );
 
     return {
