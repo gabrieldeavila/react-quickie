@@ -29,7 +29,7 @@ import { StorageService } from 'src/common/helpers/storage.service';
     root: req.body?.root,
     mode: req.body?.chatMode,
     specialty: req.body?.chatSpecialty,
-    planningModeEnabled: req.body?.planningModeEnabled
+    planningModeEnabled: req.body?.planningModeEnabled,
   })),
 )
 @Controller('chat')
@@ -46,13 +46,8 @@ export class ChatController {
 
   @Get()
   async getChat() {
-    return await this.storageService.editFile(
+    return await this.storageService.getLintErrors(
       'src/components/ChatInterface.tsx',
-
-      `export function ChatInterface(): React.JSX.Element {
-`,
-  `export function ChatInterface(): React.JSX.Element {
-`,
     );
 
     return {

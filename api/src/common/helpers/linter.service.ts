@@ -66,6 +66,13 @@ export class LinterService {
       }
 
       const results = JSON.parse(stdout) as LintErrorResult[];
+
+      if (results) {
+        results.forEach((result) => {
+          if ('source' in result) delete result.source;
+        });
+      }
+
       this.loggerService.logDecision(
         `Collected lint errors for ${lintPath}: ${results.length} file(s) evaluated,`,
       );

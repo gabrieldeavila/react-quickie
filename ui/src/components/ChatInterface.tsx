@@ -132,7 +132,9 @@ export function ChatInterface(): React.JSX.Element {
   const pendingConversationIdRef = useRef<string | null>(null);
   const assistantPersistedIdsRef = useRef<Set<string>>(new Set());
   const activeConversationIdRef = useRef<string | null>(null);
-  const sendMessageRef = useRef<((message: { text: string }) => Promise<void>) | null>(null);
+  const sendMessageRef = useRef<
+    ((message: { text: string }) => Promise<void>) | null
+  >(null);
 
   useEffect(() => {
     activeConversationIdRef.current = history.activeConversationId;

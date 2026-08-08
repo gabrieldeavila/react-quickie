@@ -743,8 +743,11 @@ body {
   color: #aab5ff;
 }
 .markdown-em {
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-style: italic;
+  font-size: medium;
 }
+
 .markdown-strong {
   font-weight: 700;
   color: #f3f6ff;
@@ -782,6 +785,7 @@ body {
   overflow-x: auto;
   padding: 14px 16px;
   border-radius: 12px;
+  margin: 0.8rem 0 !important;
   background: rgba(3, 6, 10, 0.85);
 }
 .typing-indicator {
