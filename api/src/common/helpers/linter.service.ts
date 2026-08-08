@@ -65,7 +65,9 @@ export class LinterService {
         return [];
       }
 
-      const results = JSON.parse(stdout) as LintErrorResult[];
+      const results = (JSON.parse(stdout) as LintErrorResult[]).filter(
+        (result) => result.messages.length,
+      );
 
       if (results) {
         results.forEach((result) => {

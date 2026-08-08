@@ -125,7 +125,7 @@ export class ProjectService {
     this.loggerService.logDecision(
       `Verificando erros de TypeScript no diretório: ${folderPath || 'diretório raiz'}`,
     );
-    return this.tsCheckerService.checkFileErrors(folderPath || '');
+    return this.tsCheckerService.checkErrors(folderPath || '');
   }
 
   async installDependency(

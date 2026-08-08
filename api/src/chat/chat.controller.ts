@@ -47,7 +47,7 @@ export class ChatController {
   @Get()
   async getChat() {
     return await this.storageService.getLintErrors(
-      'src/components/ChatInterface.tsx',
+      'src/components/chat/',
     );
 
     return {

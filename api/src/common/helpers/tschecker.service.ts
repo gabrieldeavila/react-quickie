@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { Project, DiagnosticCategory } from 'ts-morph';
+import { Project, DiagnosticCategory, Diagnostic, SourceFile } from 'ts-morph';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ContextService } from '../context/context.service';
@@ -17,10 +17,10 @@ export interface VsCodeProblem {
 export class TsCheckerService {
   constructor(private readonly contextService: ContextService) {}
 
-  // Cache de projetos para manter a performance alta, carregando a pasta apenas uma vez
+  // Cache de projetos para manter a performance alta
   private projectsCache = new Map<string, Project>();
 
-  private getProject(tsConfigPath: string): Project | undefined {
+  private getProject(tsConfigPath: string): Project {
     const resolvedConfigPath = path.resolve(tsConfigPath);
 
     if (!this.projectsCache.has(resolvedConfigPath)) {
@@ -29,113 +29,138 @@ export class TsCheckerService {
       });
       this.projectsCache.set(resolvedConfigPath, project);
     }
-    return this.projectsCache.get(resolvedConfigPath);
+    return this.projectsCache.get(resolvedConfigPath)!;
   }
 
-  private resolveTsConfigForFile(rootDir: string, filePath: string): string {
+  /**
+   * Lê o tsconfig raiz e retorna todos os projetos mapeados 
+   * (suporta Solution-Style tsconfig com "references")
+   */
+  private getAllProjects(rootDir: string): Project[] {
     const rootConfigPath = path.resolve(rootDir, 'tsconfig.json');
-    const absoluteFilePath = path.resolve(rootDir, filePath);
+    const projects: Project[] = [];
 
-    // Lê o tsconfig raiz
-    if (fs.existsSync(rootConfigPath)) {
-      // Usamos um parse simples aqui (cuidado com comentários no JSON na vida real,
-      // mas o ts.readConfigFile pode ser usado para ler JSONs com comentários)
-      const content = fs.readFileSync(rootConfigPath, 'utf8');
+    if (!fs.existsSync(rootConfigPath)) {
+      return projects;
+    }
 
-      // Expressão regular rápida para limpar comentários do tsconfig, se houver
-      const cleanContent = content.replace(
-        /\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm,
-        '',
-      );
-      const rootConfig = JSON.parse(cleanContent);
+    const content = fs.readFileSync(rootConfigPath, 'utf8');
+    const cleanContent = content.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, '');
+    const rootConfig = JSON.parse(cleanContent);
 
-      // Se é um Solution-Style tsconfig (tem referências)
-      if (rootConfig.references && Array.isArray(rootConfig.references)) {
-        for (const ref of rootConfig.references) {
-          // Resolve o caminho do tsconfig filho (ex: tsconfig.app.json)
-          let childConfigPath = path.resolve(rootDir, ref.path);
+    if (rootConfig.references && Array.isArray(rootConfig.references)) {
+      for (const ref of rootConfig.references) {
+        let childConfigPath = path.resolve(rootDir, ref.path);
 
-          // Se a referência apontar para uma pasta, assume que o arquivo lá dentro chama tsconfig.json
-          if (fs.statSync(childConfigPath).isDirectory()) {
-            childConfigPath = path.join(childConfigPath, 'tsconfig.json');
-          }
+        if (fs.existsSync(childConfigPath) && fs.statSync(childConfigPath).isDirectory()) {
+          childConfigPath = path.join(childConfigPath, 'tsconfig.json');
+        }
 
-          // Carrega o projeto filho no cache do ts-morph
-          const project = this.getProject(childConfigPath);
+        if (fs.existsSync(childConfigPath)) {
+          projects.push(this.getProject(childConfigPath));
+        }
+      }
+    } else {
+      // Se não tem references, o projeto principal é o próprio raiz
+      projects.push(this.getProject(rootConfigPath));
+    }
 
-          // MAGIA AQUI: O ts-morph sabe se o arquivo pertence a este config!
-          // Se o arquivo estiver dentro deste projeto, achamos o config certo.
-          if (project?.getSourceFile(absoluteFilePath)) {
-            return childConfigPath;
-          }
+    return projects;
+  }
+
+  /**
+   * Formata um erro do ts-morph para o padrão do VS Code
+   */
+  private formatDiagnostic(diagnostic: Diagnostic, sourceFile: SourceFile): VsCodeProblem {
+    const rawMessage = diagnostic.getMessageText();
+    const message = typeof rawMessage === 'string' ? rawMessage : rawMessage.getMessageText();
+
+    const start = diagnostic.getStart();
+    let line = 0;
+    let character = 0;
+
+    if (start !== undefined) {
+      const pos = sourceFile.getLineAndColumnAtPos(start);
+      line = pos.line;
+      character = pos.column;
+    }
+
+    const categoryMapping: Record<number, string> = {
+      [DiagnosticCategory.Error]: 'Error',
+      [DiagnosticCategory.Warning]: 'Warning',
+      [DiagnosticCategory.Suggestion]: 'Suggestion',
+      [DiagnosticCategory.Message]: 'Message',
+    };
+
+    return {
+      file: sourceFile.getBaseName(),
+      line,
+      character,
+      code: `TS${diagnostic.getCode()}`,
+      category: categoryMapping[diagnostic.getCategory()] || 'Error',
+      message: message as string,
+    };
+  }
+
+  /**
+   * Verifica erros de um arquivo, diretório específico ou do repositório inteiro.
+   * @param targetPath Caminho relativo para o arquivo ou pasta (opcional). Se vazio, verifica tudo.
+   */
+  public checkErrors(targetPath?: string): VsCodeProblem[] {
+    const rootDir = this.contextService.get('root');
+    if (!rootDir) {
+      throw new BadRequestException('Diretório raiz não encontrado no contexto.');
+    }
+
+    const absoluteTarget = targetPath ? path.resolve(rootDir, targetPath) : rootDir;
+
+    if (!fs.existsSync(absoluteTarget)) {
+      throw new BadRequestException(`Caminho não encontrado: ${absoluteTarget}`);
+    }
+
+    const isDirectory = fs.statSync(absoluteTarget).isDirectory();
+    // O ts-morph armazena caminhos internos usando barras (/) padrão POSIX, 
+    // mesmo no Windows. Precisamos normalizar para fazer o "startsWith" ou "===" funcionar.
+    const normalizedTarget = absoluteTarget.replace(/\\/g, '/');
+    
+    const projects = this.getAllProjects(rootDir);
+    if (projects.length === 0) {
+      throw new BadRequestException(`Nenhum tsconfig.json válido encontrado em: ${rootDir}`);
+    }
+
+    const problems: VsCodeProblem[] = [];
+    let filesChecked = 0;
+
+    for (const project of projects) {
+      // Pega todos os arquivos do projeto em cache
+      const sourceFiles = project.getSourceFiles();
+
+      const targetFiles = sourceFiles.filter((sf) => {
+        const filePath = sf.getFilePath();
+        return isDirectory 
+          ? filePath.startsWith(normalizedTarget) 
+          : filePath === normalizedTarget;
+      });
+
+      for (const sourceFile of targetFiles) {
+        // Sincroniza as mudanças mais recentes do disco para a memória
+        sourceFile.refreshFromFileSystemSync();
+        filesChecked++;
+
+        // Coleta diagnósticos apenas para este arquivo específico
+        const diagnostics = sourceFile.getPreEmitDiagnostics();
+        for (const diagnostic of diagnostics) {
+          problems.push(this.formatDiagnostic(diagnostic, sourceFile));
         }
       }
     }
 
-    // Se não tem references ou não achou o arquivo nelas, usa o raiz como fallback
-    return rootConfigPath;
-  }
-
-  /**
-   * Verifica erros de um arquivo específico, retornando no formato do VS Code
-   * @param tsConfigPath Caminho para o tsconfig.json do projeto alvo
-   * @param filePath Caminho do arquivo TypeScript que a IA deseja verificar
-   */
-  public checkFileErrors(filePath: string): VsCodeProblem[] {
-    const rootDir = this.contextService.get('root');
-    const tsConfigPath = this.resolveTsConfigForFile(rootDir!, filePath);
-    const project = this.getProject(tsConfigPath);
-
-    if (!project) {
+    if (filesChecked === 0 && !isDirectory) {
       throw new BadRequestException(
-        `Não foi possível carregar o projeto TypeScript a partir do tsconfig.json: ${tsConfigPath}`,
+        `Arquivo não encontrado no cache dos projetos TypeScript: ${targetPath}. Verifique se ele está coberto pelo tsconfig.json.`
       );
     }
 
-    const absoluteFilePath = path.resolve(path.join(rootDir!, filePath));
-    const sourceFile = project.getSourceFile(absoluteFilePath);
-
-    if (!sourceFile) {
-      throw new BadRequestException(
-        `Arquivo não encontrado no cache do projeto: ${filePath}. Verifique se ele está coberto pelo tsconfig.json.`,
-      );
-    }
-    
-    sourceFile.refreshFromFileSystemSync();
-    const diagnostics = sourceFile.getPreEmitDiagnostics();
-
-    return diagnostics.map((diagnostic) => {
-      const rawMessage = diagnostic.getMessageText();
-      const message =
-        typeof rawMessage === 'string'
-          ? rawMessage
-          : rawMessage.getMessageText();
-
-      const start = diagnostic.getStart();
-      let line = 0;
-      let character = 0;
-
-      if (start !== undefined) {
-        const pos = sourceFile.getLineAndColumnAtPos(start);
-        line = pos.line;
-        character = pos.column;
-      }
-
-      const categoryMapping = {
-        [DiagnosticCategory.Error]: 'Error',
-        [DiagnosticCategory.Warning]: 'Warning',
-        [DiagnosticCategory.Suggestion]: 'Suggestion',
-        [DiagnosticCategory.Message]: 'Message',
-      };
-
-      return {
-        file: sourceFile.getBaseName(),
-        line,
-        character,
-        code: `TS${diagnostic.getCode()}`,
-        category: categoryMapping[diagnostic.getCategory()],
-        message: message as string,
-      };
-    });
+    return problems;
   }
 }

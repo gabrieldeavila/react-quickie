@@ -17,10 +17,10 @@ export function createProjectTools(projectService: ProjectService) {
       description:
         'Valida o código TypeScript do projeto, retornando erros caso existam',
       inputSchema: z.object({
-        filePath: z.string().optional(),
+        file_or_folder_path: z.string().optional(),
       }),
-      execute: async ({ filePath }: { filePath?: string }) => {
-        const result = await projectService.checkTypeScriptErrors(filePath);
+      execute: async ({ file_or_folder_path }: { file_or_folder_path?: string }) => {
+        const result = await projectService.checkTypeScriptErrors(file_or_folder_path);
         return result;
       },
     }),

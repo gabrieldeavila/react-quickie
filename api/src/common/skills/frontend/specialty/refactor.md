@@ -30,11 +30,15 @@ Before generating any code, establish the global constraints that prevent overwh
 
 - **One Step At A Time**: NEVER output 10 refactored files in a single response. Refactor one logical unit (e.g., moving types, OR creating the context, OR migrating the UI) per response.
 - **Explain The "What" and "Why"**: Before outputting *any* code, you MUST write a short paragraph explaining exactly *what* you are about to do and *why* it is necessary according to the target architecture.
-- **Zero Guesswork**: If a file imports something you cannot see, do not invent the code. Stop and ask the user: *"Please provide the code for `X` so we can continue."*
+- **Proactive Context & Zero Guesswork**: NEVER ask the user to manually copy and paste file contents. You MUST use your available workspace tools, file readers, or environment context to read the files directly. Read the necessary dependencies autonomously before planning. Do not guess or invent code. Only ask the user for code if the file genuinely cannot be found in the workspace.
 - **Strict Target Architecture**: Every refactor MUST eventually align with the standard:
     - Root: `pages/`, `components/`, `types/`, `helpers/`.
     - Types: Centralized in `types/interface/`, `types/enum/`, `types/consts/`.
     - Components: Structured as `index.tsx` (entry) -> `context/` (Base and Services) -> `features/content.tsx` (UI).
+- **The Dead Code Protocol**: NEVER silently delete unused code. If you identify functions, variables, types, interfaces, or imports that are declared but not used anywhere in the execution flow, you MUST explicitly flag them to the user. State what the unused code is, where it is located, and ask for explicit confirmation before removing it from the refactored output.
+- **Concise & Entity-Based Naming**: Avoid excessively long, literal, or action-based filenames for types and interfaces (e.g., do NOT use `create-chat-transport-params.interface.ts` or `chat-request-body.interface.ts`). Instead, name files after the core entity (e.g., `chat.interface.ts`, `transport.interface.ts`) and group closely related interfaces (like request bodies and params for the same domain) inside that single, concisely named file.
+- **Continuous Type Validation**: IMMEDIATELY after editing, creating, or modifying any file, you MUST autonomously run the `check_typescript` function/tool. Never proceed to the next step or hand off to the user without first verifying that your changes did not introduce TypeScript errors.
+- **Action-Biased & Concise**: Do not over-explain, ramble, or repeat the architectural philosophy in every response. Keep your "What and Why" explanations to a maximum of 2 short sentences. If you need to read files, search the codebase, or run checks to gather context, DO IT AUTONOMOUSLY using your tools. DO NOT ask for permission to read or search. Only pause for user confirmation when you are about to modify, create, or delete code.
 
 ## **Phase 1: Audit & Discover**
 
@@ -48,6 +52,7 @@ Ask the user to provide a specific component, page, or folder to start with. Ana
 | **State & Logic Mixing** | Is the component fetching data, managing heavy state, and rendering UI all in one file? (Need Context split). |
 | **God Files** | Is the file too large? Does it handle multiple distinct domains? |
 | **Missing Abstractions** | Are CSS or helper functions hardcoded directly inside the render block? |
+| **Dead Code** | Are there variables, functions, or types declared but never consumed? Flag them for deletion confirmation. |
 
 ### **→ Output an Audit Brief**
 
@@ -77,8 +82,10 @@ Execute the roadmap **ONE STEP at a time**.
 For every step, use this exact format:
 
 **1. The "What" and "Why"**
-*"**What we are doing:** We are extracting the `User` and `ProfileSettings` interfaces from your component into dedicated files inside the `types/interface/` folder.*
-***Why:** Following our architectural rules, components should never loosely declare types. Centralizing them ensures reusability across the application and keeps our UI components clean."*
+**1. The "What" and "Why"**
+*(CRITICAL RULE: Maximum 2 short sentences. Do not repeat instructions. Just state the immediate action and the direct reason).*
+*"**Action:** Extracting `User` interface to `types/interface/user.interface.ts`. 
+**Reason:** Centralizing contracts prevents duplicate declarations and keeps components focused on UI."*
 
 **2. The Code**
 *(CRITICAL RULE: ALWAYS output the full, complete, and runnable code for the current step. NEVER use `...` or omit logic. The user must be able to copy and paste your exact output. Do not skip lines just to save space).*
