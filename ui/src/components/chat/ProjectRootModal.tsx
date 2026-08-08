@@ -1,14 +1,6 @@
 import { PlanningModeLabel } from "../../types/enum/planning-mode.enum";
 
-type ProjectRootModalProps = {
-  isOpen: boolean;
-  planningModeEnabled: boolean;
-  value: string;
-  onChange: (value: string) => void;
-  onPlanningModeChange: (enabled: boolean) => void;
-  onClose: () => void;
-  onSave: () => void;
-};
+import type { ProjectRootModalProps } from "../../types/interface/project-root-modal.interface";
 
 export function ProjectRootModal({
   isOpen,

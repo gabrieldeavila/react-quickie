@@ -3,10 +3,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { ChatEmptyState } from "./ChatEmptyState";
 import { ChatMessageItem } from "./ChatMessageItem";
 
-type ChatMessageListProps = {
-  messages: UIMessage[];
-  isPending: boolean;
-};
+import type { ChatMessageListProps } from "../../types/interface/chat-message-list.interface";
 
 const MAX_VISIBLE_MESSAGES = 500;
 

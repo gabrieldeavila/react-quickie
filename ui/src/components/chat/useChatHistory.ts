@@ -8,29 +8,9 @@ import {
   listConversations,
   listMessagesByConversation,
   migrateDefaultConversationTitles,
-  type ChatConversation,
 } from "../../lib/chatDb";
-
-export interface UseChatHistoryResult {
-  conversations: ChatConversation[];
-  activeConversationId: string | null;
-  activeConversation: ChatConversation | undefined;
-  setActiveConversationId: (conversationId: string | null) => void;
-  historyMessages: UIMessage[];
-  isHydrated: boolean;
-  createConversation: (firstUserMessage?: string) => Promise<string>;
-  persistUserMessage: (
-    conversationId: string,
-    content: string,
-  ) => Promise<void>;
-  persistAssistantMessage: (
-    conversationId: string,
-    content: string,
-  ) => Promise<void>;
-  reloadConversations: () => Promise<void>;
-  deleteConversation: (conversationId: string) => Promise<void>;
-  resetHistory: () => Promise<void>;
-}
+import type { ChatConversation } from "../../types/interface/chat-db.interface";
+import type { UseChatHistoryResult } from "../../types/interface/history.interface";
 
 const getActiveConversationId = () => {
   if (typeof localStorage === "undefined") return null;

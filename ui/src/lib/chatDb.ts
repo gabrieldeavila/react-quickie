@@ -1,27 +1,9 @@
 import Dexie, { type Table } from "dexie";
-
-export type ChatMessageRole = "user" | "assistant" | "system";
-
-export interface ChatConversation {
-  id: string;
-  title: string;
-  createdAt: number;
-  updatedAt: number;
-  lastMessageAt: number;
-  metadata?: Record<string, unknown>;
-  attachments?: unknown[];
-}
-
-export interface ChatMessageRecord {
-  id: string;
-  conversationId: string;
-  role: ChatMessageRole;
-  content: string;
-  createdAt: number;
-  tokens?: number;
-  metadata?: Record<string, unknown>;
-  attachments?: unknown[];
-}
+import type {
+  ChatConversation,
+  ChatMessageRecord,
+  ChatMessageRole,
+} from "../types/interface/chat-db.interface";
 
 class ChatDatabase extends Dexie {
   conversations!: Table<ChatConversation, string>;
@@ -69,7 +51,9 @@ export const migrateDefaultConversationTitle = async (
   if (!isDefaultConversationTitle(conversation.title)) return conversation;
 
   const records = await listMessagesByConversation(conversation.id);
-  const firstUserMessage = records.find((record) => record.role === "user")?.content;
+  const firstUserMessage = records.find(
+    (record) => record.role === "user",
+  )?.content;
   if (!firstUserMessage) return conversation;
 
   const renamedConversation: ChatConversation = {
@@ -98,9 +82,8 @@ export const ensureConversation = async (
   const now: number = Date.now();
 
   if (conversationId) {
-    const existing: ChatConversation | undefined = await chatDb.conversations.get(
-      conversationId,
-    );
+    const existing: ChatConversation | undefined =
+      await chatDb.conversations.get(conversationId);
 
     if (existing) {
       if (firstUserMessage && shouldRenameConversation(existing.title)) {
@@ -145,13 +128,18 @@ export const appendMessage = async (
     createdAt: now,
   };
 
-  await chatDb.transaction("rw", chatDb.messages, chatDb.conversations, async () => {
-    await chatDb.messages.add(message);
-    await chatDb.conversations.update(conversationId, {
-      updatedAt: now,
-      lastMessageAt: now,
-    });
-  });
+  await chatDb.transaction(
+    "rw",
+    chatDb.messages,
+    chatDb.conversations,
+    async () => {
+      await chatDb.messages.add(message);
+      await chatDb.conversations.update(conversationId, {
+        updatedAt: now,
+        lastMessageAt: now,
+      });
+    },
+  );
 
   return message;
 };
@@ -178,15 +166,28 @@ export const listMessagesByConversation = async (
 export const deleteConversationCascade = async (
   conversationId: string,
 ): Promise<void> => {
-  await chatDb.transaction("rw", chatDb.messages, chatDb.conversations, async () => {
-    await chatDb.messages.where("conversationId").equals(conversationId).delete();
-    await chatDb.conversations.delete(conversationId);
-  });
+  await chatDb.transaction(
+    "rw",
+    chatDb.messages,
+    chatDb.conversations,
+    async () => {
+      await chatDb.messages
+        .where("conversationId")
+        .equals(conversationId)
+        .delete();
+      await chatDb.conversations.delete(conversationId);
+    },
+  );
 };
 
 export const clearChatHistory = async (): Promise<void> => {
-  await chatDb.transaction("rw", chatDb.messages, chatDb.conversations, async () => {
-    await chatDb.messages.clear();
-    await chatDb.conversations.clear();
-  });
+  await chatDb.transaction(
+    "rw",
+    chatDb.messages,
+    chatDb.conversations,
+    async () => {
+      await chatDb.messages.clear();
+      await chatDb.conversations.clear();
+    },
+  );
 };

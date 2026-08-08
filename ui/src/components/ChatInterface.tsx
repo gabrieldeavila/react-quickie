@@ -1,6 +1,6 @@
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AgentFocusEnum, AgentSpecialtyEnum } from "../enum/agent.enum";
+import { AgentFocusEnum, AgentSpecialtyEnum } from "../types/enum/agent.enum";
 import "../styles/ChatInterface.css";
 import { ChatComposer } from "./chat/ChatComposer";
 import { ChatHeader } from "./chat/ChatHeader";
@@ -12,12 +12,7 @@ import { createChatTransport } from "./chat/chatTransport";
 import { useChatComposer } from "./chat/useChatComposer";
 import { useChatHistory } from "./chat/useChatHistory";
 
-type ProjectContext = {
-  reference: string;
-  focus: AgentFocusEnum;
-  specialty: AgentSpecialtyEnum;
-  planningModeEnabled: boolean;
-};
+import type { ProjectContext } from "../types/interface/chat-interface.interface";
 
 const PROJECT_CONTEXT_STORAGE_KEY: string = "project-context";
 const ACTIVE_CHAT_STORAGE_KEY: string = "active-chat-conversation-id";

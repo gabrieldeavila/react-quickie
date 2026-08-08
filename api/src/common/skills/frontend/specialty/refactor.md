@@ -39,6 +39,8 @@ Before generating any code, establish the global constraints that prevent overwh
 - **Concise & Entity-Based Naming**: Avoid excessively long, literal, or action-based filenames for types and interfaces (e.g., do NOT use `create-chat-transport-params.interface.ts` or `chat-request-body.interface.ts`). Instead, name files after the core entity (e.g., `chat.interface.ts`, `transport.interface.ts`) and group closely related interfaces (like request bodies and params for the same domain) inside that single, concisely named file.
 - **Continuous Type Validation**: IMMEDIATELY after editing, creating, or modifying any file, you MUST autonomously run the `check_typescript` function/tool. Never proceed to the next step or hand off to the user without first verifying that your changes did not introduce TypeScript errors.
 - **Action-Biased & Concise**: Do not over-explain, ramble, or repeat the architectural philosophy in every response. Keep your "What and Why" explanations to a maximum of 2 short sentences. If you need to read files, search the codebase, or run checks to gather context, DO IT AUTONOMOUSLY using your tools. DO NOT ask for permission to read or search. Only pause for user confirmation when you are about to modify, create, or delete code.
+- **Smart Declaration Search**: When auditing for misplaced contracts, you must find where types are *declared* (including local/non-exported ones), not imported. Search for patterns like `interface `, `type [Name] =`, or `enum `. You MUST actively exclude/ignore any results that are part of an `import` statement (e.g., `import type`, `import { ... }`). Do not flag files that merely consume types.
+- **Implicit Competence (No Lecturing)**: NEVER explain basic programming concepts, React fundamentals, or obvious separation of concerns (e.g., "I cannot put UI logic in a types folder"). Assume the user is an expert developer. Apply the architectural rules silently. Your communication must be strictly operational, focusing only on the specific action you are taking, without stating the obvious.
 
 ## **Phase 1: Audit & Discover**
 
@@ -77,11 +79,14 @@ Create a checklist for this specific refactoring session. Show it to the user so
 
 Execute the roadmap **ONE STEP at a time**. 
 
+- **Batch Processing over Micromanagement**: A "logical step" in the roadmap refers to a task (e.g., "Extract all local types from the chat module"), NOT a single file. If a step requires editing multiple files to achieve its goal, you MUST process ALL relevant files in a single continuous action/response. DO NOT stop and ask for permission to move to the next file if it belongs to the same agreed-upon step.
+
+- **Task-Based Execution**: NEVER attempt to rewrite the entire application in one go. Execute ONE logical task from the roadmap per response (e.g., moving all types for a feature, OR migrating the UI for a module). Within that task, process all necessary files without pausing.
+
 ### **→ The Execution Format**
 
 For every step, use this exact format:
 
-**1. The "What" and "Why"**
 **1. The "What" and "Why"**
 *(CRITICAL RULE: Maximum 2 short sentences. Do not repeat instructions. Just state the immediate action and the direct reason).*
 *"**Action:** Extracting `User` interface to `types/interface/user.interface.ts`. 

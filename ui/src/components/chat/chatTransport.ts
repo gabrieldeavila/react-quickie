@@ -1,25 +1,13 @@
 import { DefaultChatTransport } from "ai";
-import type { AgentFocusEnum, AgentSpecialtyEnum } from "../../enum/agent.enum";
-
-type ChatMessagePayload = {
-  role: string;
-  content: string;
-};
-
-type ChatRequestBody = {
-  messages?: Array<{
-    role: string;
-    content?: string;
-    parts?: Array<{ type: string; text?: string }>;
-  }>;
-};
-
-type CreateChatTransportParams = {
-  projectRoot: string;
-  focus: AgentFocusEnum;
-  specialty: AgentSpecialtyEnum;
-  planningModeEnabled: boolean;
-};
+import type {
+  AgentFocusEnum,
+  AgentSpecialtyEnum,
+} from "../../types/enum/agent.enum";
+import type {
+  ChatMessagePayload,
+  ChatRequestBody,
+} from "../../types/interface/chat.interface";
+import type { CreateChatTransportParams } from "../../types/interface/transport.interface";
 
 function normalizeMessage(
   message: NonNullable<ChatRequestBody["messages"]>[number],

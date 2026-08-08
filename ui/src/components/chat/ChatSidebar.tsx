@@ -1,16 +1,5 @@
 import { FiPlus } from "react-icons/fi";
-import type { ChatConversation } from "../../lib/chatDb";
-
-type ChatSidebarProps = {
-  conversations: ChatConversation[];
-  activeConversationId: string | null;
-  onCreateConversation: () => void;
-  onSelectConversation: (conversationId: string | null) => void;
-  onDeleteConversation: (conversationId: string) => Promise<void>;
-  isHydrated: boolean;
-  isOpen: boolean;
-  onToggleSidebar: () => void;
-};
+import type { ChatSidebarProps } from "../../types/interface/chat-sidebar.interface";
 
 const formatTimestamp = (timestamp: number): string => {
   return new Intl.DateTimeFormat(undefined, {

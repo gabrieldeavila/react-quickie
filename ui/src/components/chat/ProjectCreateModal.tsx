@@ -1,11 +1,7 @@
 import axios from "axios";
 import { useCallback, useMemo, useState } from "react";
 
-type ProjectCreateModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreated?: (path: string) => void;
-};
+import type { ProjectCreateModalProps } from "../../types/interface/project-create-modal.interface";
 
 const CREATE_PROJECT_URL = "http://localhost:3000/project/create";
 

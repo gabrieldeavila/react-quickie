@@ -8,19 +8,18 @@ import {
   FiShuffle,
   FiTool,
 } from "react-icons/fi";
-import { AgentFocusEnum, AgentSpecialtyEnum } from "../../enum/agent.enum";
 import { FaPalette } from "react-icons/fa";
 import { AiFillApi } from "react-icons/ai";
+import {
+  AgentFocusEnum,
+  AgentSpecialtyEnum,
+} from "../../types/enum/agent.enum";
 
-type FocusPopoverProps = {
-  value: AgentFocusEnum;
-  onChange: (value: AgentFocusEnum) => void;
-};
-type SpecialtyPopoverProps = {
-  value: AgentSpecialtyEnum;
-  onChange: (value: AgentSpecialtyEnum) => void;
-  focus: AgentFocusEnum;
-};
+import type {
+  FocusPopoverProps,
+  SpecialtyPopoverProps,
+} from "../../types/interface/chat-mode-popover.interface";
+
 type Option<T> = { value: T; label: string; icon: IconType };
 
 type PopoverProps<T extends string | number> = {
@@ -50,7 +49,7 @@ const SPECIALTY_OPTIONS: Option<AgentSpecialtyEnum>[] = [
     icon: FiLayout,
   },
   { value: AgentSpecialtyEnum.FORMS, label: "Forms", icon: FiPackage },
-  { value: AgentSpecialtyEnum.REFACTOR, label: "Refatoracao", icon: FiTool },
+  { value: AgentSpecialtyEnum.REFACTOR, label: "Refatoração", icon: FiTool },
 ];
 
 function Popover<T extends string | number>({

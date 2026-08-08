@@ -1,19 +1,8 @@
-import { AgentFocusEnum, AgentSpecialtyEnum } from "../../enum/agent.enum";
+import { AgentFocusEnum } from "../../types/enum/agent.enum";
+import type { ChatHeaderProps } from "../../types/interface/chat-header.interface";
 import { ChatModePopover, ChatSpecialtyPopover } from "./ChatModePopover";
 import { ChatStatusPill } from "./ChatStatusPill";
 import { FiFolderPlus, FiMessageCircle, FiSettings } from "react-icons/fi";
-
-type ChatHeaderProps = {
-  title: string;
-  status?: string;
-  focus: AgentFocusEnum;
-  specialty: AgentSpecialtyEnum;
-  onFocusChange: (value: AgentFocusEnum) => void;
-  onSpecialtyChange: (value: AgentSpecialtyEnum) => void;
-  onOpenProjectRoot: () => void;
-  onOpenCreateProject: () => void;
-  onCreateConversation: () => void;
-};
 
 export function ChatHeader({
   title,

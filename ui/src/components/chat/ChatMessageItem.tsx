@@ -2,10 +2,7 @@ import type { UIMessage } from "@ai-sdk/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-type ChatMessageItemProps = {
-  message: UIMessage;
-  isTyping?: boolean;
-};
+import type { ChatMessageItemProps } from "../../types/interface/chat-message-item.interface";
 
 function getMessageText(message: UIMessage): string {
   return message.parts
