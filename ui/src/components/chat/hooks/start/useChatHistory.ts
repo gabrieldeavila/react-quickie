@@ -11,18 +11,19 @@ import {
 } from "../../../../lib/chatDb";
 import type { ChatConversation } from "../../../../types/interface/chat-db.interface";
 import type { UseChatHistoryResult } from "../../../../types/interface/history.interface";
+import { ACTIVE_CHAT_STORAGE_KEY } from "@/types/consts/chat.const";
 
-const getActiveConversationId = () => {
-  if (typeof localStorage === "undefined") return null;
+const getStoredActiveConversationId = () => {
+  if (typeof window === "undefined") return null;
 
-  return localStorage.getItem("active-chat-conversation-id");
+  return window.localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY);
 };
 
 export const useChatHistory = (): UseChatHistoryResult => {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
-  >(getActiveConversationId);
+  >(getStoredActiveConversationId);
   const [historyMessages, setHistoryMessages] = useState<UIMessage[]>([]);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
@@ -75,7 +76,6 @@ export const useChatHistory = (): UseChatHistoryResult => {
 
   useEffect(() => {
     if (conversations.length === 0) {
-      setActiveConversationId(null);
       return;
     }
 

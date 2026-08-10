@@ -6,7 +6,7 @@ import {
   PROJECT_CONTEXT_STORAGE_KEY,
   SIDEBAR_OPEN_STORAGE_KEY,
 } from "../types/consts/chat.const";
-import type { ProjectContext } from "../types/interface/chat-interface.interface";
+import type { ProjectContext } from "@/types/interface/chat.interface";
 
 export function isAgentFocus(value: unknown): value is AgentFocusEnum {
   return (

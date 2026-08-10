@@ -30,11 +30,12 @@ const useStartChatState = () => {
 
   useEffect(() => {
     const storedConversationId: string | null = readActiveConversationId();
+
     if (storedConversationId) {
       history.setActiveConversationId(storedConversationId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeConversationIdRef, history.setActiveConversationId]);
+  }, [history.setActiveConversationId]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
