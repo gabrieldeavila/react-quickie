@@ -1,8 +1,8 @@
-import { ChatInterface } from "./components/ChatInterface";
 import "./App.css";
+import Chat from "./components/chat";
 
 function App() {
-  return <ChatInterface />;
+  return <Chat />;
 }
 
 export default App;

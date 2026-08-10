@@ -1,58 +1,12 @@
+import type {
+  PopoverOption,
+  PopoverProps,
+} from "@/types/interface/primitive-popover.interface";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
-import {
-  FiCode,
-  FiLayout,
-  FiMinusCircle,
-  FiPackage,
-  FiShuffle,
-  FiTool,
-} from "react-icons/fi";
-import { FaPalette } from "react-icons/fa";
-import { AiFillApi } from "react-icons/ai";
-import {
-  AgentFocusEnum,
-  AgentSpecialtyEnum,
-} from "../../types/enum/agent.enum";
+import { FiMinusCircle } from "react-icons/fi";
 
-import type {
-  FocusPopoverProps,
-  SpecialtyPopoverProps,
-} from "../../types/interface/chat-mode-popover.interface";
-
-type Option<T> = { value: T; label: string; icon: IconType };
-
-type PopoverProps<T extends string | number> = {
-  value: T;
-  onChange: (value: T) => void;
-  options: Option<T>[];
-  ariaLabel: string;
-  title: string;
-  defaultIcon?: IconType;
-};
-
-const FOCUS_OPTIONS: Option<AgentFocusEnum>[] = [
-  { value: AgentFocusEnum.FRONTEND, label: "Frontend", icon: FaPalette },
-  { value: AgentFocusEnum.BACKEND, label: "Backend", icon: AiFillApi },
-  { value: AgentFocusEnum.AGNOSTIC, label: "Agnóstico", icon: FiShuffle },
-];
-
-const SPECIALTY_OPTIONS: Option<AgentSpecialtyEnum>[] = [
-  {
-    value: AgentSpecialtyEnum.NONE,
-    label: "Sem especialidade",
-    icon: FiMinusCircle,
-  },
-  {
-    value: AgentSpecialtyEnum.LANDING_PAGES,
-    label: "Landing Pages",
-    icon: FiLayout,
-  },
-  { value: AgentSpecialtyEnum.FORMS, label: "Forms", icon: FiPackage },
-  { value: AgentSpecialtyEnum.REFACTOR, label: "Refatoração", icon: FiTool },
-];
-
-function Popover<T extends string | number>({
+export function Popover<T extends string | number>({
   value,
   onChange,
   options,
@@ -64,10 +18,12 @@ function Popover<T extends string | number>({
   const [openDirection, setOpenDirection] = useState<"left" | "right">("right");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const currentOption: Option<T> | undefined = useMemo(
+
+  const currentOption: PopoverOption<T> | undefined = useMemo(
     () => options.find((option) => option.value === value),
     [options, value],
   );
+
   const TriggerIcon: IconType =
     currentOption?.icon ?? DefaultIcon ?? FiMinusCircle;
 
@@ -127,6 +83,7 @@ function Popover<T extends string | number>({
           <TriggerIcon className="chat-mode-popover__icon-svg" />
         </span>
       </button>
+
       {isOpen ? (
         <div
           ref={panelRef}
@@ -165,36 +122,5 @@ function Popover<T extends string | number>({
         </div>
       ) : null}
     </div>
-  );
-}
-
-export function ChatModePopover({ value, onChange }: FocusPopoverProps) {
-  return (
-    <Popover
-      value={value}
-      onChange={onChange}
-      options={FOCUS_OPTIONS}
-      ariaLabel="Selecionar foco do agente"
-      title="Modo"
-      defaultIcon={FiCode}
-    />
-  );
-}
-
-export function ChatSpecialtyPopover({
-  value,
-  onChange,
-  focus,
-}: SpecialtyPopoverProps) {
-  if (focus !== AgentFocusEnum.FRONTEND) return null;
-  return (
-    <Popover
-      value={value}
-      onChange={onChange}
-      options={SPECIALTY_OPTIONS}
-      ariaLabel="Selecionar especialidade do agente"
-      title="Especialidade"
-      defaultIcon={FiMinusCircle}
-    />
   );
 }

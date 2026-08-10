@@ -8,9 +8,9 @@ import {
   listConversations,
   listMessagesByConversation,
   migrateDefaultConversationTitles,
-} from "../../lib/chatDb";
-import type { ChatConversation } from "../../types/interface/chat-db.interface";
-import type { UseChatHistoryResult } from "../../types/interface/history.interface";
+} from "../../../../lib/chatDb";
+import type { ChatConversation } from "../../../../types/interface/chat-db.interface";
+import type { UseChatHistoryResult } from "../../../../types/interface/history.interface";
 
 const getActiveConversationId = () => {
   if (typeof localStorage === "undefined") return null;
@@ -53,7 +53,6 @@ export const useChatHistory = (): UseChatHistoryResult => {
 
       const currentConversationId = activeConversationId;
       const records = await listMessagesByConversation(currentConversationId);
-      console.log(activeConversationId, records);
 
       if (isCancelled) return;
       if (currentConversationId !== activeConversationId) return;

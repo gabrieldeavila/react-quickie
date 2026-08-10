@@ -1,23 +1,23 @@
+import { CREATE_PROJECT_URL } from "@/types/consts/project.const";
 import axios from "axios";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
+import { useChatBaseContext } from "../../context/context";
 
-import { CREATE_PROJECT_URL } from "../../types/consts/project.const";
-import type { ProjectCreateModalProps } from "../../types/interface/project-create-modal.interface";
+export function ChatModalNewProject() {
+  const { isCreateModalOpen, setIsCreateModalOpen } = useChatBaseContext();
 
-export function ProjectCreateModal({
-  isOpen,
-  onClose,
-  onCreated,
-}: ProjectCreateModalProps) {
   const [projectName, setProjectName] = useState("");
   const [selectedPath, setSelectedPath] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canUseDirectoryPicker = useMemo(
-    () => typeof window !== "undefined" && "showDirectoryPicker" in window,
-    [],
-  );
+  const onClose = useCallback(() => {
+    setIsCreateModalOpen(false);
+  }, [setIsCreateModalOpen]);
+
+  const onCreated = useCallback(() => {
+    setIsCreateModalOpen(false);
+  }, [setIsCreateModalOpen]);
 
   const handleSubmit = useCallback(async () => {
     if (!projectName.trim() || !selectedPath.trim()) {
@@ -35,7 +35,7 @@ export function ProjectCreateModal({
       });
 
       if (response.data.success) {
-        onCreated?.(response.data.path);
+        onCreated();
       } else {
         setError("Erro ao criar o projeto. Verifique!");
       }
@@ -50,7 +50,7 @@ export function ProjectCreateModal({
     }
   }, [onClose, onCreated, projectName, selectedPath]);
 
-  if (!isOpen) return null;
+  if (!isCreateModalOpen) return null;
 
   return (
     <div className="chat-modal__backdrop" role="presentation" onClick={onClose}>
@@ -95,7 +95,6 @@ export function ProjectCreateModal({
                 value={selectedPath}
                 onChange={(event) => setSelectedPath(event.target.value)}
                 placeholder="Selecione uma pasta"
-                readOnly={canUseDirectoryPicker}
               />
             </div>
           </label>

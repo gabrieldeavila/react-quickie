@@ -1,40 +1,34 @@
+import { memo, useCallback } from "react";
+import {
+  useChatBaseContext,
+  useChatServicesContext,
+} from "../context/context";
 import { FiPlus } from "react-icons/fi";
-import type { ChatSidebarProps } from "../../types/interface/chat-sidebar.interface";
+import { formatTimestamp } from "@/helpers/time.helper";
 
-const formatTimestamp = (timestamp: number): string => {
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(timestamp));
-};
+const ChatSidebar = memo(() => {
+  const { isSidebarOpen, setIsSidebarOpen, history } = useChatBaseContext();
+  const { handleCreateConversation } = useChatServicesContext();
 
-export function ChatSidebar({
-  conversations,
-  activeConversationId,
-  onCreateConversation,
-  onSelectConversation,
-  onDeleteConversation,
-  isHydrated,
-  isOpen,
-  onToggleSidebar,
-}: ChatSidebarProps) {
+  const onToggleSidebar = useCallback(() => {
+    setIsSidebarOpen((current) => !current);
+  }, [setIsSidebarOpen]);
+
   return (
     <aside
-      className={`chat-sidebar ${isOpen ? "chat-sidebar--open" : "chat-sidebar--closed"}`}
+      className={`chat-sidebar ${isSidebarOpen ? "chat-sidebar--open" : "chat-sidebar--closed"}`}
       aria-label="Chats criados"
-      aria-hidden={!isOpen}
+      aria-hidden={!isSidebarOpen}
     >
       <button
         type="button"
         className="chat-sidebar__toggle"
         onClick={onToggleSidebar}
-        aria-label={isOpen ? "Fechar sidebar" : "Abrir sidebar"}
-        title={isOpen ? "Fechar sidebar" : "Abrir sidebar"}
+        aria-label={isSidebarOpen ? "Fechar sidebar" : "Abrir sidebar"}
+        title={isSidebarOpen ? "Fechar sidebar" : "Abrir sidebar"}
       >
         <span className="chat-sidebar__toggle-icon" aria-hidden="true">
-          {isOpen ? "⟨" : "⟩"}
+          {isSidebarOpen ? "⟨" : "⟩"}
         </span>
       </button>
 
@@ -49,7 +43,7 @@ export function ChatSidebar({
 
           <button
             className="chat-button chat-button--small chat-sidebar__create-button"
-            onClick={onCreateConversation}
+            onClick={handleCreateConversation}
             type="button"
             aria-label="Nova conversa"
             title="Nova conversa"
@@ -59,16 +53,16 @@ export function ChatSidebar({
         </div>
 
         <div className="chat-sidebar__list">
-          {!isHydrated ? (
+          {!history.isHydrated ? (
             <div className="chat-sidebar__empty">Carregando conversas…</div>
-          ) : conversations.length === 0 ? (
+          ) : history.conversations.length === 0 ? (
             <div className="chat-sidebar__empty">
               Nenhuma conversa encontrada. Crie uma nova.
             </div>
           ) : (
-            conversations.map((conversation) => {
+            history.conversations.map((conversation) => {
               const isActive: boolean =
-                conversation.id === activeConversationId;
+                conversation.id === history.activeConversationId;
 
               return (
                 <article
@@ -79,7 +73,7 @@ export function ChatSidebar({
                   <button
                     className="chat-sidebar__item-button"
                     type="button"
-                    onClick={() => onSelectConversation(conversation.id)}
+                    onClick={() => history.setActiveConversationId(conversation.id)}
                     aria-label={`Abrir conversa ${conversation.title}`}
                     title={`Abrir conversa ${conversation.title}`}
                   >
@@ -96,7 +90,7 @@ export function ChatSidebar({
                   <button
                     className="chat-sidebar__item-delete chat-button chat-button--ghost chat-button--x-small"
                     type="button"
-                    onClick={() => void onDeleteConversation(conversation.id)}
+                    onClick={() => history.deleteConversation(conversation.id)}
                     aria-label={`Excluir conversa ${conversation.title}`}
                     title={`Excluir conversa ${conversation.title}`}
                   >
@@ -110,4 +104,6 @@ export function ChatSidebar({
       </div>
     </aside>
   );
-}
+});
+
+export default ChatSidebar;

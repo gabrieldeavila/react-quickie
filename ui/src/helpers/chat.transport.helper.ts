@@ -2,12 +2,12 @@ import { DefaultChatTransport } from "ai";
 import type {
   AgentFocusEnum,
   AgentSpecialtyEnum,
-} from "../../types/enum/agent.enum";
+} from "../types/enum/agent.enum";
 import type {
   ChatMessagePayload,
   ChatRequestBody,
-} from "../../types/interface/chat.interface";
-import type { CreateChatTransportParams } from "../../types/interface/transport.interface";
+} from "../types/interface/chat.interface";
+import type { CreateChatTransportParams } from "../types/interface/transport.interface";
 
 function normalizeMessage(
   message: NonNullable<ChatRequestBody["messages"]>[number],
@@ -19,6 +19,7 @@ function normalizeMessage(
       .map((part) => part.text ?? "")
       .join("\n");
   }
+
   return { role: message.role, content: contentText };
 }
 

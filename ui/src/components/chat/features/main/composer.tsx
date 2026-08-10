@@ -1,12 +1,27 @@
-import type { ChatComposerProps } from "../../types/interface/chat-composer.interface";
+import { useCallback, useMemo } from "react";
+import { useChatBaseContext } from "../../context/context";
+import useSendMessage from "../../hooks/events/useSendMessage";
 
-export function ChatComposer({
-  input,
-  isDisabled,
-  onInputChange,
-  onSend,
-  onKeyDown,
-}: ChatComposerProps) {
+export function ChatComposer() {
+  const { input, hasInput, status, setInput } = useChatBaseContext();
+
+  const onSend = useSendMessage();
+
+  const isDisabled = useMemo(
+    () => !hasInput || status !== "ready",
+    [hasInput, status],
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        onSend();
+      }
+    },
+    [onSend],
+  );
+
   return (
     <div className="chat-input-section">
       <div className="input-wrapper">
@@ -14,8 +29,8 @@ export function ChatComposer({
           className="chat-input"
           placeholder="Digite sua mensagem..."
           value={input}
-          onChange={(event) => onInputChange(event.target.value)}
-          onKeyDown={onKeyDown}
+          onChange={(event) => setInput(event.target.value)}
+          onKeyDown={handleKeyDown}
           rows={1}
         />
 

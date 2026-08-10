@@ -1,15 +1,7 @@
-import type { UIMessage } from "@ai-sdk/react";
+import { getMessageText } from "@/helpers/chat.helper";
+import type { ChatMessageItemProps } from "@/types/interface/chat.interface";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-import type { ChatMessageItemProps } from "../../types/interface/chat-message-item.interface";
-
-function getMessageText(message: UIMessage): string {
-  return message.parts
-    .filter((part) => part.type === "text")
-    .map((part) => part.text ?? "")
-    .join("");
-}
 
 export function ChatMessageItem({
   message,

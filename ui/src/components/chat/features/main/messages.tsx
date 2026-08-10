@@ -1,12 +1,17 @@
-import type { UIMessage } from "@ai-sdk/react";
-import { useEffect, useMemo, useRef } from "react";
-import { ChatEmptyState } from "./ChatEmptyState";
-import { ChatMessageItem } from "./ChatMessageItem";
+import type { UIMessage } from "ai";
+import { memo, useEffect, useMemo, useRef } from "react";
+import {
+  useChatBaseContext,
+  useChatServicesContext,
+} from "../../context/context";
+import { MAX_VISIBLE_MESSAGES } from "@/types/consts/project.const";
+import { ChatEmptyState } from "./empty";
+import { ChatMessageItem } from "./messageItem";
 
-import type { ChatMessageListProps } from "../../types/interface/chat-message-list.interface";
-import { MAX_VISIBLE_MESSAGES } from "../../types/consts/project.const";
+const ChatMessagesList = memo(() => {
+  const { messages } = useChatBaseContext();
+  const { isChatPending } = useChatServicesContext();
 
-export function ChatMessageList({ messages, isPending }: ChatMessageListProps) {
   const isEmpty: boolean = messages.length === 0;
   const endRef = useRef<HTMLDivElement | null>(null);
 
@@ -16,9 +21,9 @@ export function ChatMessageList({ messages, isPending }: ChatMessageListProps) {
   }, [messages]);
 
   useEffect(() => {
-    if (isEmpty && !isPending) return;
+    if (isEmpty && !isChatPending) return;
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [isEmpty, isPending, visibleMessages.length]);
+  }, [isEmpty, isChatPending, visibleMessages.length]);
 
   return (
     <div
@@ -34,7 +39,7 @@ export function ChatMessageList({ messages, isPending }: ChatMessageListProps) {
         ))
       )}
 
-      {isPending ? (
+      {isChatPending ? (
         <ChatMessageItem
           message={
             {
@@ -50,4 +55,6 @@ export function ChatMessageList({ messages, isPending }: ChatMessageListProps) {
       <div ref={endRef} aria-hidden="true" />
     </div>
   );
-}
+});
+
+export default ChatMessagesList;
