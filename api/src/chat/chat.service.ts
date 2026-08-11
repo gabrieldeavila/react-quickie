@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ProjectService } from 'src/common/helpers/project.service';
 import { StorageService } from 'src/common/helpers/storage.service';
 import { createProjectTools, createStorageTools } from './tools';
-import { ConfigService } from '@nestjs/config';
-import { createOpenAI } from '@ai-sdk/openai';
 
 @Injectable()
 export class ChatService {
@@ -14,16 +13,9 @@ export class ChatService {
   ) {}
 
   getTools() {
-    const apiKey = this.configService.get<string>('OPENAI_KEY');
-
-    const openai = createOpenAI({
-      apiKey,
-    });
-
     return {
       ...createStorageTools(this.storageService),
       ...createProjectTools(this.projectService),
-      // ...createPlanningTools(openai),
     };
   }
 }

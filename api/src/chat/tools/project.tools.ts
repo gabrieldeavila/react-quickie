@@ -19,8 +19,13 @@ export function createProjectTools(projectService: ProjectService) {
       inputSchema: z.object({
         file_or_folder_path: z.string().optional(),
       }),
-      execute: async ({ file_or_folder_path }: { file_or_folder_path?: string }) => {
-        const result = await projectService.checkTypeScriptErrors(file_or_folder_path);
+      execute: async ({
+        file_or_folder_path,
+      }: {
+        file_or_folder_path?: string;
+      }) => {
+        const result =
+          await projectService.checkTypeScriptErrors(file_or_folder_path);
         return result;
       },
     }),
@@ -30,7 +35,13 @@ export function createProjectTools(projectService: ProjectService) {
         dependecyName: z.string(),
         isDev: z.boolean(),
       }),
-      execute: async ({ dependecyName, isDev }) => {
+      execute: async ({
+        dependecyName,
+        isDev,
+      }: {
+        dependecyName: string;
+        isDev: boolean;
+      }) => {
         const projects = await projectService.installDependency(
           dependecyName,
           isDev,

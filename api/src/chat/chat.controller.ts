@@ -25,12 +25,16 @@ import { TsCheckerService } from 'src/common/helpers/tschecker.service';
 import { StorageService } from 'src/common/helpers/storage.service';
 
 @UseInterceptors(
-  BuildContextInterceptor((req) => ({
-    root: req.body?.root,
-    mode: req.body?.chatMode,
-    specialty: req.body?.chatSpecialty,
-    planningModeEnabled: req.body?.planningModeEnabled,
-  })),
+  BuildContextInterceptor((req) => {
+    const body = req.body as Record<string, unknown>;
+
+    return {
+      root: body.root as string | undefined,
+      mode: body.chatMode as string | undefined,
+      specialty: body.chatSpecialty as string | undefined,
+      planningModeEnabled: body.planningModeEnabled as boolean | undefined,
+    };
+  }),
 )
 @Controller('chat')
 export class ChatController {
@@ -47,7 +51,7 @@ export class ChatController {
   @Get()
   async getChat() {
     return await this.storageService.regexSearchForContentInFiles(
-      "^[ \t]*const[ \t]+[A-Z][A-Z0-9_]+[ \t]*=",
+      '^[ \t]*const[ \t]+[A-Z][A-Z0-9_]+[ \t]*=',
       'src/components/chat',
     );
 
