@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { spawn } from 'child_process';
-import * as path from 'path';
-import { LoggerService } from './logger.service';
 import { ContextService } from '../context/context.service';
+import { LoggerService } from './logger.service';
 import { TsCheckerService, VsCodeProblem } from './tschecker.service';
 
 @Injectable()
