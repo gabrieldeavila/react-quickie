@@ -42,7 +42,7 @@ export type ${name}ServicesContextValue = {
 
 export const blueprintBaseContext = (
   name: string,
-) => `import { useMemo } from "react";
+) => `import { type ReactNode, useMemo } from "react";
 import { ${name}BaseContext } from "./context";
 
 export function ${name}BaseProvider({ children }: { children: ReactNode }) {
@@ -81,4 +81,13 @@ const ${name} = () => {
 };
 
 export default ${name};
+`;
+
+export const blueprintContent = (name: string) => `import { memo } from "react";
+
+const ${name}Content = memo(() => {
+  return <div></div>;
+});
+
+export default ${name}Content;
 `;

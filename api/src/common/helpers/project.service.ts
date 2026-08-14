@@ -51,11 +51,11 @@ export class ProjectService {
       let stdoutData = '';
       let stderrData = '';
 
-      child.stdout.on('data', (data) => {
+      child.stdout.on('data', (data: string) => {
         stdoutData += data.toString();
       });
 
-      child.stderr.on('data', (data) => {
+      child.stderr.on('data', (data: string) => {
         stderrData += data.toString();
       });
 
@@ -93,11 +93,11 @@ export class ProjectService {
       let stdoutData = '';
       let stderrData = '';
 
-      child.stdout.on('data', (data) => {
+      child.stdout.on('data', (data: string) => {
         stdoutData += data.toString();
       });
 
-      child.stderr.on('data', (data) => {
+      child.stderr.on('data', (data: string) => {
         stderrData += data.toString();
       });
 
@@ -119,7 +119,7 @@ export class ProjectService {
     });
   }
 
-  async checkTypeScriptErrors(folderPath?: string): Promise<VsCodeProblem[]> {
+  checkTypeScriptErrors(folderPath?: string): VsCodeProblem[] {
     this.loggerService.logDecision(
       `Verificando erros de TypeScript no diretório: ${folderPath || 'diretório raiz'}`,
     );

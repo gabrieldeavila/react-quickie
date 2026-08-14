@@ -45,7 +45,9 @@ export class LinterService {
       }
 
       this.loggerService.logDecision(`Linted and formatted ${fullPath}`);
-    } catch (error: any) {}
+    } catch {
+      void 0;
+    }
   }
 
   async getLintErrors(pathToLint = '.'): Promise<LintErrorResult[]> {
@@ -81,7 +83,7 @@ export class LinterService {
 
       return results;
     } catch (error: any) {
-      if (error?.stdout) {
+      if ('stdout' in error) {
         try {
           const results = JSON.parse(error.stdout) as LintErrorResult[];
           this.loggerService.logDecision(

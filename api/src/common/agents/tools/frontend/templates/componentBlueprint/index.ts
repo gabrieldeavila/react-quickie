@@ -6,6 +6,7 @@ import {
   blueprintBaseContext,
   blueprintServicesContext,
   blueprintIndex,
+  blueprintContent,
 } from './builder';
 
 export function createComponent(name: string, targetPath: string) {
@@ -13,6 +14,14 @@ export function createComponent(name: string, targetPath: string) {
     const fullDir = path.resolve(targetPath, name);
 
     const files = [
+      {
+        filePath: path.join(fullDir, 'features', 'content', 'index.tsx'),
+        content: blueprintContent(name),
+      },
+      {
+        filePath: path.join(fullDir, 'css', 'style.css'),
+        content: '',
+      },
       {
         filePath: path.join(fullDir, 'context', 'context.tsx'),
         content: blueprintContext(name),
@@ -34,6 +43,11 @@ export function createComponent(name: string, targetPath: string) {
     const createdFiles: string[] = [];
 
     for (const file of files) {
+      if (fs.existsSync(file.filePath)) {
+        createdFiles.push(path.relative(process.cwd(), file.filePath));
+        continue;
+      }
+
       fs.outputFileSync(file.filePath, file.content.trim());
 
       const relativePath = path.relative(process.cwd(), file.filePath);

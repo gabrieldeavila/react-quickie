@@ -16,28 +16,8 @@ export class LoggerService implements OnModuleInit {
     }
   }
 
-  async logDecision(decision: any) {
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      decision,
-    };
-
+  logDecision(decision: string) {
     console.log(decision);
     return;
-    // Lê o arquivo atual, faz o parse, adiciona o novo log e salva
-    const data = await fs.readFile(this.logFilePath, 'utf-8');
-    const logs = JSON.parse(data);
-    logs.push(logEntry);
-
-    if (logs.length > this.MAX_LOGS) {
-      logs.shift();
-    }
-
-    await fs.writeFile(this.logFilePath, JSON.stringify(logs, null, 2));
-  }
-
-  async getLogs() {
-    const data = await fs.readFile(this.logFilePath, 'utf-8');
-    return [];
   }
 }

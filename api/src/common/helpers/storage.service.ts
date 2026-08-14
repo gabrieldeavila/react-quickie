@@ -125,7 +125,7 @@ export class StorageService {
       });
 
       this.loggerService.logDecision(`Created the file ${fullPath}`);
-    } catch (error) {
+    } catch {
       // Trata erros (ex: falta de permissão de escrita)
       throw new InternalServerErrorException(
         'Erro ao criar o arquivo no repositório.',
@@ -341,7 +341,7 @@ export class StorageService {
         }
       }
       this.loggerService.logDecision(
-        `Regex Search ${regexPattern} found the files ${matchedFiles}`,
+        `Regex Search ${regexPattern} found the files ${matchedFiles.toString()}`,
       );
       return matchedFiles;
     } catch (error) {
