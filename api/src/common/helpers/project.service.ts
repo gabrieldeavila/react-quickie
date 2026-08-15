@@ -148,8 +148,14 @@ export class ProjectService {
       let stdoutData = '';
       let stderrData = '';
 
-      child.stdout.on('data', (data) => (stdoutData += data.toString()));
-      child.stderr.on('data', (data) => (stderrData += data.toString()));
+      child.stdout.on(
+        'data',
+        (data: string) => (stdoutData += data.toString()),
+      );
+      child.stderr.on(
+        'data',
+        (data: string) => (stderrData += data.toString()),
+      );
 
       child.on('close', (code) => {
         if (code === 0) {
