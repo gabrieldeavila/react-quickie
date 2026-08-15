@@ -1,4 +1,11 @@
-import { CREATE_PROJECT_URL } from "@/types/consts/project.const";
+import {
+  CREATE_PROJECT_URL,
+  PROJECT_TEMPLATE_OPTIONS,
+} from "@/types/consts/project.const";
+import type {
+  CreateProjectPayload,
+  ProjectTemplate,
+} from "@/types/interface/project.interface";
 import axios from "axios";
 import { useCallback, useState } from "react";
 import { useChatBaseContext } from "../../context/context";
@@ -8,6 +15,8 @@ export function ChatModalNewProject() {
 
   const [projectName, setProjectName] = useState("");
   const [selectedPath, setSelectedPath] = useState("");
+  const [projectTemplate, setProjectTemplate] =
+    useState<ProjectTemplate>("vite-base");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,10 +38,13 @@ export function ChatModalNewProject() {
     setError(null);
 
     try {
-      const response = await axios.post(CREATE_PROJECT_URL, {
+      const payload: CreateProjectPayload = {
         name: projectName.trim(),
         path: selectedPath.trim(),
-      });
+        template: projectTemplate,
+      };
+
+      const response = await axios.post(CREATE_PROJECT_URL, payload);
 
       if (response.data.success) {
         onCreated();
@@ -43,12 +55,13 @@ export function ChatModalNewProject() {
       onClose();
       setProjectName("");
       setSelectedPath("");
+      setProjectTemplate("vite-base");
     } catch {
       setError("Falha ao criar o projeto.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [onClose, onCreated, projectName, selectedPath]);
+  }, [onClose, onCreated, projectName, projectTemplate, selectedPath]);
 
   if (!isCreateModalOpen) return null;
 
@@ -64,7 +77,7 @@ export function ChatModalNewProject() {
         <div className="chat-modal__header">
           <div>
             <h2 id="project-create-title">Novo projeto</h2>
-            <p>Escolha a pasta para um novo projeto.</p>
+            <p>Escolha a pasta e o tipo de projeto.</p>
           </div>
           <button
             type="button"
@@ -85,6 +98,23 @@ export function ChatModalNewProject() {
               onChange={(event) => setProjectName(event.target.value)}
               placeholder="Ex: Meu novo app"
             />
+          </label>
+
+          <label className="chat-control chat-control--full">
+            <span className="chat-control__label">Tipo de projeto</span>
+            <select
+              className="chat-input chat-input--modal"
+              value={projectTemplate}
+              onChange={(event) =>
+                setProjectTemplate(event.target.value as ProjectTemplate)
+              }
+            >
+              {PROJECT_TEMPLATE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="chat-control chat-control--full">
