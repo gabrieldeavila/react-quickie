@@ -33,10 +33,10 @@ export class FrontendToolsService {
           name: string;
           targetPath: string;
         }) => {
-          const rootPath = this.contextService.get('root');
-          const pathToAdd = path.join(rootPath!, targetPath);
+          const rootPath = this.contextService.get('root')!;
+          const pathToAdd = path.join(rootPath, targetPath);
 
-          const result = createComponent(name, pathToAdd);
+          const result = createComponent(name, pathToAdd, rootPath);
 
           return { success: true, ...result };
         },

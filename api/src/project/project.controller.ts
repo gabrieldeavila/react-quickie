@@ -7,16 +7,24 @@ export class ProjectController {
 
   @Post('create')
   async createProject(
-    @Body() body: { name: string; path: string },
+    @Body()
+    body: {
+      name: string;
+      path: string;
+      template: string;
+      initializeGit: boolean;
+    },
   ) {
     const data = await this.projectService.createProject({
       projectName: body.name,
       path: body.path,
+      template: body.template,
+      startGit: body.initializeGit,
     });
 
     return {
       success: data.success,
-      path: data.path
+      path: data.path,
     };
   }
 }

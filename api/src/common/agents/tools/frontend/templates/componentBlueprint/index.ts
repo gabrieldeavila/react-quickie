@@ -7,9 +7,14 @@ import {
   blueprintServicesContext,
   blueprintIndex,
   blueprintContent,
+  blueprintTypes,
 } from './builder';
 
-export function createComponent(name: string, targetPath: string) {
+export function createComponent(
+  name: string,
+  targetPath: string,
+  rootPath: string,
+) {
   try {
     const fullDir = path.resolve(targetPath, name);
 
@@ -33,6 +38,15 @@ export function createComponent(name: string, targetPath: string) {
       {
         filePath: path.join(fullDir, 'context', `${name}ServicesContext.tsx`),
         content: blueprintServicesContext(name),
+      },
+      {
+        filePath: path.join(
+          rootPath,
+          'types',
+          'interface',
+          `${name.toLowerCase()}-context.interface.ts`,
+        ),
+        content: blueprintTypes(name),
       },
       {
         filePath: path.join(fullDir, 'index.tsx'),

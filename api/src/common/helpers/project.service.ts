@@ -3,6 +3,9 @@ import { spawn } from 'child_process';
 import { ContextService } from '../context/context.service';
 import { LoggerService } from './logger.service';
 import { TsCheckerService, VsCodeProblem } from './tschecker.service';
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import { execSync } from 'child_process';
 
 @Injectable()
 export class ProjectService {
@@ -12,111 +15,117 @@ export class ProjectService {
     private readonly tsCheckerService: TsCheckerService,
   ) {}
 
-  createProject({
+  async createProject({
     projectName,
-    path,
+    path: targetPath,
+    template = 'default',
+    startGit,
   }: {
+    template?: string;
     projectName: string;
     path?: string;
+    startGit?: boolean;
   }): Promise<{
     success: boolean;
     output?: string;
     error?: string;
     path?: string;
   }> {
-    return new Promise((resolve) => {
-      if (path && !path.startsWith('/')) {
-        path = `/${path}`;
+    try {
+      if (targetPath && !targetPath.startsWith('/')) {
+        targetPath = `/${targetPath}`;
       }
 
-      const targetDir = path || this.contextService.get('root');
+      const targetDir = targetPath || this.contextService.get('root');
       const name = projectName || 'my-react-app';
+      const projectPath = path.join(targetDir!, name);
 
-      const child = spawn(
-        'npx',
-        [
-          'create-next-app@latest',
-          name,
-          '--typescript',
-          '--tailwind',
-          '--eslint',
-          '--yes',
-        ],
-        {
-          cwd: targetDir,
-          shell: true,
-        },
+      const templatePath = path.resolve(
+        __dirname,
+        '../../../../templates',
+        template,
       );
 
-      let stdoutData = '';
-      let stderrData = '';
+      this.loggerService.logDecision(
+        `Iniciando cópia do template ${template} para ${projectPath}`,
+      );
 
-      child.stdout.on('data', (data: string) => {
-        stdoutData += data.toString();
-      });
+      await fs.cp(templatePath, projectPath, { recursive: true });
 
-      child.stderr.on('data', (data: string) => {
-        stderrData += data.toString();
-      });
+      const packageJsonPath = path.join(projectPath, 'package.json');
+      try {
+        const pkgData = await fs.readFile(packageJsonPath, 'utf8');
+        const pkg = JSON.parse(pkgData);
+        pkg.name = name;
+        await fs.writeFile(
+          packageJsonPath,
+          JSON.stringify(pkg, null, 2),
+          'utf8',
+        );
+      } catch {
+        this.loggerService.logDecision(
+          `Aviso: package.json não encontrado no template ${template}`,
+        );
+      }
 
-      child.on('close', (code) => {
-        if (code === 0) {
-          this.loggerService.logDecision(`Created project ${projectName}`);
-          resolve({
-            success: true,
-            output: stdoutData,
-            path: `${targetDir}/${name}`,
+      let outputLogs = `Projeto ${name} copiado do template '${template}'.\n`;
+
+      try {
+        if (startGit) {
+          this.loggerService.logDecision('Inicializando Git...');
+
+          execSync('git init', { cwd: projectPath, stdio: 'ignore' });
+          execSync('git checkout -b main', {
+            cwd: projectPath,
+            stdio: 'ignore',
           });
-        } else {
-          resolve({
-            success: false,
-            error: stderrData || `Processo encerrado com código ${code}`,
+          outputLogs += 'Repositório Git inicializado.\n';
+
+          execSync('git add .', { cwd: projectPath, stdio: 'ignore' });
+          execSync('git commit -m "chore: initial commit from react-quickie"', {
+            cwd: projectPath,
+            stdio: 'ignore',
           });
+          outputLogs += '\nCommit inicial finalizado com sucesso.\n';
         }
-      });
+      } catch (execError: any) {
+        outputLogs += `\nAviso durante execução de comandos: ${execError.message}`;
+      }
 
-      // Tratamento caso o comando nem consiga iniciar
-      child.on('error', (err) => {
-        resolve({ success: false, error: err.message });
-      });
-    });
+      this.loggerService.logDecision('Instalando dependências...');
+
+      const installBuffer = execSync('pnpm install', { cwd: projectPath });
+      outputLogs += installBuffer.toString();
+
+      this.loggerService.logDecision(`Projeto ${name} criado com sucesso!`);
+
+      return {
+        success: true,
+        output: outputLogs,
+        path: projectPath,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erro desconhecido ao gerar os arquivos.',
+      };
+    }
   }
 
-  getProjectsCreatedInDirectory(): Promise<string[]> {
+  async getProjectsCreatedInDirectory(): Promise<string[]> {
     const targetDir = this.contextService.get('root')!;
-    return new Promise((resolve, reject) => {
-      const child = spawn('ls', ['-1'], {
-        cwd: targetDir,
-        shell: true,
-      });
 
-      let stdoutData = '';
-      let stderrData = '';
+    try {
+      const dirents = await fs.readdir(targetDir, { withFileTypes: true });
 
-      child.stdout.on('data', (data: string) => {
-        stdoutData += data.toString();
-      });
+      const projects = dirents
+        .filter((dirent) => dirent.isDirectory())
+        .map((dirent) => dirent.name);
 
-      child.stderr.on('data', (data: string) => {
-        stderrData += data.toString();
-      });
-
-      child.on('close', (code) => {
-        if (code === 0) {
-          const projects = stdoutData
-            .split('\n')
-            .filter((line) => line.trim() !== '');
-          resolve(projects);
-        } else {
-          reject(stderrData || `Processo encerrado com código ${code}`);
-        }
-      });
-
-      // Tratamento caso o comando nem consiga iniciar
-      child.on('error', (err) => {
-        reject(err.message);
-      });
-    });
+      return projects;
+    } catch (error: any) {
+      throw new Error(`Erro ao ler o diretório: ${error.message}`);
+    }
   }
 
   checkTypeScriptErrors(folderPath?: string): VsCodeProblem[] {
