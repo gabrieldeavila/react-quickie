@@ -1,13 +1,13 @@
+import axios from "axios";
+import { useCallback, useState } from "react";
 import {
   CREATE_PROJECT_URL,
   PROJECT_TEMPLATE_OPTIONS,
-} from "@/types/consts/project.const";
+} from "~types/consts/project.const";
 import type {
   CreateProjectPayload,
   ProjectTemplate,
-} from "@/types/interface/project.interface";
-import axios from "axios";
-import { useCallback, useState } from "react";
+} from "~types/interface/project.interface";
 import { useChatBaseContext } from "../../context/context";
 
 export function ChatModalNewProject() {
@@ -17,16 +17,26 @@ export function ChatModalNewProject() {
   const [selectedPath, setSelectedPath] = useState("");
   const [projectTemplate, setProjectTemplate] =
     useState<ProjectTemplate>("vite-base");
+  const [initializeGit, setInitializeGit] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const resetForm = useCallback(() => {
+    setProjectName("");
+    setSelectedPath("");
+    setProjectTemplate("vite-base");
+    setInitializeGit(true);
+  }, []);
+
   const onClose = useCallback(() => {
+    resetForm();
     setIsCreateModalOpen(false);
-  }, [setIsCreateModalOpen]);
+  }, [resetForm, setIsCreateModalOpen]);
 
   const onCreated = useCallback(() => {
+    resetForm();
     setIsCreateModalOpen(false);
-  }, [setIsCreateModalOpen]);
+  }, [resetForm, setIsCreateModalOpen]);
 
   const handleSubmit = useCallback(async () => {
     if (!projectName.trim() || !selectedPath.trim()) {
@@ -42,6 +52,7 @@ export function ChatModalNewProject() {
         name: projectName.trim(),
         path: selectedPath.trim(),
         template: projectTemplate,
+        initializeGit,
       };
 
       const response = await axios.post(CREATE_PROJECT_URL, payload);
@@ -51,17 +62,12 @@ export function ChatModalNewProject() {
       } else {
         setError("Erro ao criar o projeto. Verifique!");
       }
-
-      onClose();
-      setProjectName("");
-      setSelectedPath("");
-      setProjectTemplate("vite-base");
     } catch {
       setError("Falha ao criar o projeto.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [onClose, onCreated, projectName, projectTemplate, selectedPath]);
+  }, [initializeGit, onCreated, projectName, projectTemplate, selectedPath]);
 
   if (!isCreateModalOpen) return null;
 
@@ -77,7 +83,7 @@ export function ChatModalNewProject() {
         <div className="chat-modal__header">
           <div>
             <h2 id="project-create-title">Novo projeto</h2>
-            <p>Escolha a pasta e o tipo de projeto.</p>
+            <p>Escolha a pasta, o tipo de projeto e se quer iniciar git.</p>
           </div>
           <button
             type="button"

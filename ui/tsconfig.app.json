@@ -23,8 +23,9 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "~types/*": ["./types/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "types"]
 }

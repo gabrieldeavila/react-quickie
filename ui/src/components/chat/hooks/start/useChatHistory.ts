@@ -9,9 +9,9 @@ import {
   listMessagesByConversation,
   migrateDefaultConversationTitles,
 } from "../../../../lib/chatDb";
-import type { ChatConversation } from "../../../../types/interface/chat-db.interface";
-import type { UseChatHistoryResult } from "../../../../types/interface/history.interface";
-import { ACTIVE_CHAT_STORAGE_KEY } from "@/types/consts/chat.const";
+import type { ChatConversation } from "~types/interface/chat-db.interface";
+import type { UseChatHistoryResult } from "~types/interface/history.interface";
+import { ACTIVE_CHAT_STORAGE_KEY } from "~types/consts/chat.const";
 
 const getStoredActiveConversationId = () => {
   if (typeof window === "undefined") return null;

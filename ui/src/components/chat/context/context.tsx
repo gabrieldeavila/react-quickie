@@ -1,4 +1,4 @@
-import type { ChatBaseContextValue, ChatServicesContextValue } from "@/types/interface/chat-context.interface";
+import type { ChatBaseContextValue, ChatServicesContextValue } from "~types/interface/chat-context.interface";
 import { createContext, useContext } from "react";
 
 export const ChatBaseContext = createContext<ChatBaseContextValue | null>(null);

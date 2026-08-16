@@ -8,7 +8,7 @@ import {
   ACTIVE_CHAT_STORAGE_KEY,
   PROJECT_CONTEXT_STORAGE_KEY,
   SIDEBAR_OPEN_STORAGE_KEY,
-} from "@/types/consts/chat.const";
+} from "~types/consts/chat.const";
 
 const useStartChatState = () => {
   const {

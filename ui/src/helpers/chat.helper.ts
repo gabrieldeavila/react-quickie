@@ -1,12 +1,12 @@
 import { type UIMessage } from "@ai-sdk/react";
-import { AgentFocusEnum, AgentSpecialtyEnum } from "../types/enum/agent.enum";
+import { AgentFocusEnum, AgentSpecialtyEnum } from "../../types/enum/agent.enum";
 import {
   ACTIVE_CHAT_STORAGE_KEY,
   DEFAULT_PROJECT_CONTEXT,
   PROJECT_CONTEXT_STORAGE_KEY,
   SIDEBAR_OPEN_STORAGE_KEY,
-} from "../types/consts/chat.const";
-import type { ProjectContext } from "@/types/interface/chat.interface";
+} from "../../types/consts/chat.const";
+import type { ProjectContext } from "../../types/interface/chat.interface";
 
 export function isAgentFocus(value: unknown): value is AgentFocusEnum {
   return (

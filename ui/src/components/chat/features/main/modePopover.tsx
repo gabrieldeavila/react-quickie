@@ -1,9 +1,9 @@
 import { Popover } from "@/components/primitives/popover";
-import { CHAT_MODE_OPTIONS } from "@/types/consts/chat.const";
+import { CHAT_MODE_OPTIONS } from "~types/consts/chat.const";
 import { memo, useCallback } from "react";
 import { FiCode } from "react-icons/fi";
 import { useChatBaseContext } from "../../context/context";
-import type { AgentFocusEnum } from "@/types/enum/agent.enum";
+import type { AgentFocusEnum } from "~types/enum/agent.enum";
 
 const ChatModePopover = memo(() => {
   const { projectContext, setProjectContext } = useChatBaseContext();

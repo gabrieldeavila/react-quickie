@@ -1,5 +1,5 @@
 import { getMessageText } from "@/helpers/chat.helper";
-import type { ChatMessageItemProps } from "@/types/interface/chat.interface";
+import type { ChatMessageItemProps } from "~types/interface/chat.interface";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 

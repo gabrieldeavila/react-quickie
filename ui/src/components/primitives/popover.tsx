@@ -1,7 +1,7 @@
 import type {
   PopoverOption,
   PopoverProps,
-} from "@/types/interface/primitive-popover.interface";
+} from "../../../types/interface/primitive-popover.interface";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import { FiMinusCircle } from "react-icons/fi";

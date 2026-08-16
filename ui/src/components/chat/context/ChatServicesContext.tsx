@@ -2,7 +2,7 @@ import { type ReactNode, useMemo } from "react";
 import useStartChatState from "../hooks/start/useStartChatState";
 import { ChatServicesContext, useChatBaseContext } from "./context";
 import useServiceChatCreate from "../hooks/services/useServiceChatCreate";
-import { AgentFocusEnum } from "@/types/enum/agent.enum";
+import { AgentFocusEnum } from "~types/enum/agent.enum";
 
 export function ChatServicesProvider({ children }: { children: ReactNode }) {
   const { activeConversationId, messages, status, projectContext } =

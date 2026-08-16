@@ -4,7 +4,7 @@ import {
   useChatBaseContext,
   useChatServicesContext,
 } from "../../context/context";
-import { MAX_VISIBLE_MESSAGES } from "@/types/consts/project.const";
+import { MAX_VISIBLE_MESSAGES } from "~types/consts/project.const";
 import { ChatEmptyState } from "./empty";
 import { ChatMessageItem } from "./messageItem";
 

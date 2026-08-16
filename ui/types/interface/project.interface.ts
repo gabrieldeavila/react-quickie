@@ -4,4 +4,5 @@ export interface CreateProjectPayload {
   name: string;
   path: string;
   template: ProjectTemplate;
+  initializeGit: boolean;
 }

@@ -4,7 +4,7 @@ import {
   readProjectContext,
   readSidebarOpenState,
 } from "../../../helpers/chat.helper";
-import type { ProjectContext } from "../../../types/interface/chat.interface";
+import type { ProjectContext } from "~types/interface/chat.interface";
 import { useChatHistory } from "../hooks/start/useChatHistory";
 import { ChatBaseContext } from "./context";
 import { createChatTransport } from "@/helpers/chat.transport.helper";

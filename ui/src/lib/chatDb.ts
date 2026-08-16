@@ -3,7 +3,7 @@ import type {
   ChatConversation,
   ChatMessageRecord,
   ChatMessageRole,
-} from "../types/interface/chat-db.interface";
+} from "../../types/interface/chat-db.interface";
 
 class ChatDatabase extends Dexie {
   conversations!: Table<ChatConversation, string>;

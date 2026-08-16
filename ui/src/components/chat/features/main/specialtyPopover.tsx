@@ -1,6 +1,6 @@
 import { Popover } from "@/components/primitives/popover";
-import { CHAT_SPECIALTY_OPTIONS } from "@/types/consts/chat.const";
-import { AgentFocusEnum, AgentSpecialtyEnum } from "@/types/enum/agent.enum";
+import { CHAT_SPECIALTY_OPTIONS } from "~types/consts/chat.const";
+import { AgentFocusEnum, AgentSpecialtyEnum } from "~types/enum/agent.enum";
 import { memo, useCallback } from "react";
 import { FiMinusCircle } from "react-icons/fi";
 import { useChatBaseContext } from "../../context/context";

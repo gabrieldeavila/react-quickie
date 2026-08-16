@@ -1,8 +1,8 @@
-import { PlanningModeLabel } from "@/types/enum/planning-mode.enum";
+import { PlanningModeLabel } from "~types/enum/planning-mode.enum";
 import { useChatBaseContext } from "../../context/context";
 import { useCallback } from "react";
-import type { ProjectContext } from "@/types/interface/chat.interface";
-import { DEFAULT_PROJECT_CONTEXT } from "@/types/consts/chat.const";
+import type { ProjectContext } from "~types/interface/chat.interface";
+import { DEFAULT_PROJECT_CONTEXT } from "~types/consts/chat.const";
 
 export function ChatModalSettings() {
   const {
