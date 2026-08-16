@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useCallback, useState } from "react";
+import Toggle from "../../../primitives/toggle";
 import {
   CREATE_PROJECT_URL,
   PROJECT_TEMPLATE_OPTIONS,
@@ -134,6 +135,13 @@ export function ChatModalNewProject() {
               />
             </div>
           </label>
+
+          <Toggle
+            checked={initializeGit}
+            onChange={setInitializeGit}
+            label="Habilitar git"
+            description="Cria o projeto já com repositório Git inicializado."
+          />
 
           {error ? <p className="chat-modal__error">{error}</p> : null}
         </div>
