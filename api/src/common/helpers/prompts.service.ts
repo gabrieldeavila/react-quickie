@@ -43,15 +43,21 @@ export class PromptsService {
     const pathSearch = path.join(this.contentPath, pathSkills);
     const exists = await fs.pathExists(pathSearch);
 
+    const instructions: Instructions = [];
+
+    const projectAgents = await this.getProjectAgents();
+
+    if (Array.isArray(projectAgents)) {
+      instructions.push(...projectAgents);
+    }
+
     if (!exists) {
-      return null;
+      return instructions;
     }
 
     const content = await this.markdownService.getMarkdownFile(
       `${pathSearch}/index.md`,
     )?.html;
-
-    const instructions: Instructions = [];
 
     if (content.length) {
       instructions.push({
@@ -118,6 +124,35 @@ export class PromptsService {
         content,
         role: 'system',
       });
+    }
+
+    return instructions;
+  }
+
+  async getProjectAgents(): Promise<Instructions | null> {
+    const pathRoot = this.contextService.get('root')!;
+
+    const pathAgents = path.join(pathRoot, '.agents');
+
+    if (!fs.existsSync(pathAgents)) {
+      return null;
+    }
+
+    const files = await fs.readdir(pathAgents);
+
+    const instructions: Instructions = [];
+
+    for (const file of files) {
+      const content = await this.markdownService.getMarkdownFile(
+        `${pathAgents}/${file}`,
+      )?.html;
+
+      if (content.length) {
+        instructions.push({
+          content,
+          role: 'system',
+        });
+      }
     }
 
     return instructions;

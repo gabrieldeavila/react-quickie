@@ -13,7 +13,7 @@ export class FrontendToolsService {
     return {
       create_component_blueprint: tool({
         description:
-          'Gera a estrutura boile∏rplate completa de um componente React complexo, criando múltiplos arquivos como index, contexts (Base e Services) e types. Use essa tool sempre que precisar criar uma nova feature ou módulo do zero.',
+          'Gera a estrutura boilerplate completa de um componente React complexo, criando múltiplos arquivos como index, contexts (Base e Services) e types. Use essa tool sempre que precisar criar uma nova feature ou componente complexo.',
         inputSchema: z.object({
           name: z
             .string()
