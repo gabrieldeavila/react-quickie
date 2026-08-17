@@ -63,12 +63,6 @@ export class GitToolsService {
           files: string[];
         }) => {
           const rootPath = this.contextService.get('root')!;
-          console.log('Git commit tool invoked with:', {
-            message,
-            files,
-            rootPath,
-          });
-
           try {
             const filesArg = files.join(' ');
 
@@ -169,6 +163,62 @@ export class GitToolsService {
 
             return { success: true, commits };
           } catch (error: any) {
+            return { success: false, error: error.message };
+          }
+        },
+      }),
+
+      get_uncommitted_changes: tool({
+        description:
+          'Verifica o status atual do repositório (arquivos modificados, adicionados ou deletados) e o diff do código. DEVE ser usada antes de criar um commit para entender o contexto, revisar o código e sugerir mensagens.',
+        inputSchema: z.object({}),
+        execute: async () => {
+          const rootPath = this.contextService.get('root')!;
+
+          try {
+            const { stdout: statusOutput } = await execAsync('git status -s', {
+              cwd: rootPath,
+            });
+
+            if (!statusOutput.trim()) {
+              return {
+                success: true,
+                hasChanges: false,
+                message: 'Nenhuma alteração pendente (working tree clean).',
+              };
+            }
+
+            const files = statusOutput.split('\n').filter(Boolean);
+
+            const { stdout: diffOutput } = await execAsync('git diff HEAD', {
+              cwd: rootPath,
+            });
+
+            return {
+              success: true,
+              hasChanges: true,
+              files,
+              diff: diffOutput.slice(0, 10000),
+            };
+          } catch (error: any) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            if (error?.message?.includes("bad revision 'HEAD'")) {
+              const { stdout: statusOutput } = await execAsync(
+                'git status -s',
+                { cwd: rootPath },
+              );
+              const { stdout: diffOutput } = await execAsync(
+                'git diff --cached',
+                { cwd: rootPath },
+              );
+              return {
+                success: true,
+                hasChanges: true,
+                files: statusOutput.split('\n').filter(Boolean),
+                diff: diffOutput.slice(0, 10000),
+                note: 'Primeiro commit do repositório.',
+              };
+            }
             return { success: false, error: error.message };
           }
         },

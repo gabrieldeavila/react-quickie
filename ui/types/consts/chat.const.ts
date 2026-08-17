@@ -1,4 +1,5 @@
 import { FaPalette } from "react-icons/fa";
+import { FaGitAlt } from "react-icons/fa6";
 import { AgentFocusEnum, AgentSpecialtyEnum } from "../enum/agent.enum";
 import type { ProjectContext } from "../interface/chat.interface";
 import type { PopoverOption } from "../interface/primitive-popover.interface";
@@ -26,6 +27,7 @@ export const CHAT_MODE_OPTIONS: PopoverOption<AgentFocusEnum>[] = [
   { value: AgentFocusEnum.FRONTEND, label: "Frontend", icon: FaPalette },
   { value: AgentFocusEnum.BACKEND, label: "Backend", icon: AiFillApi },
   { value: AgentFocusEnum.AGNOSTIC, label: "Agnóstico", icon: FiShuffle },
+  { value: AgentFocusEnum.GIT, label: "Git", icon: FaGitAlt },
 ];
 
 export const CHAT_SPECIALTY_OPTIONS: PopoverOption<AgentSpecialtyEnum>[] = [
