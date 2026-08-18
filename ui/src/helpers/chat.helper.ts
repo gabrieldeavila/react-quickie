@@ -1,18 +1,24 @@
 import { type UIMessage } from "@ai-sdk/react";
-import { AgentFocusEnum, AgentSpecialtyEnum } from "../../types/enum/agent.enum";
+import {
+  AgentFocusEnum,
+  AgentSpecialtyEnum,
+} from "../../types/enum/agent.enum";
 import {
   ACTIVE_CHAT_STORAGE_KEY,
+  CHAT_MODE_OPTIONS,
   DEFAULT_PROJECT_CONTEXT,
   PROJECT_CONTEXT_STORAGE_KEY,
   SIDEBAR_OPEN_STORAGE_KEY,
 } from "../../types/consts/chat.const";
 import type { ProjectContext } from "../../types/interface/chat.interface";
 
+const AGENT_FOCUS_VALUES = new Set(
+  CHAT_MODE_OPTIONS.map((option) => option.value),
+);
+
 export function isAgentFocus(value: unknown): value is AgentFocusEnum {
   return (
-    value === AgentFocusEnum.FRONTEND ||
-    value === AgentFocusEnum.BACKEND ||
-    value === AgentFocusEnum.AGNOSTIC
+    typeof value === "string" && AGENT_FOCUS_VALUES.has(value as AgentFocusEnum)
   );
 }
 
@@ -27,13 +33,7 @@ export function isAgentSpecialty(value: unknown): value is AgentSpecialtyEnum {
 
 export function normalizeStoredFocus(value: unknown): AgentFocusEnum {
   if (typeof value === "number") {
-    return (
-      [
-        AgentFocusEnum.FRONTEND,
-        AgentFocusEnum.BACKEND,
-        AgentFocusEnum.AGNOSTIC,
-      ][value] ?? DEFAULT_PROJECT_CONTEXT.focus
-    );
+    return CHAT_MODE_OPTIONS[value]?.value ?? DEFAULT_PROJECT_CONTEXT.focus;
   }
   return isAgentFocus(value) ? value : DEFAULT_PROJECT_CONTEXT.focus;
 }
