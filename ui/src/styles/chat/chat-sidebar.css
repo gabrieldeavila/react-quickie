@@ -1,0 +1,107 @@
+.chat-sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+  border-right: 1px solid var(--chat-border);
+  background: rgba(7, 11, 16, 0.88);
+  overflow: visible;
+  transition:
+    width 0.24s ease,
+    min-width 0.24s ease,
+    max-width 0.24s ease,
+    opacity 0.24s ease,
+    border-color 0.24s ease;
+}
+
+.chat-sidebar--closed {
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  border-right-color: transparent;
+  background: transparent;
+  padding: 0;
+}
+
+.chat-sidebar__create-button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.chat-sidebar__create-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  line-height: 1;
+  color: #ffffff;
+  flex: 0 0 auto;
+}
+
+.chat-sidebar__toggle {
+  position: absolute;
+  top: 50%;
+  right: -28px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 56px;
+  border: 1px solid var(--chat-border-strong);
+  border-left: none;
+  border-radius: 0 14px 14px 0;
+  background: rgba(10, 14, 20, 0.96);
+  color: var(--chat-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 10px 0 24px rgba(0, 0, 0, 0.18);
+  pointer-events: auto;
+}
+
+.chat-sidebar__toggle:hover {
+  background: rgba(16, 21, 30, 0.98);
+}
+
+.chat-sidebar__toggle-icon {
+  display: inline-flex;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.chat-sidebar__content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 18px;
+  overflow: hidden;
+}
+
+.chat-sidebar--closed .chat-sidebar__content {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chat-sidebar__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.chat-sidebar__subtitle {
+  display: block;
+  margin-top: 4px;
+  color: var(--chat-text-muted);
+  font-size: 0.76rem;
+}

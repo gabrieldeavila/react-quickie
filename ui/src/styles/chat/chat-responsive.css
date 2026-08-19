@@ -1,0 +1,84 @@
+@media (max-width: 768px) {
+  .chat-shell {
+    padding: 0;
+  }
+
+  .chat-container {
+    height: 100dvh;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .chat-header,
+  .chat-messages,
+  .chat-input-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .chat-header__top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chat-header__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .chat-control--full,
+  .chat-select {
+    width: 100%;
+  }
+
+  .chat-folder-picker {
+    flex-direction: column;
+  }
+
+  .chat-mode-inline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chat-toggle-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chat-toggle-switch {
+    width: 100%;
+    max-width: 132px;
+  }
+}
+
+.chat-mode-inline .chat-input--mode {
+  max-width: none;
+}
+
+.message-content {
+  max-width: 86%;
+  font-size: 1.05rem;
+}
+
+.markdown-content {
+  max-width: 86%;
+}
+
+.send-button {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message,
+  .typing-indicator span {
+    animation: none;
+  }
+
+  .chat-input,
+  .send-button {
+    transition: none;
+  }
+}

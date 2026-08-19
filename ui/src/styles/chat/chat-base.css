@@ -1,0 +1,29 @@
+/* placeholder */
+:root {
+  --chat-bg: #0b0f14;
+  --chat-surface: rgba(15, 20, 28, 0.72);
+  --chat-surface-strong: rgba(18, 24, 33, 0.94);
+  --chat-border: rgba(255, 255, 255, 0.08);
+  --chat-border-strong: rgba(255, 255, 255, 0.14);
+  --chat-text: #e7edf5;
+  --chat-text-muted: #91a0b4;
+  --chat-accent: #7c8cff;
+  --chat-accent-2: #8a5cf6;
+  --chat-user: linear-gradient(
+    135deg,
+    rgba(124, 140, 255, 0.95),
+    rgba(138, 92, 246, 0.92)
+  );
+  --chat-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}

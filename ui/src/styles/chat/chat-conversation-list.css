@@ -1,0 +1,124 @@
+.chat-sidebar__list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 6px;
+  max-height: calc(100vh - 140px);
+}
+
+.chat-sidebar__list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.chat-sidebar__list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.chat-sidebar__list::-webkit-scrollbar-thumb {
+  background: rgba(124, 140, 255, 0.28);
+  border-radius: 999px;
+  border: 2px solid rgba(7, 11, 16, 0.88);
+}
+
+.chat-sidebar__list:hover::-webkit-scrollbar-thumb {
+  background: rgba(124, 140, 255, 0.42);
+}
+
+.chat-sidebar__item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--chat-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  min-height: 84px;
+  overflow: hidden;
+}
+
+.chat-sidebar__item--active {
+  border-color: rgba(124, 140, 255, 0.65);
+  background: rgba(124, 140, 255, 0.12);
+}
+
+.chat-sidebar__item-button {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.chat-sidebar__item-button:hover .chat-sidebar__item-title {
+  color: #ffffff;
+}
+
+.chat-sidebar__item-body {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 2px 4px 4px;
+}
+
+.chat-sidebar__item-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: 100%;
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chat-sidebar__item-meta {
+  margin: 0;
+  color: var(--chat-text-muted);
+  font-size: 0.78rem;
+}
+
+.chat-button.chat-sidebar__item-delete {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+  font-size: 0.72rem;
+  margin-top: 2px;
+}
+
+.chat-sidebar__item-delete .chat-button__icon {
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.chat-sidebar__empty {
+  padding: 16px;
+  color: var(--chat-text-muted);
+  font-size: 0.95rem;
+  border: 1px dashed var(--chat-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}

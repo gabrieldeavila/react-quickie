@@ -1,0 +1,52 @@
+.chat-sidebar__item-button:focus-visible,
+.chat-sidebar__item-delete:focus-visible,
+.chat-sidebar__toggle:focus-visible,
+.chat-mode-popover__trigger:focus-visible,
+.chat-mode-popover__option:focus-visible {
+  outline: 2px solid rgba(124, 140, 255, 0.9);
+  outline-offset: 2px;
+}
+
+.chat-status-pill,
+.chat-button,
+.chat-select,
+.chat-input {
+  border-radius: 7px;
+}
+
+.chat-button--icon {
+  border-radius: 10px;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-button__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.chat-button__icon {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.chat-header__action-button {
+  color: var(--chat-text-muted);
+}
+
+.chat-header__action-icon-wrap {
+  color: var(--chat-text-muted);
+}
+
+.chat-header__action-icon {
+  color: var(--chat-text-muted);
+}
