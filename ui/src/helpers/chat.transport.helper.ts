@@ -1,7 +1,7 @@
 import { DefaultChatTransport } from "ai";
 import type {
-  AgentFocusEnum,
   AgentSpecialtyEnum,
+  CombinedAgentEnum
 } from "../../types/enum/agent.enum";
 import type {
   ChatMessagePayload,
@@ -35,7 +35,7 @@ export function createChatTransport({
       if (options?.body) {
         const body = JSON.parse(options.body as string) as ChatRequestBody & {
           root?: string;
-          chatMode?: AgentFocusEnum;
+          chatMode?: CombinedAgentEnum;
           chatSpecialty?: AgentSpecialtyEnum;
           planningModeEnabled?: boolean;
         };

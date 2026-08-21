@@ -1,8 +1,8 @@
-import type { AgentFocusEnum, AgentSpecialtyEnum } from "../enum/agent.enum";
+import type { AgentSpecialtyEnum, CombinedAgentEnum } from "../enum/agent.enum";
 
 export interface CreateChatTransportParams {
   projectRoot: string;
-  focus: AgentFocusEnum;
+  focus: CombinedAgentEnum;
   specialty: AgentSpecialtyEnum;
   planningModeEnabled: boolean;
 }

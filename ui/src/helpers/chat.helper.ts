@@ -1,8 +1,6 @@
 import { type UIMessage } from "@ai-sdk/react";
-import {
-  AgentFocusEnum,
-  AgentSpecialtyEnum,
-} from "../../types/enum/agent.enum";
+import { AgentSpecialtyEnum } from "../../types/enum/agent.enum";
+import type { CombinedAgentEnum } from "../../types/enum/agent.enum";
 import {
   ACTIVE_CHAT_STORAGE_KEY,
   CHAT_MODE_OPTIONS,
@@ -16,9 +14,10 @@ const AGENT_FOCUS_VALUES = new Set(
   CHAT_MODE_OPTIONS.map((option) => option.value),
 );
 
-export function isAgentFocus(value: unknown): value is AgentFocusEnum {
+export function isAgentFocus(value: unknown): value is CombinedAgentEnum {
   return (
-    typeof value === "string" && AGENT_FOCUS_VALUES.has(value as AgentFocusEnum)
+    typeof value === "string" &&
+    AGENT_FOCUS_VALUES.has(value as CombinedAgentEnum)
   );
 }
 
@@ -31,7 +30,7 @@ export function isAgentSpecialty(value: unknown): value is AgentSpecialtyEnum {
   );
 }
 
-export function normalizeStoredFocus(value: unknown): AgentFocusEnum {
+export function normalizeStoredFocus(value: unknown): CombinedAgentEnum {
   if (typeof value === "number") {
     return CHAT_MODE_OPTIONS[value]?.value ?? DEFAULT_PROJECT_CONTEXT.focus;
   }

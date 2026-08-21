@@ -1,3 +1,5 @@
+import type { AgentFocusPluginEnum } from "~types/plugin/specialty.plugin";
+
 export enum AgentFocusEnum {
   FRONTEND = "frontend",
   BACKEND = "backend",
@@ -11,3 +13,5 @@ export enum AgentSpecialtyEnum {
   FORMS = "forms",
   REFACTOR = "refactor",
 }
+
+export type CombinedAgentEnum = AgentFocusEnum | AgentFocusPluginEnum;

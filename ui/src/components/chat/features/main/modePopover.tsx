@@ -3,13 +3,13 @@ import { CHAT_MODE_OPTIONS } from "~types/consts/chat.const";
 import { memo, useCallback } from "react";
 import { FiCode } from "react-icons/fi";
 import { useChatBaseContext } from "../../context/context";
-import type { AgentFocusEnum } from "~types/enum/agent.enum";
+import type { CombinedAgentEnum } from "~types/enum/agent.enum";
 
 const ChatModePopover = memo(() => {
   const { projectContext, setProjectContext } = useChatBaseContext();
 
   const handleChange = useCallback(
-    (value: AgentFocusEnum) => {
+    (value: CombinedAgentEnum) => {
       setProjectContext((current) => ({
         ...current,
         focus: value,

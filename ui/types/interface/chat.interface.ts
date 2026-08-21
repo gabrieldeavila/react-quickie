@@ -1,6 +1,5 @@
 import type { UIMessage } from "@ai-sdk/react";
-import type { AgentFocusEnum, AgentSpecialtyEnum } from "../enum/agent.enum";
-
+import type { CombinedAgentEnum } from "../enum/agent.enum";
 
 export interface ChatMessagePayload {
   role: string;
@@ -29,7 +28,7 @@ export type ChatMessageItemProps = {
 
 export type ProjectContext = {
   reference: string;
-  focus: AgentFocusEnum;
-  specialty: AgentSpecialtyEnum;
+  focus: CombinedAgentEnum;
+  specialty: string;
   planningModeEnabled: boolean;
 };

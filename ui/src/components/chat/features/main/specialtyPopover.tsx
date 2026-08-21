@@ -2,14 +2,13 @@ import { Popover } from "@/components/primitives/popover";
 import { memo, useCallback, useMemo } from "react";
 import { FiMinusCircle } from "react-icons/fi";
 import { CHAT_SPECIALTY_OPTIONS } from "~types/consts/chat.const";
-import { AgentSpecialtyEnum } from "~types/enum/agent.enum";
 import { useChatBaseContext } from "../../context/context";
 
 const ChatSpecialtyPopover = memo(() => {
   const { projectContext, setProjectContext } = useChatBaseContext();
 
   const handleChange = useCallback(
-    (value: AgentSpecialtyEnum) => {
+    (value: string) => {
       setProjectContext((current) => ({
         ...current,
         specialty: value,
