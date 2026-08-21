@@ -33,13 +33,15 @@ export class PromptsService {
       if (Array.isArray(planningSkills)) instructions.push(...planningSkills);
     }
 
+    console.log(instructions);
+
     return instructions;
   }
 
   async getModeSkills(): Promise<Instructions | null> {
     const mode = this.contextService.get('mode');
 
-    const pathSkills = `common/skills/${mode}`;
+    const pathSkills = `common/agents/skills/${mode}`;
     const pathSearch = path.join(this.contentPath, pathSkills);
     const exists = await fs.pathExists(pathSearch);
 
@@ -107,7 +109,7 @@ export class PromptsService {
   }
 
   async getPlanningSkills(): Promise<Instructions | null> {
-    const pathPlanning = 'common/skills/planning.md';
+    const pathPlanning = 'common/agents/skills/planning.md';
     const pathSearch = path.join(this.contentPath, pathPlanning);
 
     const exists = await fs.pathExists(pathSearch);
