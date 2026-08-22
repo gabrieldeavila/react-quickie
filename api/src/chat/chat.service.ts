@@ -5,6 +5,7 @@ import { createProjectTools, createStorageTools } from './tools';
 import { ContextService } from 'src/common/context/context.service';
 import { FrontendToolsService } from 'src/common/agents/tools/frontend/tool.service';
 import { GitToolsService } from 'src/common/agents/tools/git/git.service';
+import { PluginToolsService } from 'src/common/agents/plugin/tools/tools.plugins.service';
 
 @Injectable()
 export class ChatService {
@@ -14,6 +15,7 @@ export class ChatService {
     private readonly contextService: ContextService,
     private readonly frontendToolsService: FrontendToolsService,
     private readonly gitToolsService: GitToolsService,
+    private readonly pluginToolsService: PluginToolsService,
   ) {}
 
   getCustomTools() {
@@ -25,6 +27,8 @@ export class ChatService {
     if (mode === 'git') {
       return this.gitToolsService.createGitTools();
     }
+
+    return this.pluginToolsService.getTools();
   }
 
   getTools() {

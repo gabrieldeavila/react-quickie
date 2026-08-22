@@ -9,6 +9,6 @@ import { ContextFallbackMiddleware } from './context-fallback.middleware';
 })
 export class ContextModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(ContextFallbackMiddleware).forRoutes('*'); 
+    consumer.apply(ContextFallbackMiddleware).forRoutes('*');
   }
 }

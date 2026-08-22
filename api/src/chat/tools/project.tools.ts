@@ -19,13 +19,9 @@ export function createProjectTools(projectService: ProjectService) {
       inputSchema: z.object({
         file_or_folder_path: z.string().optional(),
       }),
-      execute: async ({
-        file_or_folder_path,
-      }: {
-        file_or_folder_path?: string;
-      }) => {
+      execute: ({ file_or_folder_path }: { file_or_folder_path?: string }) => {
         const result =
-          await projectService.checkTypeScriptErrors(file_or_folder_path);
+          projectService.checkTypeScriptErrors(file_or_folder_path);
         return result;
       },
     }),
