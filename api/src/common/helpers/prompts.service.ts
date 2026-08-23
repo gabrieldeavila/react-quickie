@@ -15,6 +15,7 @@ export class PromptsService {
 
   async getInstructions(): Promise<Instructions> {
     const modeSkills = await this.getModeSkills();
+    const pluginSkills = await this.getPluginSkills();
     const isPlanning = this.contextService.get('planningModeEnabled');
 
     const instructions: Instructions = [
@@ -28,12 +29,16 @@ export class PromptsService {
       instructions.push(...modeSkills);
     }
 
+    if (Array.isArray(pluginSkills)) {
+      instructions.push(...pluginSkills);
+    }
+
+    console.log(instructions);
+
     if (isPlanning) {
       const planningSkills = await this.getPlanningSkills();
       if (Array.isArray(planningSkills)) instructions.push(...planningSkills);
     }
-
-    console.log(instructions);
 
     return instructions;
   }
@@ -42,6 +47,20 @@ export class PromptsService {
     const mode = this.contextService.get('mode');
 
     const pathSkills = `common/agents/skills/${mode}`;
+    const instructions = await this.getSkills(pathSkills);
+    return instructions;
+  }
+
+  async getPluginSkills(): Promise<Instructions | null> {
+    const mode = this.contextService.get('mode');
+
+    const pathPlugins = `common/agents/plugin/skills/${mode}`;
+
+    const instructions = await this.getSkills(pathPlugins);
+    return instructions;
+  }
+
+  async getSkills(pathSkills: string): Promise<Instructions | null> {
     const pathSearch = path.join(this.contentPath, pathSkills);
     const exists = await fs.pathExists(pathSearch);
 
@@ -57,33 +76,10 @@ export class PromptsService {
       return instructions;
     }
 
-    const content = await this.markdownService.getMarkdownFile(
-      `${pathSearch}/index.md`,
-    )?.html;
+    const modeInstructions = await this.loadDirectorySkills(pathSearch);
 
-    if (content.length) {
-      instructions.push({
-        content,
-        role: 'system',
-      });
-    }
-    const defaultPath = `${pathSearch}/default`;
-
-    const existsDefaultInstructions = await fs.pathExists(defaultPath);
-
-    if (existsDefaultInstructions) {
-      const files = await fs.readdir(defaultPath);
-
-      for (const file of files) {
-        const contentDefault = await this.markdownService.getMarkdownFile(
-          `${defaultPath}/${file}`,
-        )?.html;
-
-        instructions.push({
-          content: contentDefault,
-          role: 'system',
-        });
-      }
+    if (Array.isArray(modeInstructions) && modeInstructions.length) {
+      instructions.push(...modeInstructions);
     }
 
     const specialty = this.contextService.get('specialty');
@@ -99,10 +95,53 @@ export class PromptsService {
       const contentSpecialty =
         await this.markdownService.getMarkdownFile(specialtyFilePath)?.html;
 
-      instructions.push({
-        content: contentSpecialty,
-        role: 'system',
-      });
+      if (contentSpecialty && contentSpecialty.length) {
+        instructions.push({
+          content: contentSpecialty,
+          role: 'system',
+        });
+      }
+    }
+
+    return instructions;
+  }
+
+  private async loadDirectorySkills(pathSearch: string): Promise<Instructions> {
+    const instructions: Instructions = [];
+
+    const indexPath = `${pathSearch}/index.md`;
+    const existsIndex = await fs.pathExists(indexPath);
+
+    if (existsIndex) {
+      const content =
+        await this.markdownService.getMarkdownFile(indexPath)?.html;
+
+      if (content && content.length) {
+        instructions.push({
+          content,
+          role: 'system',
+        });
+      }
+    }
+
+    const defaultPath = `${pathSearch}/default`;
+    const existsDefault = await fs.pathExists(defaultPath);
+
+    if (existsDefault) {
+      const files = await fs.readdir(defaultPath);
+
+      for (const file of files) {
+        const contentDefault = await this.markdownService.getMarkdownFile(
+          `${defaultPath}/${file}`,
+        )?.html;
+
+        if (contentDefault && contentDefault.length) {
+          instructions.push({
+            content: contentDefault,
+            role: 'system',
+          });
+        }
+      }
     }
 
     return instructions;
