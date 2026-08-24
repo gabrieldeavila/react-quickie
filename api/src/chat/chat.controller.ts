@@ -23,6 +23,8 @@ import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ChatService } from './chat.service';
 import { TsCheckerService } from 'src/common/helpers/tschecker.service';
 import { StorageService } from 'src/common/helpers/storage.service';
+import { AgentBuilderToolsService } from 'src/common/agents/plugin/tools/agent_builder/tool.service';
+import { createAgent } from 'src/common/agents/plugin/tools/agent_builder/template';
 
 @UseInterceptors(
   BuildContextInterceptor((req) => {
@@ -45,16 +47,18 @@ export class ChatController {
     private readonly markdownService: MarkdownService,
     private readonly projectService: ProjectService,
     private readonly storageService: StorageService,
+    private readonly agentBuilderService: AgentBuilderToolsService,
     private readonly tsCheckerService: TsCheckerService,
   ) {}
 
   @Get()
   async getChat() {
-    return await this.storageService.regexSearchForContentInFiles(
-      '^[ \t]*const[ \t]+[A-Z][A-Z0-9_]+[ \t]*=',
-      'src/components/chat',
-    );
-
+    return createAgent({
+      icon: 'AiFillAlert',
+      iconImport: 'react-icons/ai',
+      name: 'oi',
+      label: 'oi',
+    });
     return {
       message: 'Chat endpoint is working!',
       content: await this.markdownService.getMarkdownFile(

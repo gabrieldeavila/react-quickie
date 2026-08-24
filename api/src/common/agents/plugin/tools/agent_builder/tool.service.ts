@@ -9,7 +9,7 @@ export class AgentBuilderToolsService {
 
   createTools() {
     return {
-      get_recent_commits: tool({
+      create_new_agent: tool({
         description:
           'Recupera o histórico dos últimos commits do repositório Git. Retorna o hash, autor, data e mensagem.',
         inputSchema: z.object({

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ContextService } from 'src/common/context/context.service';
-import { AgentBuilderToolsService } from './agentBuilder/tool.service';
 import { ToolSet } from 'ai';
+import { AgentBuilderToolsService } from './agent_builder/tool.service';
 
 @Injectable()
 export class PluginToolsService {
