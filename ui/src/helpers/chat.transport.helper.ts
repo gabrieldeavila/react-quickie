@@ -7,6 +7,7 @@ import type {
   ChatRequestBody,
 } from "../../types/interface/chat.interface";
 import type { CreateChatTransportParams } from "../../types/interface/transport.interface";
+import { CHAT_API_URL } from "~types/consts/project.const";
 
 function normalizeMessage(
   message: NonNullable<ChatRequestBody["messages"]>[number],
@@ -29,7 +30,7 @@ export function createChatTransport({
   planningModeEnabled,
 }: CreateChatTransportParams) {
   return new DefaultChatTransport({
-    api: "http://localhost:3000/chat",
+    api: CHAT_API_URL,
     fetch: (url, options) => {
       if (options?.body) {
         const body = JSON.parse(options.body as string) as ChatRequestBody & {
