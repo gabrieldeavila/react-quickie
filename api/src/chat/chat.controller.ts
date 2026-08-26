@@ -73,6 +73,7 @@ export class ChatController {
     @Res() res: Response,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_KEY');
+    const modelEnv = this.configService.get<string>('OPENAI_MODEL');
 
     const openai = createOpenAI({
       apiKey,
@@ -90,7 +91,7 @@ export class ChatController {
 
     const instructions = await this.promptsService.getInstructions();
 
-    const model = openai('gpt-5.4-mini');
+    const model = openai(modelEnv!);
     const result = streamText({
       model,
       messages: validMessages,
