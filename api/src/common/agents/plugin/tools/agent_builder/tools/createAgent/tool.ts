@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import path from 'path';
 import pascalName from 'src/common/utils/pascalCase';
 import { Project, SyntaxKind, Scope } from 'ts-morph';
-import { blueprintAgentToolService } from './builder';
+import { blueprintAgentToolService, blueprintSkillAgent } from './template';
 import { camelCase } from 'src/common/utils/camelCaseName';
 import { execSync } from 'child_process';
 
@@ -28,8 +28,13 @@ export function createAgent({
 
   const agentApiDir = path.join(apiPluginDir, 'tools', name.toLowerCase());
 
-  createUi(uiPluginDir, name, label, icon, iconImport);
-  createApi(agentApiDir, name);
+  const paths = [
+    createUi(uiPluginDir, name, label, icon, iconImport),
+    createApi(agentApiDir, name),
+    createSkills(apiPluginDir, name),
+  ];
+
+  return paths;
 }
 
 const createUi = (
@@ -102,6 +107,8 @@ const createUi = (
   });
 
   sourceFile.saveSync();
+
+  return filePath;
 };
 
 const createApi = (agentApiDir: string, name: string) => {
@@ -190,5 +197,21 @@ const createApi = (agentApiDir: string, name: string) => {
         error?.message,
       );
     }
+
+    return filePath;
   }
+};
+
+const createSkills = (apiPluginDir: string, name: string) => {
+  const agentApiDir = path.join(apiPluginDir, 'skills', name.toLowerCase());
+  const skillFilePath = path.join(agentApiDir, 'index.md');
+
+  fs.ensureDirSync(agentApiDir);
+
+  if (!fs.existsSync(skillFilePath)) {
+    const skillContent = blueprintSkillAgent(name);
+    fs.writeFileSync(skillFilePath, skillContent);
+  }
+
+  return skillFilePath;
 };

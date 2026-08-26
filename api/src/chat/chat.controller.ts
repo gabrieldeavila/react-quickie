@@ -1,12 +1,5 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Res,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Post, Res, UseInterceptors } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   isStepCount,
@@ -17,14 +10,8 @@ import {
 } from 'ai';
 import { type Response } from 'express';
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
-import { MarkdownService } from 'src/common/helpers/markdown.module';
-import { ProjectService } from 'src/common/helpers/project.service';
 import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ChatService } from './chat.service';
-import { TsCheckerService } from 'src/common/helpers/tschecker.service';
-import { StorageService } from 'src/common/helpers/storage.service';
-import { AgentBuilderToolsService } from 'src/common/agents/plugin/tools/agent_builder/tool.service';
-import { createAgent } from 'src/common/agents/plugin/tools/agent_builder/template';
 
 @UseInterceptors(
   BuildContextInterceptor((req) => {
@@ -44,28 +31,7 @@ export class ChatController {
     private configService: ConfigService,
     private readonly promptsService: PromptsService,
     private readonly chatService: ChatService,
-    private readonly markdownService: MarkdownService,
-    private readonly projectService: ProjectService,
-    private readonly storageService: StorageService,
-    private readonly agentBuilderService: AgentBuilderToolsService,
-    private readonly tsCheckerService: TsCheckerService,
   ) {}
-
-  @Get()
-  async getChat() {
-    return createAgent({
-      icon: 'AiFillAlert',
-      iconImport: 'react-icons/ai',
-      name: 'oi',
-      label: 'oi',
-    });
-    return {
-      message: 'Chat endpoint is working!',
-      content: await this.markdownService.getMarkdownFile(
-        '../.agents/skills/awwwards-hero/SKILL',
-      ).html,
-    };
-  }
 
   @Post()
   async chat(
