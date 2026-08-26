@@ -10,6 +10,8 @@ services:
     build: ./api
     ports:
       - "4000:4000"
+    volumes:
+      - ${BASE_CODE_PATH}:/workspace
     env_file:
       - ./api/.env
     restart: always

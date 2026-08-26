@@ -25,7 +25,7 @@ export const ACTIVE_CHAT_STORAGE_KEY: string = "active-chat-conversation-id";
 export const SIDEBAR_OPEN_STORAGE_KEY: string = "chat-sidebar-open";
 
 export const DEFAULT_PROJECT_CONTEXT: ProjectContext = {
-  reference: "/src",
+  reference: "/workspace",
   focus: AgentFocusEnum.AGNOSTIC,
   specialty: AgentSpecialtyEnum.NONE,
   planningModeEnabled: false,
