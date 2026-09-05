@@ -7,18 +7,23 @@ import { marked } from 'marked';
 @Injectable()
 export class MarkdownService {
   getMarkdownFile(filename: string) {
-    filename = filename.endsWith('.md') ? filename : `${filename}.md`;
-    const filePath = path.join(filename);
+    try {
+      filename = filename.endsWith('.md') ? filename : `${filename}.md`;
+      const filePath = path.join(filename);
 
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
 
-    const { data, content } = matter(fileContent);
+      const { data, content } = matter(fileContent);
 
-    const htmlContent = marked.parse(content);
+      const htmlContent = marked.parse(content);
 
-    return {
-      metadata: data,
-      html: htmlContent,
-    };
+      return {
+        metadata: data,
+        html: htmlContent,
+      };
+    } catch (error) {
+      console.error('Error reading markdown file:', error);
+      return { metadata: {}, html: '' };
+    }
   }
 }
