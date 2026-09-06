@@ -54,6 +54,41 @@ function ToolStatusIcon({
   );
 }
 
+function shortenToolPath(path?: string, maxSegments = 4): string {
+  if (!path) return "";
+
+  const normalized = path.replace(/\\/g, "/");
+  const segments = normalized.split("/").filter(Boolean);
+
+  if (segments.length <= maxSegments) return normalized;
+
+  return `…/${segments.slice(-maxSegments).join("/")}`;
+}
+
+function getToolLabel(
+  part: Record<string, unknown>,
+  fallbackLabel: string,
+): string {
+  const input = part.input as Record<string, unknown> | undefined;
+
+  if (part.type === "tool-read_file") {
+    const path = typeof input?.path === "string" ? input.path : undefined;
+    return path
+      ? `Lendo conteúdo do arquivo: ${shortenToolPath(path)}`
+      : fallbackLabel;
+  }
+
+  if (part.type === "tool-list_folders") {
+    const parentPath =
+      typeof input?.parentPath === "string" ? input.parentPath : undefined;
+    return parentPath
+      ? `Listando arquivos e pastas: ${shortenToolPath(parentPath)}`
+      : fallbackLabel;
+  }
+
+  return fallbackLabel;
+}
+
 function ToolCallCard({
   label,
   status,
@@ -141,10 +176,15 @@ export function ChatMessageItem({
                   ? "success"
                   : "loading";
 
+              const label = getToolLabel(
+                part as Record<string, unknown>,
+                meta.label,
+              );
+
               return (
                 <ToolCallCard
                   key={`${message.id}-tool-${index}`}
-                  label={meta.label}
+                  label={label}
                   status={status}
                   outputText={outputText}
                 />
