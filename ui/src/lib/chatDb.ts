@@ -136,7 +136,7 @@ export const appendMessage = async (
     chatDb.messages,
     chatDb.conversations,
     async () => {
-      await chatDb.messages.add(message);
+      await chatDb.messages.put(message);
       await chatDb.conversations.update(conversationId, {
         updatedAt: now,
         lastMessageAt: now,

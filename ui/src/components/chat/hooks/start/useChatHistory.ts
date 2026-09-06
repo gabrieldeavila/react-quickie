@@ -66,6 +66,7 @@ export const useChatHistory = (): UseChatHistoryResult => {
             record.parts?.length && record.parts.length > 0
               ? record.parts
               : [{ type: "text", text: record.content }],
+          content: record.content,
         })),
       );
     };

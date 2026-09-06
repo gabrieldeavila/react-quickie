@@ -124,10 +124,22 @@ export function ChatMessageItem({
           <>
             {toolParts.map((part, index) => {
               const meta = getToolUiMeta(part.type);
-              const status: "loading" | "success" | "error" = part.output
-                ? "success"
-                : "loading";
               const outputText = stringifyToolOutput(part.output);
+              const state = (part as Record<string, unknown>).state;
+              const hasOutput =
+                part.output !== undefined && part.output !== null;
+              const hasError =
+                state === "output-error" ||
+                Boolean(
+                  (part as Record<string, unknown>).error ??
+                  (part as Record<string, unknown>).toolError ??
+                  (part as Record<string, unknown>).errorText,
+                );
+              const status: "loading" | "success" | "error" = hasError
+                ? "error"
+                : state === "output-available" || hasOutput
+                  ? "success"
+                  : "loading";
 
               return (
                 <ToolCallCard
