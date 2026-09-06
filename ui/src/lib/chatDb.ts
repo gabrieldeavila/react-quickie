@@ -1,4 +1,5 @@
 import Dexie, { type Table } from "dexie";
+import type { UIMessage } from "ai";
 import type {
   ChatConversation,
   ChatMessageRecord,
@@ -12,9 +13,9 @@ class ChatDatabase extends Dexie {
   constructor() {
     super("react-quickie-chat");
 
-    this.version(1).stores({
+    this.version(3).stores({
       conversations: "id, updatedAt, lastMessageAt, createdAt",
-      messages: "id, conversationId, createdAt",
+      messages: "id, conversationId, createdAt, role",
     });
   }
 }
@@ -118,6 +119,7 @@ export const appendMessage = async (
   conversationId: string,
   role: ChatMessageRole,
   content: string,
+  parts?: UIMessage["parts"],
 ): Promise<ChatMessageRecord> => {
   const now: number = Date.now();
   const message: ChatMessageRecord = {
@@ -125,6 +127,7 @@ export const appendMessage = async (
     conversationId,
     role,
     content,
+    parts,
     createdAt: now,
   };
 
@@ -142,6 +145,12 @@ export const appendMessage = async (
   );
 
   return message;
+};
+
+export const upsertMessage = async (
+  message: ChatMessageRecord,
+): Promise<void> => {
+  await chatDb.messages.put(message);
 };
 
 export const listConversations = async (): Promise<ChatConversation[]> => {

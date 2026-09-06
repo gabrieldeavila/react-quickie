@@ -1,15 +1,15 @@
 import { type ReactNode, useMemo, useRef, useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { createChatTransport } from "@/helpers/chat.transport.helper";
 import {
   getMessageText,
   readProjectContext,
   readSidebarOpenState,
 } from "../../../helpers/chat.helper";
-import type { ProjectContext } from "~types/interface/chat.interface";
-import { useChatHistory } from "../hooks/start/useChatHistory";
-import { ChatBaseContext } from "./context";
-import { createChatTransport } from "@/helpers/chat.transport.helper";
-import { useChat } from "@ai-sdk/react";
 import { useChatComposer } from "../hooks/start/useChatComposer";
+import { useChatHistory } from "../hooks/start/useChatHistory";
+import type { ProjectContext } from "~types/interface/chat.interface";
+import { ChatBaseContext } from "./context";
 
 export function ChatBaseProvider({ children }: { children: ReactNode }) {
   const [isRootModalOpen, setIsRootModalOpen] = useState<boolean>(false);
@@ -74,7 +74,11 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
     onFinish: ({ message }) => {
       const content = getMessageText(message).trim();
       if (activeConversationId && content) {
-        history.persistAssistantMessage(activeConversationId, content);
+        void history.persistAssistantMessage(
+          activeConversationId,
+          content,
+          message.parts,
+        );
       }
     },
   });

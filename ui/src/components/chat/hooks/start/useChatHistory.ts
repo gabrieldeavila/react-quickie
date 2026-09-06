@@ -62,7 +62,10 @@ export const useChatHistory = (): UseChatHistoryResult => {
         records.map((record) => ({
           id: record.id,
           role: record.role,
-          parts: [{ type: "text", text: record.content }],
+          parts:
+            record.parts?.length && record.parts.length > 0
+              ? record.parts
+              : [{ type: "text", text: record.content }],
         })),
       );
     };
@@ -114,9 +117,13 @@ export const useChatHistory = (): UseChatHistoryResult => {
   );
 
   const persistAssistantMessage = useCallback(
-    async (conversationId: string, content: string): Promise<void> => {
+    async (
+      conversationId: string,
+      content: string,
+      parts?: UIMessage["parts"],
+    ): Promise<void> => {
       await ensureConversation(conversationId);
-      await appendMessage(conversationId, "assistant", content);
+      await appendMessage(conversationId, "assistant", content, parts);
       await reloadConversations();
     },
     [reloadConversations],

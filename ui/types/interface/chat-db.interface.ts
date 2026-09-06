@@ -1,3 +1,5 @@
+import type { UIMessage } from "ai";
+
 export type ChatMessageRole = "user" | "assistant" | "system";
 
 export interface ChatConversation {
@@ -19,4 +21,5 @@ export interface ChatMessageRecord {
   tokens?: number;
   metadata?: Record<string, unknown>;
   attachments?: unknown[];
+  parts?: UIMessage["parts"];
 }
