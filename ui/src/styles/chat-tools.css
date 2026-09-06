@@ -1,0 +1,106 @@
+.tool-call-card {
+  width: 100%;
+  margin: 0.35rem 0;
+  border: 1px solid var(--chat-border);
+  border-radius: 10px;
+  background: var(--chat-surface);
+  overflow: hidden;
+}
+
+.tool-call-card--loading {
+  padding: 0.45rem 0.7rem;
+}
+
+.tool-call-card--done {
+  padding: 0;
+}
+
+.tool-call-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.tool-call-card__summary {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.tool-call-card__summary::-webkit-details-marker {
+  display: none;
+}
+
+.tool-call-card__summary-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.tool-call-card__summary-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+  opacity: 0.55;
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease;
+}
+
+.tool-call-card[open] .tool-call-card__summary-icon {
+  transform: rotate(180deg);
+  opacity: 0.8;
+}
+
+.tool-call-card__label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: inherit;
+  letter-spacing: 0.01em;
+  min-width: 0;
+}
+
+.tool-status-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+}
+
+.tool-status-icon--loading {
+  animation: tool-spin 1s linear infinite;
+}
+
+.tool-status-icon--success,
+.tool-status-icon--error {
+  opacity: 0.9;
+}
+
+.tool-call-card__details {
+  padding: 0 0.7rem 0.7rem;
+  border-top: 1px solid var(--chat-border);
+}
+
+.tool-call-card__output {
+  margin: 0;
+  padding: 0.7rem;
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--chat-surface-strong) 70%, transparent);
+}
+
+@keyframes tool-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

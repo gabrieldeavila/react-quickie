@@ -6,7 +6,6 @@ import {
   ModelMessage,
   pipeUIMessageStreamToResponse,
   streamText,
-  toUIMessageStream,
 } from 'ai';
 import { type Response } from 'express';
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
@@ -68,7 +67,7 @@ export class ChatController {
 
     pipeUIMessageStreamToResponse({
       response: res,
-      stream: toUIMessageStream({ stream: result.stream }),
+      stream: result.toUIMessageStream(),
     });
   }
 }
