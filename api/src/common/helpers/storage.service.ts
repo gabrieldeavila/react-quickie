@@ -8,7 +8,8 @@ import { glob } from 'fast-glob';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { ContextService } from '../context/context.service';
-import { LinterService, LintErrorResult } from './linter.service';
+import { LinterService } from './linter.service';
+import type { LintErrorResult } from './linter.service';
 import { LoggerService } from './logger.service';
 
 @Injectable()

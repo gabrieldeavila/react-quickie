@@ -21,6 +21,7 @@ export interface LintErrorResult {
   messages: LintErrorMessage[];
   errorCount: number;
   warningCount: number;
+  source?: string;
 }
 
 @Injectable()
