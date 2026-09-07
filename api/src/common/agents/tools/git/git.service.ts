@@ -1,11 +1,35 @@
-import { tool } from 'ai';
-import { z } from 'zod/v4';
 import { Injectable } from '@nestjs/common';
-import { ContextService } from 'src/common/context/context.service';
+import { tool } from 'ai';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { ContextService } from 'src/common/context/context.service';
+import { z } from 'zod/v4';
+import { formatToolError, toolSuccess } from '../shared/format-tool-error';
 
 const execAsync = promisify(exec);
+
+type CommitItem = {
+  hash: string;
+  author: string;
+  date: string;
+  message: string;
+};
+
+function formatCommitLine(line: string): CommitItem {
+  const [hash = '', author = '', date = '', message = ''] = line.split('|');
+  return { hash, author, date, message };
+}
+
+function formatCommitItems(commits: CommitItem[]): string[] {
+  return commits.map(
+    (commit) =>
+      `${commit.hash} | ${commit.author} | ${commit.date} | ${commit.message}`,
+  );
+}
+
+function formatTextLines(title: string, lines: string[]): string[] {
+  return [title, ...lines];
+}
 
 @Injectable()
 export class GitToolsService {
@@ -24,16 +48,32 @@ export class GitToolsService {
             .describe('Número máximo de commits para recuperar (ex: 5, 10).'),
         }),
         execute: async ({ limit }: { limit: number }) => {
-          const rootPath = this.contextService.get('root')!;
+          const rootPath = this.contextService.get('root');
+          if (!rootPath) {
+            return formatToolError(
+              'obter os commits recentes',
+              new Error('Raiz do projeto não encontrada.'),
+            );
+          }
 
           try {
-            // Usa o formato resumido: hash - autor, tempo : mensagem
-            const command = `git log -n ${limit} --pretty=format:"%h - %an, %ar : %s"`;
+            const command = `git log -n ${limit} --pretty=format:"%h|%an|%ai|%s"`;
             const { stdout } = await execAsync(command, { cwd: rootPath });
+            const lines = stdout.split('\n').filter(Boolean);
 
-            return { success: true, commits: stdout.split('\n') };
-          } catch (error: any) {
-            return { success: false, error: error.message };
+            if (!lines.length) {
+              return toolSuccess('Nenhum commit encontrado.', [
+                'Nenhum item encontrado.',
+              ]);
+            }
+
+            const commits = lines.map(formatCommitLine);
+            return toolSuccess(
+              'Commits recentes encontrados.',
+              formatCommitItems(commits),
+            );
+          } catch (error) {
+            return formatToolError('obter os commits recentes', error);
           }
         },
       }),
@@ -62,22 +102,31 @@ export class GitToolsService {
           message: string;
           files: string[];
         }) => {
-          const rootPath = this.contextService.get('root')!;
+          const rootPath = this.contextService.get('root');
+          if (!rootPath) {
+            return formatToolError(
+              'criar o commit',
+              new Error('Raiz do projeto não encontrada.'),
+            );
+          }
+
           try {
             const filesArg = files.join(' ');
-
             await execAsync(`git add ${filesArg}`, { cwd: rootPath });
 
             const safeMessage = message.replace(/"/g, '\\"');
-
             const { stdout } = await execAsync(
               `git commit -m "${safeMessage}"`,
-              { cwd: rootPath },
+              {
+                cwd: rootPath,
+              },
             );
 
-            return { success: true, output: stdout };
-          } catch (error: any) {
-            return { success: false, error: error.message };
+            return toolSuccess('Commit criado com sucesso.', [
+              stdout.trim() || 'Commit criado com sucesso.',
+            ]);
+          } catch (error) {
+            return formatToolError('criar o commit', error);
           }
         },
       }),
@@ -123,47 +172,37 @@ export class GitToolsService {
           until?: string;
           limit: number;
         }) => {
-          const rootPath = this.contextService.get('root')!;
+          const rootPath = this.contextService.get('root');
+          if (!rootPath) {
+            return formatToolError(
+              'buscar commits',
+              new Error('Raiz do projeto não encontrada.'),
+            );
+          }
 
           try {
             let command = `git log -n ${limit} --pretty=format:"%h|%an|%ai|%s"`;
 
-            if (author) {
-              const safeAuthor = author.replace(/"/g, '\\"');
-              command += ` --author="${safeAuthor}"`;
-            }
-
-            if (since) {
-              const safeSince = since.replace(/"/g, '\\"');
-              command += ` --since="${safeSince}"`;
-            }
-
-            if (until) {
-              const safeUntil = until.replace(/"/g, '\\"');
-              command += ` --until="${safeUntil}"`;
-            }
+            if (author) command += ` --author="${author.replace(/"/g, '\\"')}"`;
+            if (since) command += ` --since="${since.replace(/"/g, '\\"')}"`;
+            if (until) command += ` --until="${until.replace(/"/g, '\\"')}"`;
 
             const { stdout } = await execAsync(command, { cwd: rootPath });
+            const lines = stdout.split('\n').filter(Boolean);
 
-            if (!stdout.trim()) {
-              return {
-                success: true,
-                commits: [],
-                message: 'Nenhum commit encontrado para estes filtros.',
-              };
+            if (!lines.length) {
+              return toolSuccess(
+                'Nenhum commit encontrado para estes filtros.',
+                ['Nenhum item encontrado.'],
+              );
             }
 
-            const commits = stdout
-              .split('\n')
-              .filter(Boolean)
-              .map((line) => {
-                const [hash, commitAuthor, date, message] = line.split('|');
-                return { hash, author: commitAuthor, date, message };
-              });
-
-            return { success: true, commits };
-          } catch (error: any) {
-            return { success: false, error: error.message };
+            return toolSuccess(
+              'Commits encontrados.',
+              formatCommitItems(lines.map(formatCommitLine)),
+            );
+          } catch (error) {
+            return formatToolError('buscar commits', error);
           }
         },
       }),
@@ -173,7 +212,13 @@ export class GitToolsService {
           'Verifica o status atual do repositório (arquivos modificados, adicionados ou deletados) e o diff do código. DEVE ser usada antes de criar um commit para entender o contexto, revisar o código e sugerir mensagens.',
         inputSchema: z.object({}),
         execute: async () => {
-          const rootPath = this.contextService.get('root')!;
+          const rootPath = this.contextService.get('root');
+          if (!rootPath) {
+            return formatToolError(
+              'verificar alterações pendentes',
+              new Error('Raiz do projeto não encontrada.'),
+            );
+          }
 
           try {
             const { stdout: statusOutput } = await execAsync('git status -s', {
@@ -181,28 +226,29 @@ export class GitToolsService {
             });
 
             if (!statusOutput.trim()) {
-              return {
-                success: true,
-                hasChanges: false,
-                message: 'Nenhuma alteração pendente (working tree clean).',
-              };
+              return toolSuccess('Nenhuma alteração pendente.', [
+                'working tree clean',
+              ]);
             }
 
             const files = statusOutput.split('\n').filter(Boolean);
-
             const { stdout: diffOutput } = await execAsync('git diff HEAD', {
               cwd: rootPath,
             });
 
-            return {
-              success: true,
-              hasChanges: true,
-              files,
-              diff: diffOutput.slice(0, 10000),
-            };
-          } catch (error: any) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            if (error?.message?.includes("bad revision 'HEAD'")) {
+            return toolSuccess('Alterações pendentes encontradas.', [
+              ...formatTextLines(
+                'Arquivos:',
+                files.map((file) => `- ${file}`),
+              ),
+              '',
+              ...formatTextLines('Diff:', [diffOutput.slice(0, 10000)]),
+            ]);
+          } catch (error) {
+            if (
+              error instanceof Error &&
+              error.message.includes("bad revision 'HEAD'")
+            ) {
               const { stdout: statusOutput } = await execAsync(
                 'git status -s',
                 { cwd: rootPath },
@@ -211,15 +257,21 @@ export class GitToolsService {
                 'git diff --cached',
                 { cwd: rootPath },
               );
-              return {
-                success: true,
-                hasChanges: true,
-                files: statusOutput.split('\n').filter(Boolean),
-                diff: diffOutput.slice(0, 10000),
-                note: 'Primeiro commit do repositório.',
-              };
+
+              return toolSuccess('Primeiro commit do repositório.', [
+                ...formatTextLines(
+                  'Arquivos:',
+                  statusOutput
+                    .split('\n')
+                    .filter(Boolean)
+                    .map((file) => `- ${file}`),
+                ),
+                '',
+                ...formatTextLines('Diff:', [diffOutput.slice(0, 10000)]),
+              ]);
             }
-            return { success: false, error: error.message };
+
+            return formatToolError('verificar alterações pendentes', error);
           }
         },
       }),
@@ -235,26 +287,29 @@ export class GitToolsService {
             ),
         }),
         execute: async ({ commitHash }: { commitHash: string }) => {
-          const rootPath = this.contextService.get('root')!;
+          const rootPath = this.contextService.get('root');
+          if (!rootPath) {
+            return formatToolError(
+              'revisar o commit',
+              new Error('Raiz do projeto não encontrada.'),
+            );
+          }
 
           try {
             const { stdout: filesChanged } = await execAsync(
               `git show --stat --oneline ${commitHash}`,
               { cwd: rootPath },
             );
-
             const { stdout: diffPatch } = await execAsync(
               `git show --patch --format= ${commitHash}`,
               { cwd: rootPath },
             );
 
-            return {
-              success: true,
-              summary: filesChanged,
-              diff: diffPatch,
-            };
-          } catch (error: any) {
-            return { success: false, error: error.message };
+            return toolSuccess('Resumo do commit.', [
+              `${filesChanged.trim()}\n\nDiff:\n${diffPatch.trim()}`,
+            ]);
+          } catch (error) {
+            return formatToolError('revisar o commit', error);
           }
         },
       }),

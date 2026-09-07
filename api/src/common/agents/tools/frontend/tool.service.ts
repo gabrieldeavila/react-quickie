@@ -1,9 +1,19 @@
-import { tool } from 'ai';
-import { z } from 'zod/v4';
-import { createComponent } from './templates/componentBlueprint';
 import { Injectable } from '@nestjs/common';
-import { ContextService } from 'src/common/context/context.service';
+import { tool } from 'ai';
 import path from 'path';
+import { ContextService } from 'src/common/context/context.service';
+import { z } from 'zod/v4';
+import { formatToolError, toolSuccess } from '../shared/format-tool-error';
+import { createComponent } from './templates/componentBlueprint';
+
+type ComponentBlueprint = string | Record<string, unknown>;
+
+function normalizeBlueprint(result: ComponentBlueprint): string[] {
+  const content =
+    typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+
+  return [content];
+}
 
 @Injectable()
 export class FrontendToolsService {
@@ -33,12 +43,25 @@ export class FrontendToolsService {
           name: string;
           targetPath: string;
         }) => {
-          const rootPath = this.contextService.get('root')!;
-          const pathToAdd = path.join(rootPath, targetPath);
+          try {
+            const rootPath = this.contextService.get('root');
+            if (!rootPath) {
+              return formatToolError(
+                'gerar o blueprint do componente',
+                new Error('Raiz do projeto não encontrada.'),
+              );
+            }
 
-          const result = createComponent(name, pathToAdd, rootPath);
+            const pathToAdd = path.join(rootPath, targetPath);
+            const result = createComponent(name, pathToAdd, rootPath);
 
-          return { success: true, ...result };
+            return toolSuccess(
+              'Blueprint do componente gerado com sucesso.',
+              normalizeBlueprint(result),
+            );
+          } catch (error) {
+            return formatToolError('gerar o blueprint do componente', error);
+          }
         },
       }),
     };

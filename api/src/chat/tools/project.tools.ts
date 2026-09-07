@@ -1,6 +1,34 @@
 import { tool } from 'ai';
 import { ProjectService } from 'src/common/helpers/project.service';
 import { z } from 'zod/v4';
+import {
+  formatToolError,
+  toolSuccess,
+} from 'src/common/agents/tools/shared/format-tool-error';
+
+function toLineList(values: unknown[]): string[] {
+  return values.map((value) => {
+    if (typeof value === 'string') return `- ${value}`;
+    if (value instanceof Error) return `- ${value.message}`;
+    if (
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      typeof value === 'bigint'
+    ) {
+      return `- ${String(value)}`;
+    }
+
+    if (value && typeof value === 'object') {
+      try {
+        return `- ${JSON.stringify(value)}`;
+      } catch {
+        return '- Erro desconhecido.';
+      }
+    }
+
+    return '- Erro desconhecido.';
+  });
+}
 
 export function createProjectTools(projectService: ProjectService) {
   return {
@@ -8,9 +36,15 @@ export function createProjectTools(projectService: ProjectService) {
       description: 'Lista os projetos criados no diretório principal',
       inputSchema: z.object({}),
       execute: async () => {
-        const projects = await projectService.getProjectsCreatedInDirectory();
-
-        return { success: true, projects };
+        try {
+          const projects = await projectService.getProjectsCreatedInDirectory();
+          return toolSuccess(
+            'Projetos criados no diretório principal.',
+            toLineList(projects),
+          );
+        } catch (error) {
+          return formatToolError('listar os projetos criados', error);
+        }
       },
     }),
     check_typescript: tool({
@@ -20,9 +54,23 @@ export function createProjectTools(projectService: ProjectService) {
         file_or_folder_path: z.string().optional(),
       }),
       execute: ({ file_or_folder_path }: { file_or_folder_path?: string }) => {
-        const result =
-          projectService.checkTypeScriptErrors(file_or_folder_path);
-        return result;
+        try {
+          const result =
+            projectService.checkTypeScriptErrors(file_or_folder_path);
+
+          if (!result.length) {
+            return toolSuccess('Verificação TypeScript concluída.', [
+              'Nenhum problema encontrado.',
+            ]);
+          }
+
+          return toolSuccess(
+            'Verificação TypeScript concluída.',
+            toLineList(result),
+          );
+        } catch (error) {
+          return formatToolError('validar o TypeScript', error);
+        }
       },
     }),
     install_depency: tool({
@@ -38,12 +86,19 @@ export function createProjectTools(projectService: ProjectService) {
         dependecyName: string;
         isDev: boolean;
       }) => {
-        const projects = await projectService.installDependency(
-          dependecyName,
-          isDev,
-        );
-
-        return { success: true, projects };
+        try {
+          const result = await projectService.installDependency(
+            dependecyName,
+            isDev,
+          );
+          return toolSuccess('Dependência instalada com sucesso.', [
+            typeof result === 'string'
+              ? result
+              : JSON.stringify(result, null, 2),
+          ]);
+        } catch (error) {
+          return formatToolError('instalar a dependência', error);
+        }
       },
     }),
   };

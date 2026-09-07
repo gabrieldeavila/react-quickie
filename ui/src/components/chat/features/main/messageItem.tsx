@@ -10,14 +10,51 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/styles/chat-tools.css";
 
+type ToolOutput = {
+  success?: boolean;
+  message?: string;
+  error?: string;
+  data?: unknown;
+};
+
+type ToolOutputPart = {
+  output?: ToolOutput;
+  state?: string;
+  input?: Record<string, unknown>;
+  type: string;
+};
+
+function isToolOutputPart(part: unknown): part is ToolOutputPart {
+  return (
+    typeof part === "object" &&
+    part !== null &&
+    "output" in part &&
+    "type" in part
+  );
+}
+
 function stringifyToolOutput(output: unknown): string {
   if (output == null) return "";
   if (typeof output === "string") return output;
 
+  if (typeof output === "object") {
+    const toolOutput = output as ToolOutput;
+
+    if (toolOutput.success === false) {
+      return (
+        toolOutput.error || toolOutput.message || "Erro na execução da tool."
+      );
+    }
+
+    if (toolOutput.success === true) {
+      return toolOutput.message || "Tool executada com sucesso.";
+    }
+  }
+
   try {
     return JSON.stringify(output, null, 2);
   } catch {
-    return String(output);
+    return "Saída da tool indisponível.";
   }
 }
 
@@ -159,22 +196,17 @@ export function ChatMessageItem({
           <>
             {toolParts.map((part, index) => {
               const meta = getToolUiMeta(part.type);
-              const outputText = stringifyToolOutput(part.output);
-              const state = (part as Record<string, unknown>).state;
-              const hasOutput =
-                part.output !== undefined && part.output !== null;
+              const toolPart = isToolOutputPart(part) ? part : undefined;
+              const output = toolPart?.output;
+              const state = toolPart?.state;
               const hasError =
-                state === "output-error" ||
-                Boolean(
-                  (part as Record<string, unknown>).error ??
-                  (part as Record<string, unknown>).toolError ??
-                  (part as Record<string, unknown>).errorText,
-                );
+                output?.success === false || state === "output-error";
               const status: "loading" | "success" | "error" = hasError
                 ? "error"
-                : state === "output-available" || hasOutput
+                : output?.success === true || state === "output-available"
                   ? "success"
                   : "loading";
+              const outputText = stringifyToolOutput(output);
 
               const label = getToolLabel(
                 part as Record<string, unknown>,

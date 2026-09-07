@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import { StorageService } from 'src/common/helpers/storage.service';
 import { z } from 'zod/v4';
 import type { LintErrorResult } from 'src/common/helpers/linter.service';
+import { formatToolError } from 'src/common/agents/tools/shared/format-tool-error';
 
 type SearchMatch = {
   line: number;
@@ -111,16 +112,6 @@ const searchContentInputSchema = z.object({
       "O padrão Regex. REGRA DE OURO: Como esse padrão será trafegado em JSON, NUNCA use '\\s', '\\w' ou '\\d', pois o escape falhará. Para buscar espaços em branco, use OBRIGATORIAMENTE '[ \\t]'. Exemplo: em vez de '^\\s*const\\s+', envie '^[ \\t]*const[ \\t]+'.",
     ),
 });
-
-function formatToolError(action: string, error: unknown) {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : 'Erro desconhecido.';
-  return `Não foi possível ${action}.\nMotivo: ${message}`;
-}
 
 function formatListOutput(title: string, items: string[]) {
   return items.length

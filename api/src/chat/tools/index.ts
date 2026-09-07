@@ -99,7 +99,8 @@ export const TOOL_UI_MAPPING: Record<string, ToolUiMetadata> = {
 };
 
 export function enrichToolPart(part: Record<string, unknown>) {
-  const type = String(part?.type ?? '');
+  const rawType = part?.type;
+  const type = typeof rawType === 'string' ? rawType : '';
   if (!type.startsWith('tool-')) return part;
 
   const toolName = type.replace(/^tool-/, '');
