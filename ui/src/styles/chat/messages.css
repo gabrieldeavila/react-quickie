@@ -122,6 +122,41 @@
   overflow-wrap: anywhere;
   white-space: normal;
 }
+.user-message-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.message-user-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.message-user-text--clamped {
+  -webkit-line-clamp: 5;
+}
+.message-expand-toggle {
+  appearance: none;
+  align-self: flex-end;
+  border: 0;
+  background: transparent;
+  color: rgba(231, 237, 245, 0.78);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.message-expand-toggle:hover,
+.message-expand-toggle:focus-visible {
+  color: #ffffff;
+}
 .typing-indicator {
   display: flex;
   gap: 6px;

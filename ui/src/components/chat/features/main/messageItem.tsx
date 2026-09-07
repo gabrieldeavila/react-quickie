@@ -8,7 +8,9 @@ import { FiAlertCircle, FiCheckCircle, FiChevronDown } from "react-icons/fi";
 import { LuLoaderCircle } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/chat-tools.css";
+import "@/styles/chat-user-message.css";
 
 type ToolOutput = {
   success?: boolean;
@@ -23,6 +25,11 @@ type ToolOutputPart = {
   input?: Record<string, unknown>;
   type: string;
 };
+
+const USER_MESSAGE_COLLAPSED_MAX_HEIGHT = 5 * 1.72 * 0.98 * 16;
+const USER_MESSAGE_LINE_HEIGHT = 1.6;
+const USER_MESSAGE_COLLAPSED_LINES = 5;
+const USER_MESSAGE_COLLAPSED_LINE_CLAMP = String(USER_MESSAGE_COLLAPSED_LINES);
 
 function isToolOutputPart(part: unknown): part is ToolOutputPart {
   return (
@@ -177,11 +184,43 @@ export function ChatMessageItem({
   message,
   isTyping = false,
 }: ChatMessageItemProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const textRef = useRef<HTMLDivElement | null>(null);
   const roleClass: string =
     message.role === "user" ? "user-message" : "assistant-message";
   const messageText: string = getMessageText(message);
   const toolParts =
     message.parts?.filter((part) => isToolPartType(part.type)) ?? [];
+  const isUserMessage = message.role === "user";
+
+  const userTextStyle = useMemo(
+    () =>
+      ({
+        lineHeight: USER_MESSAGE_LINE_HEIGHT,
+        maxHeight: isExpanded
+          ? "none"
+          : `${USER_MESSAGE_COLLAPSED_LINES * USER_MESSAGE_LINE_HEIGHT}em`,
+        WebkitLineClamp: isExpanded
+          ? "unset"
+          : USER_MESSAGE_COLLAPSED_LINE_CLAMP,
+      }) as React.CSSProperties,
+    [isExpanded],
+  );
+
+  useEffect(() => {
+    if (!isUserMessage || !textRef.current) {
+      setIsTruncated(false);
+      return;
+    }
+
+    const el = textRef.current;
+    setIsTruncated(el.scrollHeight > USER_MESSAGE_COLLAPSED_MAX_HEIGHT + 1);
+  }, [isUserMessage, messageText, isExpanded]);
+
+  const handleToggleExpand = () => {
+    setIsExpanded((value) => !value);
+  };
 
   return (
     <article className={`message ${roleClass}`}>
@@ -278,6 +317,29 @@ export function ChatMessageItem({
               {messageText}
             </ReactMarkdown>
           </>
+        ) : isUserMessage ? (
+          <div className="user-message-body">
+            <div
+              ref={textRef}
+              className={`message-user-text${!isExpanded && isTruncated ? " message-user-text--clamped" : ""}`}
+              style={userTextStyle}
+              aria-expanded={isExpanded}
+            >
+              {messageText}
+            </div>
+            {isTruncated ? (
+              <button
+                type="button"
+                className="message-expand-toggle"
+                onClick={handleToggleExpand}
+                aria-label={
+                  isExpanded ? "Recolher mensagem" : "Expandir mensagem"
+                }
+              >
+                {isExpanded ? "Mostrar menos" : "Mostrar mais"}
+              </button>
+            ) : null}
+          </div>
         ) : (
           messageText
         )}

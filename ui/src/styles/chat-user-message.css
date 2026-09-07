@@ -1,0 +1,44 @@
+.user-message-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 100%;
+}
+
+.message-user-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  transition: max-height 180ms ease;
+}
+
+.message-user-text--clamped {
+  line-clamp: 5;
+  -webkit-line-clamp: 5;
+}
+
+.message-expand-toggle {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  cursor: pointer;
+}
+
+.message-expand-toggle:hover {
+  color: currentColor;
+}
+
+.message-expand-toggle:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
