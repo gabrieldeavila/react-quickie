@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import { useChatBaseContext } from "../../context/context";
 import useSendMessage from "../../hooks/events/useSendMessage";
 
 export function ChatComposer() {
   const { input, hasInput, status, setInput } = useChatBaseContext();
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const onSend = useSendMessage();
 
@@ -11,6 +12,21 @@ export function ChatComposer() {
     () => !hasInput || status !== "ready",
     [hasInput, status],
   );
+
+  const resizeTextarea = useCallback(() => {
+    const textarea = textareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
+  }, []);
+
+  useLayoutEffect(() => {
+    resizeTextarea();
+  }, [input, resizeTextarea]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
@@ -26,6 +42,7 @@ export function ChatComposer() {
     <div className="chat-input-section">
       <div className="input-wrapper">
         <textarea
+          ref={textareaRef}
           className="chat-input"
           placeholder="Digite sua mensagem..."
           value={input}

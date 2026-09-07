@@ -20,12 +20,15 @@
   min-height: 58px;
   max-height: 160px;
   resize: none;
+  overflow-y: auto;
   border: 1px solid var(--chat-border-strong);
   background: rgba(6, 10, 15, 0.55);
   color: var(--chat-text);
   padding: 16px;
   outline: none;
   box-sizing: border-box;
+  line-height: 1.45;
+  field-sizing: content;
 }
 
 .chat-input::placeholder {
