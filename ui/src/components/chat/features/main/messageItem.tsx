@@ -8,7 +8,7 @@ import { FiAlertCircle, FiCheckCircle, FiChevronDown } from "react-icons/fi";
 import { LuLoaderCircle } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/chat-tools.css";
 import "@/styles/chat-user-message.css";
 
@@ -133,6 +133,64 @@ function getToolLabel(
   return fallbackLabel;
 }
 
+const UserMessageContent = memo(function UserMessageContent({
+  text,
+}: {
+  text: string;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const textRef = useRef<HTMLDivElement | null>(null);
+
+  const userTextStyle = useMemo(
+    () =>
+      ({
+        lineHeight: USER_MESSAGE_LINE_HEIGHT,
+        maxHeight: isExpanded
+          ? "none"
+          : `${USER_MESSAGE_COLLAPSED_LINES * USER_MESSAGE_LINE_HEIGHT}em`,
+        WebkitLineClamp: isExpanded
+          ? "unset"
+          : USER_MESSAGE_COLLAPSED_LINE_CLAMP,
+      }) as React.CSSProperties,
+    [isExpanded],
+  );
+
+  useEffect(() => {
+    const element = textRef.current;
+    if (!element) return;
+
+    const nextIsTruncated =
+      element.scrollHeight > USER_MESSAGE_COLLAPSED_MAX_HEIGHT + 1;
+    setIsTruncated((current) =>
+      current === nextIsTruncated ? current : nextIsTruncated,
+    );
+  }, [text, isExpanded]);
+
+  return (
+    <div className="user-message-body">
+      <div
+        ref={textRef}
+        className={`message-user-text${!isExpanded && isTruncated ? " message-user-text--clamped" : ""}`}
+        style={userTextStyle}
+        aria-expanded={isExpanded}
+      >
+        {text}
+      </div>
+      {isTruncated ? (
+        <button
+          type="button"
+          className="message-expand-toggle"
+          onClick={() => setIsExpanded((value) => !value)}
+          aria-label={isExpanded ? "Recolher mensagem" : "Expandir mensagem"}
+        >
+          {isExpanded ? "Mostrar menos" : "Mostrar mais"}
+        </button>
+      ) : null}
+    </div>
+  );
+});
+
 function ToolCallCard({
   label,
   status,
@@ -184,43 +242,47 @@ export function ChatMessageItem({
   message,
   isTyping = false,
 }: ChatMessageItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isTruncated, setIsTruncated] = useState(false);
-  const textRef = useRef<HTMLDivElement | null>(null);
   const roleClass: string =
     message.role === "user" ? "user-message" : "assistant-message";
   const messageText: string = getMessageText(message);
-  const toolParts =
-    message.parts?.filter((part) => isToolPartType(part.type)) ?? [];
+  const toolParts = useMemo(
+    () => message.parts?.filter((part) => isToolPartType(part.type)) ?? [],
+    [message.parts],
+  );
   const isUserMessage = message.role === "user";
 
-  const userTextStyle = useMemo(
+  const toolCallCards = useMemo(
     () =>
-      ({
-        lineHeight: USER_MESSAGE_LINE_HEIGHT,
-        maxHeight: isExpanded
-          ? "none"
-          : `${USER_MESSAGE_COLLAPSED_LINES * USER_MESSAGE_LINE_HEIGHT}em`,
-        WebkitLineClamp: isExpanded
-          ? "unset"
-          : USER_MESSAGE_COLLAPSED_LINE_CLAMP,
-      }) as React.CSSProperties,
-    [isExpanded],
+      toolParts.map((part, index) => {
+        const meta = getToolUiMeta(part.type);
+        const toolPart = isToolOutputPart(part) ? part : undefined;
+        const output = toolPart?.output;
+        const state = toolPart?.state;
+        const hasError =
+          output?.success === false || state === "output-error";
+        const status: "loading" | "success" | "error" = hasError
+          ? "error"
+          : output?.success === true || state === "output-available"
+            ? "success"
+            : "loading";
+        const outputText = stringifyToolOutput(output);
+
+        const label = getToolLabel(
+          part as Record<string, unknown>,
+          meta.label,
+        );
+
+        return (
+          <ToolCallCard
+            key={`${message.id}-tool-${index}`}
+            label={label}
+            status={status}
+            outputText={outputText}
+          />
+        );
+      }),
+    [message.id, toolParts],
   );
-
-  useEffect(() => {
-    if (!isUserMessage || !textRef.current) {
-      setIsTruncated(false);
-      return;
-    }
-
-    const el = textRef.current;
-    setIsTruncated(el.scrollHeight > USER_MESSAGE_COLLAPSED_MAX_HEIGHT + 1);
-  }, [isUserMessage, messageText, isExpanded]);
-
-  const handleToggleExpand = () => {
-    setIsExpanded((value) => !value);
-  };
 
   return (
     <article className={`message ${roleClass}`}>
@@ -233,34 +295,7 @@ export function ChatMessageItem({
           </div>
         ) : message.role === "assistant" ? (
           <>
-            {toolParts.map((part, index) => {
-              const meta = getToolUiMeta(part.type);
-              const toolPart = isToolOutputPart(part) ? part : undefined;
-              const output = toolPart?.output;
-              const state = toolPart?.state;
-              const hasError =
-                output?.success === false || state === "output-error";
-              const status: "loading" | "success" | "error" = hasError
-                ? "error"
-                : output?.success === true || state === "output-available"
-                  ? "success"
-                  : "loading";
-              const outputText = stringifyToolOutput(output);
-
-              const label = getToolLabel(
-                part as Record<string, unknown>,
-                meta.label,
-              );
-
-              return (
-                <ToolCallCard
-                  key={`${message.id}-tool-${index}`}
-                  label={label}
-                  status={status}
-                  outputText={outputText}
-                />
-              );
-            })}
+            {toolCallCards}
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -318,28 +353,7 @@ export function ChatMessageItem({
             </ReactMarkdown>
           </>
         ) : isUserMessage ? (
-          <div className="user-message-body">
-            <div
-              ref={textRef}
-              className={`message-user-text${!isExpanded && isTruncated ? " message-user-text--clamped" : ""}`}
-              style={userTextStyle}
-              aria-expanded={isExpanded}
-            >
-              {messageText}
-            </div>
-            {isTruncated ? (
-              <button
-                type="button"
-                className="message-expand-toggle"
-                onClick={handleToggleExpand}
-                aria-label={
-                  isExpanded ? "Recolher mensagem" : "Expandir mensagem"
-                }
-              >
-                {isExpanded ? "Mostrar menos" : "Mostrar mais"}
-              </button>
-            ) : null}
-          </div>
+          <UserMessageContent text={messageText} />
         ) : (
           messageText
         )}

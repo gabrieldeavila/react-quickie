@@ -2,7 +2,7 @@ import {
   readActiveConversationId,
   serializeProjectContext,
 } from "@/helpers/chat.helper";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useChatBaseContext } from "../../context/context";
 import {
   ACTIVE_CHAT_STORAGE_KEY,
@@ -22,7 +22,12 @@ const useStartChatState = () => {
     setMessages,
     initialMessages,
     activeConversationId,
+    status,
   } = useChatBaseContext();
+
+  const synchronizedMessagesRef = useRef(initialMessages);
+  const statusRef = useRef(status);
+  statusRef.current = status;
 
   useEffect(() => {
     activeConversationIdRef.current = history.activeConversationId;
@@ -75,6 +80,10 @@ const useStartChatState = () => {
   }, [sendMessage, sendMessageRef]);
 
   useEffect(() => {
+    if (statusRef.current !== "ready") return;
+    if (synchronizedMessagesRef.current === initialMessages) return;
+
+    synchronizedMessagesRef.current = initialMessages;
     setMessages(initialMessages);
   }, [initialMessages, setMessages, activeConversationId]);
 };

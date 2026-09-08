@@ -16,6 +16,7 @@ export interface UseChatHistoryResult {
   persistAssistantMessage: (
     conversationId: string,
     content: string,
+    parts?: UIMessage["parts"],
   ) => Promise<void>;
   reloadConversations: () => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;

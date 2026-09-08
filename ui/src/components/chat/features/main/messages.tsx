@@ -25,8 +25,6 @@ const ChatMessagesList = memo(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [isEmpty, isChatPending, visibleMessages.length]);
 
-  console.log(visibleMessages);
-
   return (
     <div
       className="chat-messages"

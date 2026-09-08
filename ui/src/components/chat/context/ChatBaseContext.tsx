@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { createChatTransport } from "@/helpers/chat.transport.helper";
 import {
@@ -64,14 +64,13 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
     ],
   );
 
-  const chat = useChat({
-    transport,
-    id: activeConversationId ?? undefined,
-    messages: initialMessages,
-    onError: () => {
-      pendingConversationIdRef.current = null;
-    },
-    onFinish: ({ message }) => {
+  const handleError = useCallback((error: unknown) => {
+    console.log(error);
+    pendingConversationIdRef.current = null;
+  }, []);
+
+  const handleFinish = useCallback(
+    ({ message }: { message: any }) => {
       const content = getMessageText(message).trim();
       if (activeConversationId && content) {
         void history.persistAssistantMessage(
@@ -81,6 +80,15 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
         );
       }
     },
+    [activeConversationId, history],
+  );
+
+  const chat = useChat({
+    transport,
+    id: activeConversationId ?? undefined,
+    messages: initialMessages,
+    onError: handleError,
+    onFinish: handleFinish,
   });
 
   const value = useMemo(
