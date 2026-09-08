@@ -9,20 +9,58 @@ export const TOOL_UI_MAPPING: Record<string, ToolUiMeta> = {
     description:
       "O sistema está verificando a estrutura de diretórios do projeto.",
   },
+  "tool-create_file": {
+    label: "Criando arquivo...",
+    description: "O sistema está criando um novo arquivo no projeto.",
+  },
+  "tool-edit_file": {
+    label: "Editando arquivo...",
+    description:
+      "O sistema está substituindo um bloco específico de conteúdo em um arquivo existente.",
+  },
+  "tool-overwrite_file": {
+    label: "Sobrescrevendo arquivo...",
+    description:
+      "O sistema está substituindo todo o conteúdo de um arquivo existente.",
+  },
+  "tool-delete_file": {
+    label: "Deletando arquivo...",
+    description: "O sistema está removendo um arquivo do projeto.",
+  },
+  "tool-rename_file_or_folder": {
+    label: "Renomeando item...",
+    description:
+      "O sistema está alterando o nome de um arquivo ou diretório existente.",
+  },
+  "tool-move_file_or_folder": {
+    label: "Movendo item...",
+    description:
+      "O sistema está deslocando um arquivo ou diretório para outro caminho.",
+  },
   "tool-read_file": {
     label: "Lendo conteúdo do arquivo...",
     description:
       "O sistema está abrindo o arquivo solicitado para analisar seu conteúdo.",
   },
-  "tool-search_web": {
-    label: "Buscando informações na web...",
-    description:
-      "O sistema está consultando fontes externas para encontrar informações relevantes.",
-  },
   "tool-get_lint_errors": {
     label: "Verificando erros de lint...",
     description:
       "O sistema está analisando o código para identificar problemas de estilo e qualidade.",
+  },
+  "tool-regex_search_files_content": {
+    label: "Buscando padrão em arquivos...",
+    description:
+      "O sistema está procurando ocorrências de um padrão regex em múltiplos arquivos.",
+  },
+  "tool-search_content_in_file": {
+    label: "Buscando conteúdo no arquivo...",
+    description:
+      "O sistema está procurando um padrão regex dentro de um arquivo específico.",
+  },
+  "tool-search_web": {
+    label: "Buscando informações na web...",
+    description:
+      "O sistema está consultando fontes externas para encontrar informações relevantes.",
   },
   "tool-check_typescript": {
     label: "Validando TypeScript...",
