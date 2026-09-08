@@ -124,9 +124,19 @@ export class TsCheckerService {
       );
     }
 
+    const normalizedRootDir = path.resolve(rootDir);
+    const expectedApiRoot = path.resolve(normalizedRootDir, 'api');
+    const effectiveRootDir = fs.existsSync(
+      path.join(normalizedRootDir, 'tsconfig.json'),
+    )
+      ? normalizedRootDir
+      : fs.existsSync(path.join(expectedApiRoot, 'tsconfig.json'))
+        ? expectedApiRoot
+        : normalizedRootDir;
+
     const absoluteTarget = targetPath
-      ? path.resolve(rootDir, targetPath)
-      : rootDir;
+      ? path.resolve(effectiveRootDir, targetPath)
+      : effectiveRootDir;
 
     if (!fs.existsSync(absoluteTarget)) {
       throw new BadRequestException(
@@ -139,10 +149,10 @@ export class TsCheckerService {
     // mesmo no Windows. Precisamos normalizar para fazer o "startsWith" ou "===" funcionar.
     const normalizedTarget = absoluteTarget.replace(/\\/g, '/');
 
-    const projects = this.getAllProjects(rootDir);
+    const projects = this.getAllProjects(effectiveRootDir);
     if (projects.length === 0) {
       throw new BadRequestException(
-        `Nenhum tsconfig.json válido encontrado em: ${rootDir}`,
+        `Nenhum tsconfig.json válido encontrado em: ${effectiveRootDir}`,
       );
     }
 

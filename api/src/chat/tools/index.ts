@@ -1,5 +1,6 @@
 export { createProjectTools } from './project.tools';
 export { createStorageTools } from './storage.tools';
+export { createMemoryTools } from './memory.tools';
 
 export type ToolUiMetadata = {
   uiLabel: string;
@@ -72,6 +73,16 @@ export const TOOL_UI_MAPPING: Record<string, ToolUiMetadata> = {
     uiLabel: 'Instalando dependência...',
     uiDescription:
       'O sistema está adicionando uma nova dependência ao projeto.',
+  },
+  read_project_memory: {
+    uiLabel: 'Lendo memória do projeto...',
+    uiDescription:
+      'O sistema está carregando a memória centralizada do projeto atual.',
+  },
+  save_project_memory: {
+    uiLabel: 'Salvando memória do projeto...',
+    uiDescription:
+      'O sistema está gravando a memória centralizada por tópicos.',
   },
   get_recent_commits: {
     uiLabel: 'Lendo commits recentes...',
