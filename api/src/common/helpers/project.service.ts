@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { spawn } from 'child_process';
 import { ContextService } from '../context/context.service';
-import { LoggerService } from './logger.service';
 import { TsCheckerService, VsCodeProblem } from './tschecker.service';
 import { promises as fs } from 'fs';
 import * as path from 'path';
@@ -10,7 +9,6 @@ import { execSync } from 'child_process';
 @Injectable()
 export class ProjectService {
   constructor(
-    private readonly loggerService: LoggerService,
     private readonly contextService: ContextService,
     private readonly tsCheckerService: TsCheckerService,
   ) {}
@@ -46,10 +44,6 @@ export class ProjectService {
         template,
       );
 
-      this.loggerService.logDecision(
-        `Iniciando cópia do template ${template} para ${projectPath}`,
-      );
-
       await fs.cp(templatePath, projectPath, { recursive: true });
 
       const packageJsonPath = path.join(projectPath, 'package.json');
@@ -63,7 +57,7 @@ export class ProjectService {
           'utf8',
         );
       } catch {
-        this.loggerService.logDecision(
+        console.log(
           `Aviso: package.json não encontrado no template ${template}`,
         );
       }
@@ -72,8 +66,6 @@ export class ProjectService {
 
       try {
         if (startGit) {
-          this.loggerService.logDecision('Inicializando Git...');
-
           execSync('git init', { cwd: projectPath, stdio: 'ignore' });
           execSync('git checkout -b main', {
             cwd: projectPath,
@@ -92,12 +84,8 @@ export class ProjectService {
         outputLogs += `\nAviso durante execução de comandos: ${execError.message}`;
       }
 
-      this.loggerService.logDecision('Instalando dependências...');
-
       const installBuffer = execSync('pnpm install', { cwd: projectPath });
       outputLogs += installBuffer.toString();
-
-      this.loggerService.logDecision(`Projeto ${name} criado com sucesso!`);
 
       return {
         success: true,
@@ -129,9 +117,6 @@ export class ProjectService {
   }
 
   checkTypeScriptErrors(folderPath?: string): VsCodeProblem[] {
-    this.loggerService.logDecision(
-      `Verificando erros de TypeScript no diretório: ${folderPath || 'diretório raiz'}`,
-    );
     return this.tsCheckerService.checkErrors(folderPath || '');
   }
 
@@ -168,9 +153,6 @@ export class ProjectService {
 
       child.on('close', (code) => {
         if (code === 0) {
-          this.loggerService.logDecision(
-            `Instalada dependência ${dependency} `,
-          );
           resolve({ success: true, output: stdoutData });
         } else {
           resolve({

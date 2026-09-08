@@ -6,7 +6,6 @@ import { ChatModule } from './chat/chat.module';
 import { ContextModule } from './common/context/context.module';
 import { ProjectController } from './project/project.controller';
 import { ProjectService } from './common/helpers/project.service';
-import { LoggerService } from './common/helpers/logger.service';
 import { TsCheckerService } from './common/helpers/tschecker.service';
 
 @Module({
@@ -19,6 +18,6 @@ import { TsCheckerService } from './common/helpers/tschecker.service';
     }),
   ],
   controllers: [AppController, ProjectController],
-  providers: [AppService, ProjectService, LoggerService, TsCheckerService],
+  providers: [AppService, ProjectService, TsCheckerService],
 })
 export class AppModule {}

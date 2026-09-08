@@ -2,7 +2,6 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { ContextService } from '../context/context.service';
-import { LoggerService } from './logger.service';
 
 export type MemoryTopicValue =
   | string
@@ -19,10 +18,7 @@ export type ProjectMemoryEntry = {
 
 @Injectable()
 export class MemoryService {
-  constructor(
-    private readonly loggerService: LoggerService,
-    private readonly contextService: ContextService,
-  ) {}
+  constructor(private readonly contextService: ContextService) {}
 
   private getMemoryRoot(): string {
     const appRoot = this.contextService.get('root');
@@ -69,9 +65,6 @@ export class MemoryService {
         topics: parsed?.topics || {},
       };
     } catch {
-      this.loggerService.logDecision(
-        `Falha ao ler a memória do projeto ${projectRoot}`,
-      );
       throw new InternalServerErrorException(
         'Erro ao ler a memória centralizada do projeto.',
       );
@@ -101,12 +94,8 @@ export class MemoryService {
         JSON.stringify(nextMemory, null, 2),
         'utf8',
       );
-      this.loggerService.logDecision(`Memória salva em ${memoryFile}`);
       return nextMemory;
     } catch {
-      this.loggerService.logDecision(
-        `Falha ao salvar a memória do projeto ${projectRoot}`,
-      );
       throw new InternalServerErrorException(
         'Erro ao salvar a memória centralizada do projeto.',
       );

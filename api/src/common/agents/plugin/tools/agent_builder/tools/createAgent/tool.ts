@@ -190,7 +190,6 @@ const createApi = (agentApiDir: string, name: string) => {
 
     try {
       execSync(`npx prettier --write "${filePath}"`, { stdio: 'ignore' });
-      console.log(`Tools Factory atualizado e formatado em: ${filePath}`);
     } catch (error: any) {
       console.warn(
         'Aviso: Não foi possível rodar o Prettier automaticamente.',
@@ -247,7 +246,6 @@ const insertAgentIntoModule = (agentApiDir: string, name: string) => {
               return element.getText() === newServiceImportName;
             });
 
-            console.log('elementExists 1 (providers):', elementExists);
             if (!elementExists) {
               initializer.addElement(newServiceImportName);
             }

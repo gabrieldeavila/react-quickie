@@ -10,12 +10,10 @@ import * as path from 'path';
 import { ContextService } from '../context/context.service';
 import { LinterService } from './linter.service';
 import type { LintErrorResult } from './linter.service';
-import { LoggerService } from './logger.service';
 
 @Injectable()
 export class StorageService {
   constructor(
-    private readonly loggerService: LoggerService,
     private readonly contextService: ContextService,
     private readonly linterService: LinterService,
   ) {}
@@ -90,14 +88,8 @@ export class StorageService {
         const selectedLines = lines.slice(lineStart - 1, lineEnd);
         const selectedContent = selectedLines.join('\n');
 
-        this.loggerService.logDecision(
-          `Read the file ${fullPath} from line ${lineStart} to ${lineEnd}`,
-        );
-
         return selectedContent;
       }
-
-      this.loggerService.logDecision(`Read the file ${fullPath}`);
 
       return content;
     } catch (error) {
@@ -124,8 +116,6 @@ export class StorageService {
       await fs.outputFile(fullPath, content).then(async () => {
         await this.linterService.formatAndLintFile(fullPath);
       });
-
-      this.loggerService.logDecision(`Created the file ${fullPath}`);
     } catch {
       // Trata erros (ex: falta de permissão de escrita)
       throw new InternalServerErrorException(
@@ -151,7 +141,6 @@ export class StorageService {
         );
       }
 
-      this.loggerService.logDecision(`Removed the file ${fullPath}`);
       // Deleta o arquivo
       await fs.remove(fullPath);
     } catch (error) {
@@ -178,9 +167,6 @@ export class StorageService {
       }
 
       await fs.move(fullCurrentPath, fullNewPath, { overwrite: false });
-      this.loggerService.logDecision(
-        `Renamed path ${currentPath} to ${newPath}`,
-      );
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
 
@@ -204,9 +190,6 @@ export class StorageService {
       }
 
       await fs.move(fullSourcePath, fullDestinationPath, { overwrite: false });
-      this.loggerService.logDecision(
-        `Moved path ${sourcePath} to ${destinationPath}`,
-      );
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
 
@@ -230,10 +213,6 @@ export class StorageService {
 
       await fs.writeFile(fullPath, newContent, 'utf-8');
       await this.linterService.formatAndLintFile(fullPath);
-
-      this.loggerService.logDecision(
-        `Edited file ${filePath}: Overwrote entire file`,
-      );
     } catch (error) {
       console.log(error, `Erro ao sobrescrever o arquivo: ${filePath}`);
 
@@ -275,10 +254,6 @@ export class StorageService {
       const updatedContent = currentContent.replace(
         normalizedOldContent,
         newContent.replace(/\r\n/g, '\n'),
-      );
-
-      this.loggerService.logDecision(
-        `Edited file ${filePath}: Replaced targeted code block`,
       );
 
       await fs.writeFile(fullPath, updatedContent, 'utf-8');
@@ -341,9 +316,7 @@ export class StorageService {
           matchedFiles.push(file.replace(targetPath, ''));
         }
       }
-      this.loggerService.logDecision(
-        `Regex Search ${regexPattern} found the files ${matchedFiles.toString()}`,
-      );
+
       return matchedFiles;
     } catch (error) {
       console.log(
@@ -388,10 +361,6 @@ export class StorageService {
           });
         }
       }
-
-      this.loggerService.logDecision(
-        `Regex search for '${regexPattern}' in ${filePath} found ${matches.length} matches.`,
-      );
 
       return matches;
     } catch (error) {

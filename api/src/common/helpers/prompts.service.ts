@@ -33,8 +33,6 @@ export class PromptsService {
       instructions.push(...pluginSkills);
     }
 
-    console.log(instructions);
-
     if (isPlanning) {
       const planningSkills = await this.getPlanningSkills();
       if (Array.isArray(planningSkills)) instructions.push(...planningSkills);

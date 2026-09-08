@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { LoggerService } from './logger.service';
 import { ContextService } from '../context/context.service';
 
 const execAsync = promisify(exec);
@@ -26,10 +25,7 @@ export interface LintErrorResult {
 
 @Injectable()
 export class LinterService {
-  constructor(
-    private readonly loggerService: LoggerService,
-    private readonly contextService: ContextService,
-  ) {}
+  constructor(private readonly contextService: ContextService) {}
 
   async formatAndLintFile(fullPath: string): Promise<void> {
     try {
@@ -44,8 +40,6 @@ export class LinterService {
       ) {
         await execAsync(`npx eslint --fix "${fullPath}"`, { cwd: targetDir });
       }
-
-      this.loggerService.logDecision(`Linted and formatted ${fullPath}`);
     } catch {
       void 0;
     }
@@ -78,30 +72,18 @@ export class LinterService {
         });
       }
 
-      this.loggerService.logDecision(
-        `Collected lint errors for ${lintPath}: ${results.length} file(s) evaluated,`,
-      );
-
       return results;
     } catch (error: any) {
       if ('stdout' in error) {
         try {
           const results = JSON.parse(error.stdout) as LintErrorResult[];
-          this.loggerService.logDecision(
-            `Collected lint errors for ${lintPath}: ${results.length} file(s) evaluated`,
-          );
-          console.log(results);
+
           return results;
         } catch {
-          this.loggerService.logDecision(
-            `Could not parse ESLint JSON output for ${lintPath}`,
-          );
+          console.log(`Could not parse ESLint JSON output for ${lintPath}`);
         }
       }
 
-      this.loggerService.logDecision(
-        `Failed to collect lint errors for ${lintPath}: ${error?.message ?? 'unknown error'}`,
-      );
       return [];
     }
   }
