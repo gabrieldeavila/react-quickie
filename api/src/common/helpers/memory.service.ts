@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { ContextService } from '../context/context.service';
+import { createHash } from 'crypto';
 
 export type MemoryTopicValue =
   | string
@@ -18,31 +18,44 @@ export type ProjectMemoryEntry = {
 
 @Injectable()
 export class MemoryService {
-  constructor(private readonly contextService: ContextService) {}
-
   private getMemoryRoot(): string {
-    const appRoot = this.contextService.get('root');
-
-    if (!appRoot) {
-      throw new InternalServerErrorException('Root da aplicação não definido.');
-    }
-
-    const normalizedRoot = path.resolve(appRoot);
-    const memoryRoot = normalizedRoot.endsWith(path.sep + 'api')
-      ? path.join(normalizedRoot, 'memory')
-      : path.join(normalizedRoot, 'api', 'memory');
-
-    return path.resolve(memoryRoot);
+    return path.resolve(process.cwd(), 'storage', 'memory');
   }
 
-  private getProjectNameFromRoot(projectRoot: string): string {
-    return path.basename(path.resolve(projectRoot));
+  private slugify(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-');
+  }
+
+  private getProjectSlug(projectRoot: string): string {
+    const normalizedRoot = path.resolve(projectRoot);
+    const parts = normalizedRoot.split(path.sep).filter(Boolean);
+    const lastTwoParts = parts.slice(-2).join('-');
+
+    return this.slugify(lastTwoParts || path.basename(normalizedRoot));
+  }
+
+  private getProjectMemoryKey(projectRoot: string): string {
+    const normalizedRoot = path.resolve(projectRoot);
+    const hash = createHash('sha1')
+      .update(normalizedRoot)
+      .digest('hex')
+      .slice(0, 8);
+    const slug = this.getProjectSlug(projectRoot);
+
+    return `${hash}_${slug}`;
   }
 
   private getProjectMemoryFile(projectRoot: string): string {
     const memoryRoot = this.getMemoryRoot();
-    const projectName = this.getProjectNameFromRoot(projectRoot);
-    return path.join(memoryRoot, `${projectName}.json`);
+    const projectKey = this.getProjectMemoryKey(projectRoot);
+
+    return path.join(memoryRoot, `${projectKey}.json`);
   }
 
   async readProjectMemory(projectRoot: string): Promise<ProjectMemoryEntry> {

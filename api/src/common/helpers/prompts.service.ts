@@ -38,6 +38,12 @@ export class PromptsService {
       if (Array.isArray(planningSkills)) instructions.push(...planningSkills);
     }
 
+    const memorySkills = await this.getMemorySkills();
+
+    if (Array.isArray(memorySkills)) {
+      instructions.push(...memorySkills);
+    }
+
     return instructions;
   }
 
@@ -152,6 +158,25 @@ export class PromptsService {
     const exists = await fs.pathExists(pathSearch);
 
     if (!exists) return null;
+
+    const content =
+      await this.markdownService.getMarkdownFile(pathSearch)?.html;
+
+    const instructions: Instructions = [];
+
+    if (content.length) {
+      instructions.push({
+        content,
+        role: 'system',
+      });
+    }
+
+    return instructions;
+  }
+
+  async getMemorySkills(): Promise<Instructions | null> {
+    const pathMemory = 'common/agents/skills/memory.md';
+    const pathSearch = path.join(this.contentPath, pathMemory);
 
     const content =
       await this.markdownService.getMarkdownFile(pathSearch)?.html;
