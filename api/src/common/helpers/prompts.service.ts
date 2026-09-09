@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Instructions } from 'ai';
 import { MarkdownService } from './markdown.module';
 import { ContextService } from '../context/context.service';
+import { MemoryService } from './memory.service';
 import * as fs from 'fs-extra';
 import path from 'path';
 
@@ -10,6 +11,7 @@ export class PromptsService {
   constructor(
     private readonly markdownService: MarkdownService,
     private readonly contextService: ContextService,
+    private readonly memoryService: MemoryService,
   ) {}
   private readonly contentPath = path.join(process.cwd(), 'src');
 
@@ -42,6 +44,20 @@ export class PromptsService {
 
     if (Array.isArray(memorySkills)) {
       instructions.push(...memorySkills);
+    }
+
+    const projectRoot = this.contextService.get('root');
+    if (projectRoot) {
+      const projectMemory =
+        await this.memoryService.readProjectMemory(projectRoot);
+      const memoryContent = this.formatProjectMemory(projectMemory.topics);
+
+      if (memoryContent) {
+        instructions.push({
+          role: 'system',
+          content: `Project memory from the current workspace:\n${memoryContent}`,
+        });
+      }
     }
 
     return instructions;
@@ -183,7 +199,7 @@ export class PromptsService {
 
     const instructions: Instructions = [];
 
-    if (content.length) {
+    if (content?.length) {
       instructions.push({
         content,
         role: 'system',
@@ -191,6 +207,18 @@ export class PromptsService {
     }
 
     return instructions;
+  }
+
+  private formatProjectMemory(topics: Record<string, unknown>): string | null {
+    const entries = Object.entries(topics || {});
+
+    if (!entries.length) {
+      return null;
+    }
+
+    return entries
+      .map(([key, value]) => `- ${key}: ${JSON.stringify(value)}`)
+      .join('\n');
   }
 
   async getProjectAgents(): Promise<Instructions | null> {

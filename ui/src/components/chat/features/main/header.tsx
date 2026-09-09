@@ -14,8 +14,10 @@ const ChatHeader = memo(() => {
     setIsCreateModalOpen,
     setDraftContext,
     projectContext,
+    messages,
     setIsRootModalOpen,
   } = useChatBaseContext();
+  console.log(messages);
   const { chatStatusLabel, isFrontendMode, handleCreateConversation } =
     useChatServicesContext();
 
