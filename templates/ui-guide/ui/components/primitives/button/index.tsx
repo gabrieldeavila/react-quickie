@@ -21,10 +21,11 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: cn(
+    "[--button-tracking-color:rgba(255,255,255,0.18)]",
     "relative overflow-hidden border border-white/12",
     "bg-[linear-gradient(135deg,var(--color-primary),var(--color-primary-hover))]",
     "text-white shadow-[0_8px_18px_rgba(0,0,0,0.14),0_0_0_1px_rgba(255,255,255,0.05)]",
-    "before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_var(--button-radial-x,_50%)_var(--button-radial-y,_50%),rgba(255,255,255,0.18),transparent_62%)]",
+    "before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_var(--button-radial-x,_50%)_var(--button-radial-y,_50%),rgba(255,255,255,0.16),transparent_62%)]",
     "before:opacity-[var(--button-radial-opacity,_0)] before:transition-[opacity,background-position] before:duration-[var(--transition-base)]",
     "before:translate-x-0 before:translate-y-0 hover:border-white/16 hover:shadow-[0_10px_20px_rgba(0,0,0,0.16),0_0_0_1px_rgba(255,255,255,0.07)]",
   ),
@@ -43,9 +44,10 @@ const variantClasses: Record<ButtonVariant, string> = {
     "backdrop-blur-xl hover:border-white/14 hover:bg-white/[0.045]",
   ),
   destructive: cn(
-    "border border-white/10 bg-[linear-gradient(135deg,#ff6b6b,#ff3d5a)]",
-    "text-white shadow-[0_8px_18px_rgba(255,61,90,0.16)]",
-    "hover:shadow-[0_10px_22px_rgba(255,61,90,0.2)]",
+    "[--button-tracking-color:rgba(255,255,255,0.18)]",
+    "border border-[rgba(255,255,255,0.22)] bg-[linear-gradient(135deg,var(--color-danger),var(--color-danger-hover))]",
+    "text-white shadow-[0_8px_18px_var(--color-danger-glow)]",
+    "hover:border-[rgba(255,255,255,0.34)] hover:bg-[linear-gradient(135deg,var(--color-danger),#a30000)] hover:shadow-[0_10px_22px_var(--color-danger-glow)]",
   ),
 };
 
@@ -100,7 +102,7 @@ export const Button = memo(
           "focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]",
           "disabled:cursor-not-allowed disabled:opacity-50",
           "active:translate-y-[1px] active:scale-[0.99]",
-          "before:pointer-events-none before:absolute before:inset-[1px] before:rounded-[inherit] before:bg-[radial-gradient(circle_at_var(--button-radial-x,_50%)_var(--button-radial-y,_50%),rgba(14,18,28,var(--button-radial-opacity,_0.34)),transparent_62%)] before:opacity-0 before:transition-[opacity,background-position] before:duration-[var(--transition-base)] hover:before:opacity-100",
+          "before:pointer-events-none before:absolute before:inset-[1px] before:rounded-[inherit] before:bg-[radial-gradient(circle_at_var(--button-radial-x,_50%)_var(--button-radial-y,_50%),var(--button-tracking-color,rgba(14,18,28,var(--button-radial-opacity,_0.34))),transparent_62%)] before:opacity-0 before:transition-[opacity,background-position] before:duration-[var(--transition-base)] hover:before:opacity-100",
           variantClasses[variant],
           className,
         )}

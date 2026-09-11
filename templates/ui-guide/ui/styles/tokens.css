@@ -12,10 +12,12 @@
   --color-border-strong: rgba(255, 255, 255, 0.16);
   --color-text: #f5f7fb;
   --color-text-muted: #a6adbb;
-  --color-primary: #8b5cf6;
-  --color-primary-hover: #7c3aed;
-  --color-primary-glow: rgba(139, 92, 246, 0.38);
-  --color-danger: #ff5d5d;
+  --color-primary: #5ea8ff;
+  --color-primary-hover: #3d8dff;
+  --color-primary-glow: rgba(94, 168, 255, 0.34);
+  --color-danger: #d40000;
+  --color-danger-hover: #b80000;
+  --color-danger-glow: rgba(212, 0, 0, 0.28);
   --color-success: #22c55e;
 
   --radius-xs: 5px;
