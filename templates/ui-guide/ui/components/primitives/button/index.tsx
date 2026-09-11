@@ -60,7 +60,7 @@ export const Button = memo(
           "focus-visible:outline-none focus-visible:ring-2",
           "focus-visible:ring-primary",
           "focus-visible:ring-offset-2",
-          "focus-visible:ring-offset-bg`",
+          "focus-visible:ring-offset-[var(--color-bg)]",
           "disabled:cursor-not-allowed disabled:opacity-60",
           "active:translate-y-px",
           variantClasses[variant],
