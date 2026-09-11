@@ -5,7 +5,7 @@ import {
   useMemo,
 } from "react";
 
-import { cn } from "@/app/helpers/cn";
+import { cn } from "@/ui/helpers/cn";
 
 export type ButtonVariant =
   "primary" | "secondary" | "ghost" | "transparent" | "destructive";
@@ -56,11 +56,11 @@ export const Button = memo(
           "rounded-[5px] px-4 py-2.5",
           "text-sm font-medium",
           "transition-[background-color,border-color,opacity,transform]",
-          "duration-[var(--transition-base)] ease-[var(--transition-base)]",
+          "duration-(--transition-base) ease-(--transition-base)",
           "focus-visible:outline-none focus-visible:ring-2",
-          "focus-visible:ring-[var(--color-primary)]",
+          "focus-visible:ring-primary",
           "focus-visible:ring-offset-2",
-          "focus-visible:ring-offset-[var(--color-bg)]",
+          "focus-visible:ring-offset-bg`",
           "disabled:cursor-not-allowed disabled:opacity-60",
           "active:translate-y-px",
           variantClasses[variant],

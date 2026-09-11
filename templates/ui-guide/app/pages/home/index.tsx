@@ -1,6 +1,5 @@
+import { Button } from "~ui/components/primitives/button";
 import { memo } from "react";
-
-import { Button } from "@/components/ui/button";
 
 const Home = memo(() => {
   return (
