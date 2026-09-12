@@ -44,7 +44,7 @@ export const Divider = memo(
         aria-orientation={orientation}
         style={geometryStyle}
         className={cn(
-          "shrink-0 text-(--color-text-muted)",
+          "shrink-0 text-text-muted",
           isHorizontal
             ? "w-full flex-row items-center"
             : "h-full flex-col items-center",

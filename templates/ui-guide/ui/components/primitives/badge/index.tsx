@@ -29,23 +29,23 @@ const indicatorSizeClasses: Record<BadgeSize, string> = {
 const variantClasses: Record<BadgeVariant, string> = {
   default: cn(
     "[--badge-accent:var(--color-text-muted)]",
-    "border-(--color-border-strong) bg-[linear-gradient(180deg,var(--color-surface-2),var(--color-surface))] text-(--color-text-muted)",
+    "border-border-strong bg-[linear-gradient(180deg,var(--color-surface-2),var(--color-surface))] text-text-muted",
   ),
   success: cn(
     "[--badge-accent:var(--color-success)]",
-    "border-[color-mix(in_srgb,var(--color-success)_38%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-success)_12%,var(--color-surface))] text-(--color-success)",
+    "border-[color-mix(in_srgb,var(--color-success)_38%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-success)_12%,var(--color-surface))] text-success",
   ),
   warning: cn(
     "[--badge-accent:var(--color-warning)]",
-    "border-[color-mix(in_srgb,var(--color-warning)_38%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-warning)_12%,var(--color-surface))] text-(--color-warning)",
+    "border-[color-mix(in_srgb,var(--color-warning)_38%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-warning)_12%,var(--color-surface))] text-warning",
   ),
   danger: cn(
     "[--badge-accent:var(--color-danger)]",
-    "border-[color-mix(in_srgb,var(--color-danger)_38%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-danger)_12%,var(--color-surface))] text-(--color-danger)",
+    "border-[color-mix(in_srgb,var(--color-danger)_38%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-danger)_12%,var(--color-surface))] text-danger",
   ),
   info: cn(
     "[--badge-accent:var(--color-primary)]",
-    "border-[color-mix(in_srgb,var(--color-primary)_38%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-primary)_12%,var(--color-surface))] text-(--color-primary)",
+    "border-[color-mix(in_srgb,var(--color-primary)_38%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-primary)_12%,var(--color-surface))] text-primary",
   ),
 };
 
