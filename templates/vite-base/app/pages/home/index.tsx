@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FiArrowUpRight,
   FiBarChart2,
@@ -13,36 +14,24 @@ import { Avatar } from "@/ui/components/primitives/avatar";
 import { Badge } from "@/ui/components/primitives/badge";
 import { Button } from "@/ui/components/primitives/button";
 import { Card } from "@/ui/components/primitives/card";
+import { Select } from "@/ui/components/primitives/select";
 import { Stat } from "@/ui/components/primitives/stat";
+import { changeLanguage, type SupportedLanguage } from "../../i18n";
 
-const features = [
-  {
-    icon: FiZap,
-    eyebrow: "Ritmo de trabalho",
-    title: "Menos ruído. Mais movimento.",
-    description:
-      "Organize o que importa em um espaço que acompanha o seu ritmo e deixa cada decisão mais clara.",
-    accent: "text-(--color-warning)",
-  },
-  {
-    icon: FiLayers,
-    eyebrow: "Tudo conectado",
-    title: "Uma visão para cada camada.",
-    description:
-      "Do primeiro rascunho ao resultado final, mantenha contexto, pessoas e prioridades no mesmo lugar.",
-    accent: "text-(--color-primary)",
-  },
-  {
-    icon: FiBarChart2,
-    eyebrow: "Clareza contínua",
-    title: "Progresso que dá para sentir.",
-    description:
-      "Transforme sinais dispersos em uma leitura simples do que está avançando — e do próximo passo.",
-    accent: "text-(--color-success)",
-  },
+const featureIcons = [FiZap, FiLayers, FiBarChart2];
+const featureAccents = [
+  "text-(--color-warning)",
+  "text-(--color-primary)",
+  "text-(--color-success)",
 ];
 
 const Home = memo(() => {
+  const { i18n, t } = useTranslation(["common", "home"]);
+
+  const handleLanguageChange = (language: SupportedLanguage) => {
+    void changeLanguage(language);
+  };
+
   return (
     <main className="min-h-[100dvh] overflow-hidden bg-(--color-bg)">
       <div className="pointer-events-none fixed inset-0 -z-0 opacity-80 [background-image:radial-gradient(circle_at_78%_8%,rgba(94,168,255,0.16),transparent_28%),radial-gradient(circle_at_8%_44%,rgba(126,87,194,0.10),transparent_26%)]" />
@@ -51,7 +40,7 @@ const Home = memo(() => {
         <a
           href="#top"
           className="group inline-flex items-center gap-3"
-          aria-label="Nexa início"
+          aria-label={t("home:brand.ariaLabel")}
         >
           <span className="grid size-9 place-items-center rounded-xl border border-white/12 bg-white/6 text-(--color-primary) shadow-(--shadow-sm) transition-transform duration-300 group-hover:rotate-6">
             <FiZap aria-hidden="true" />
@@ -66,30 +55,43 @@ const Home = memo(() => {
             className="transition-colors hover:text-(--color-text)"
             href="#produto"
           >
-            Produto
+            {t("common:navigation.product")}
           </a>
           <a
             className="transition-colors hover:text-(--color-text)"
             href="#visao"
           >
-            Visão
+            {t("common:navigation.vision")}
           </a>
           <a
             className="transition-colors hover:text-(--color-text)"
             href="#comece"
           >
-            Comece agora
+            {t("common:navigation.startNow")}
           </a>
         </div>
 
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          rightIcon={<FiArrowUpRight aria-hidden="true" />}
-        >
-          <a href="#comece">Entrar</a>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select
+            aria-label={t("common:language.label")}
+            value={i18n.language}
+            onChange={(event) =>
+              handleLanguageChange(event.target.value as SupportedLanguage)
+            }
+            className="min-h-9 w-auto border-white/10 bg-white/5 px-2.5 py-1.5 text-xs"
+          >
+            <option value="pt-BR">{t("common:language.portuguese")}</option>
+            <option value="en">{t("common:language.english")}</option>
+          </Select>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            rightIcon={<FiArrowUpRight aria-hidden="true" />}
+          >
+            <a href="#comece">{t("common:navigation.signIn")}</a>
+          </Button>
+        </div>
       </nav>
 
       <section
@@ -98,16 +100,16 @@ const Home = memo(() => {
       >
         <div className="max-w-2xl">
           <Badge variant="info" size="md" showIndicator>
-            A próxima camada do seu trabalho
+            {t("home:hero.eyebrow")}
           </Badge>
           <h1 className="mt-7 max-w-3xl text-5xl font-semibold leading-[0.96] tracking-[-0.065em] text-(--color-text) sm:text-7xl lg:text-[6.5rem]">
-            Clareza para criar o que vem{" "}
-            <span className="text-(--color-primary)">depois.</span>
+            {t("home:hero.titleBefore")}{" "}
+            <span className="text-(--color-primary)">
+              {t("home:hero.titleAccent")}
+            </span>
           </h1>
           <p className="mt-8 max-w-xl text-base leading-7 text-(--color-text-muted) sm:text-lg">
-            Nexa é o espaço calmo entre a ideia e a entrega. Conecte times,
-            decisões e progresso em uma experiência feita para dar impulso ao
-            que realmente importa.
+            {t("home:hero.description")}
           </p>
           <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Button
@@ -115,7 +117,7 @@ const Home = memo(() => {
               size="lg"
               rightIcon={<FiArrowUpRight aria-hidden="true" />}
             >
-              <a href="#comece">Começar agora</a>
+              <a href="#comece">{t("home:hero.primaryAction")}</a>
             </Button>
             <Button
               asChild
@@ -123,7 +125,7 @@ const Home = memo(() => {
               size="lg"
               leftIcon={<FiPlay aria-hidden="true" />}
             >
-              <a href="#visao">Ver como funciona</a>
+              <a href="#visao">{t("home:hero.secondaryAction")}</a>
             </Button>
           </div>
           <div className="mt-12 flex items-center gap-4 border-t border-(--color-border) pt-6">
@@ -149,10 +151,10 @@ const Home = memo(() => {
             </div>
             <p className="text-xs leading-5 text-(--color-text-muted)">
               <span className="font-semibold text-(--color-text)">
-                +2.000 criadores
+                {t("home:hero.socialProof")}
               </span>
               <br />
-              já encontraram seu próximo passo.
+              {t("home:hero.socialProofDescription")}
             </p>
           </div>
         </div>
@@ -163,21 +165,21 @@ const Home = memo(() => {
             <Card.Header className="flex-row items-start justify-between border-b border-(--color-border) pb-5">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-(--color-text-muted)">
-                  Painel de foco
+                  {t("home:dashboard.eyebrow")}
                 </p>
                 <Card.Title className="mt-2 text-xl">
-                  Semana em movimento
+                  {t("home:dashboard.title")}
                 </Card.Title>
               </div>
               <Badge variant="success" size="sm" showIndicator>
-                Ao vivo
+                {t("home:dashboard.live")}
               </Badge>
             </Card.Header>
             <Card.Body className="space-y-6 pt-5">
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-sm text-(--color-text-muted)">
-                    Progresso geral
+                    {t("home:dashboard.progress")}
                   </p>
                   <p className="mt-1 text-5xl font-semibold tracking-[-0.06em] text-(--color-text)">
                     78
@@ -196,20 +198,20 @@ const Home = memo(() => {
               <div className="grid grid-cols-3 gap-3">
                 <Stat
                   className="border-white/8 bg-(--color-surface-2)/70 p-3"
-                  label="Entregas"
+                  label={t("home:dashboard.deliveries")}
                   value="24"
                   trend="+8%"
                   trendDirection="up"
                 />
                 <Stat
                   className="border-white/8 bg-(--color-surface-2)/70 p-3"
-                  label="Em foco"
+                  label={t("home:dashboard.inFocus")}
                   value="08"
-                  trend="Hoje"
+                  trend={t("home:dashboard.today")}
                 />
                 <Stat
                   className="border-white/8 bg-(--color-surface-2)/70 p-3"
-                  label="Impacto"
+                  label={t("home:dashboard.impact")}
                   value="4.8x"
                   trend="+18%"
                   trendDirection="up"
@@ -262,36 +264,35 @@ const Home = memo(() => {
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          {features.map(
-            ({ icon: Icon, eyebrow, title, description, accent }) => (
-              <Card
-                key={title}
-                className="group border-white/8 bg-(--color-surface)/70 p-2 transition-transform duration-300 hover:-translate-y-1 hover:border-white/16"
-              >
-                <Card.Body className="p-5 sm:p-6">
-                  <Icon
-                    className={`mb-10 text-2xl ${accent}`}
-                    aria-hidden="true"
-                  />
-                  <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--color-text-muted)">
-                    {eyebrow}
-                  </p>
-                  <h3 className="mt-3 text-xl font-semibold leading-tight tracking-[-0.03em] text-(--color-text)">
-                    {title}
-                  </h3>
-                  <p className="mt-4 text-sm leading-6 text-(--color-text-muted)">
-                    {description}
-                  </p>
-                  <a
-                    href="#comece"
-                    className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-(--color-text) transition-colors group-hover:text-(--color-primary)"
-                  >
-                    Explorar <FiArrowUpRight aria-hidden="true" />
-                  </a>
-                </Card.Body>
-              </Card>
-            ),
-          )}
+          {featureIcons.map((Icon, index) => (
+            <Card
+              key={index}
+              className="group border-white/8 bg-(--color-surface)/70 p-2 transition-transform duration-300 hover:-translate-y-1 hover:border-white/16"
+            >
+              <Card.Body className="p-5 sm:p-6">
+                <Icon
+                  className={`mb-10 text-2xl ${featureAccents[index]}`}
+                  aria-hidden="true"
+                />
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--color-text-muted)">
+                  {t(`home:features.items.${index}.eyebrow`)}
+                </p>
+                <h3 className="mt-3 text-xl font-semibold leading-tight tracking-[-0.03em] text-(--color-text)">
+                  {t(`home:features.items.${index}.title`)}
+                </h3>
+                <p className="mt-4 text-sm leading-6 text-(--color-text-muted)">
+                  {t(`home:features.items.${index}.description`)}
+                </p>
+                <a
+                  href="#comece"
+                  className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-(--color-text) transition-colors group-hover:text-(--color-primary)"
+                >
+                  {t("common:actions.explore")}{" "}
+                  <FiArrowUpRight aria-hidden="true" />
+                </a>
+              </Card.Body>
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -322,7 +323,7 @@ const Home = memo(() => {
         </div>
       </section>
       <footer className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-6 py-8 text-xs text-(--color-text-muted) sm:flex-row sm:items-center sm:justify-between lg:px-10">
-        <span>© 2025 Nexa. Feito para seguir em frente.</span>
+        <span>{t("home:footer")}</span>
         <span className="tracking-[0.12em]">CLAREZA / RITMO / IMPACTO</span>
       </footer>
     </main>
