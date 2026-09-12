@@ -8,7 +8,6 @@ const Home = memo(() => {
         <Button>Primary</Button>
         <Button variant="secondary">Secondary</Button>
         <Button variant="ghost">Ghost</Button>
-        <Button variant="transparent">Transparent</Button>
         <Button variant="destructive">Destructive</Button>
         <Button isLoading>Loading</Button>
         <Button disabled>Disabled</Button>
