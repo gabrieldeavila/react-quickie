@@ -6,6 +6,16 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 
+const TEMPLATE_IGNORED_PATHS = new Set([
+  'node_modules',
+  'dist',
+  'build',
+  '.next',
+  '.react-router',
+  'coverage',
+  '.git',
+]);
+
 @Injectable()
 export class ProjectService {
   constructor(
@@ -29,14 +39,31 @@ export class ProjectService {
     error?: string;
     path?: string;
   }> {
+    let createdProjectPath: string | undefined;
+
     try {
-      if (targetPath && !targetPath.startsWith('/')) {
-        targetPath = `/${targetPath}`;
+      const rootPath = this.contextService.get('root');
+      if (!rootPath) {
+        throw new Error('A raiz do workspace não foi configurada.');
       }
 
-      const targetDir = targetPath || this.contextService.get('root');
-      const name = projectName || 'my-react-app';
-      const projectPath = path.join(targetDir!, name);
+      const name = (projectName || 'my-react-app').trim();
+      if (
+        !name ||
+        name === '.' ||
+        name === '..' ||
+        name !== path.basename(name) ||
+        name.includes(path.sep)
+      ) {
+        throw new Error('O nome do projeto é inválido.');
+      }
+
+      const targetDir = targetPath
+        ? path.isAbsolute(targetPath)
+          ? path.resolve(targetPath)
+          : path.resolve(rootPath, targetPath)
+        : rootPath;
+      const projectPath = path.resolve(targetDir, name);
 
       const templatePath = path.resolve(
         __dirname,
@@ -44,7 +71,28 @@ export class ProjectService {
         template,
       );
 
-      await fs.cp(templatePath, projectPath, { recursive: true });
+      if (!(await fs.stat(templatePath).catch(() => null))) {
+        throw new Error(`Template '${template}' não encontrado.`);
+      }
+
+      if (await fs.stat(projectPath).catch(() => null)) {
+        throw new Error(
+          `A pasta do projeto já existe: ${projectPath}. Escolha outro nome ou remova a pasta existente.`,
+        );
+      }
+
+      createdProjectPath = projectPath;
+      await fs.cp(templatePath, projectPath, {
+        recursive: true,
+        filter: (source) => {
+          const relativePath = path.relative(templatePath, source);
+          if (!relativePath) return true;
+
+          return !relativePath
+            .split(path.sep)
+            .some((part) => TEMPLATE_IGNORED_PATHS.has(part));
+        },
+      });
 
       const packageJsonPath = path.join(projectPath, 'package.json');
       try {
@@ -84,7 +132,19 @@ export class ProjectService {
         outputLogs += `\nAviso durante execução de comandos: ${execError.message}`;
       }
 
-      const installBuffer = execSync('pnpm install', { cwd: projectPath });
+      // Instala usando exclusivamente o lockfile do projeto gerado. Isso evita
+      // que um pnpm-workspace/lockfile existente em um diretório pai altere a
+      // árvore de dependências e crie mais de uma instância do React.
+      const installBuffer = execSync(
+        'pnpm install --force --frozen-lockfile --ignore-workspace',
+        {
+          cwd: projectPath,
+          env: {
+            ...process.env,
+            COREPACK_ENABLE_PROJECT_SPEC: '0',
+          },
+        },
+      );
       outputLogs += installBuffer.toString();
 
       return {
@@ -93,6 +153,12 @@ export class ProjectService {
         path: projectPath,
       };
     } catch (error: any) {
+      if (createdProjectPath) {
+        await fs
+          .rm(createdProjectPath, { recursive: true, force: true })
+          .catch(() => undefined);
+      }
+
       return {
         success: false,
         error: error.message || 'Erro desconhecido ao gerar os arquivos.',

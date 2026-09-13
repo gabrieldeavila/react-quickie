@@ -25,6 +25,8 @@ export class ProjectController {
     return {
       success: data.success,
       path: data.path,
+      output: data.output,
+      error: data.error,
     };
   }
 }
