@@ -14,7 +14,34 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--chat-bg) 58%, transparent);
   color: var(--chat-text);
+  scrollbar-color: var(--chat-border-strong) transparent;
+  scrollbar-width: thin;
   white-space: pre-wrap;
+}
+
+.bash-approval-card pre::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.bash-approval-card pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bash-approval-card pre::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--chat-border-strong);
+  background-clip: padding-box;
+}
+
+.bash-approval-card pre:hover::-webkit-scrollbar-thumb {
+  background: color-mix(
+    in srgb,
+    var(--chat-accent) 42%,
+    var(--chat-border-strong)
+  );
+  background-clip: padding-box;
 }
 
 .bash-approval-card small {

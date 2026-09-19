@@ -1,14 +1,20 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
-import { useChatBaseContext } from "../../context/context";
+import { FiPause, FiSend } from "react-icons/fi";
+import {
+  useChatBaseContext,
+  useChatServicesContext,
+} from "../../context/context";
 import useSendMessage from "../../hooks/events/useSendMessage";
 
 export function ChatComposer() {
-  const { input, hasInput, status, setInput } = useChatBaseContext();
+  const { input, hasInput, status, setInput, stop } = useChatBaseContext();
+  const { isChatPending } = useChatServicesContext();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const onSend = useSendMessage();
 
-  const isDisabled = useMemo(
+  const isPaused = isChatPending;
+  const isSendDisabled = useMemo(
     () => !hasInput || status !== "ready",
     [hasInput, status],
   );
@@ -52,23 +58,18 @@ export function ChatComposer() {
         />
 
         <button
-          className="send-button"
-          onClick={onSend}
-          disabled={isDisabled}
-          title="Enviar mensagem"
+          className={`send-button ${isPaused ? "send-button--pause" : ""}`}
+          onClick={isPaused ? stop : onSend}
+          disabled={isPaused ? false : isSendDisabled}
+          title={isPaused ? "Pausar resposta" : "Enviar mensagem"}
+          aria-label={isPaused ? "Pausar resposta" : "Enviar mensagem"}
           type="button"
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
+          {isPaused ? (
+            <FiPause aria-hidden="true" />
+          ) : (
+            <FiSend aria-hidden="true" />
+          )}
         </button>
       </div>
     </div>

@@ -37,6 +37,15 @@ export class ChatController {
     @Body() body: { messages?: Array<ModelMessage> },
     @Res() res: Response,
   ) {
+    const abortController = new AbortController();
+    const abortUpstreamRequest = () => {
+      if (!res.writableEnded) {
+        abortController.abort();
+      }
+    };
+
+    res.once('close', abortUpstreamRequest);
+
     const apiKey = this.configService.get<string>('OPENAI_KEY');
     const modelEnv = this.configService.get<string>('OPENAI_MODEL');
 
@@ -63,6 +72,7 @@ export class ChatController {
       tools: this.chatService.getTools(),
       instructions,
       stopWhen: isStepCount(50),
+      abortSignal: abortController.signal,
     });
 
     pipeUIMessageStreamToResponse({

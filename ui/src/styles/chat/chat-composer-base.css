@@ -67,6 +67,18 @@
   box-shadow: 0 16px 30px rgba(124, 140, 255, 0.22);
 }
 
+.send-button--pause {
+  border-color: var(--chat-border-strong);
+  color: var(--chat-text);
+  background: var(--chat-surface);
+}
+
+.send-button--pause:hover:not(:disabled) {
+  border-color: var(--chat-accent);
+  background: var(--chat-surface-hover, var(--chat-surface));
+  box-shadow: none;
+}
+
 .send-button:active:not(:disabled) {
   transform: translateY(0) scale(0.98);
 }
