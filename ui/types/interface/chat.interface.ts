@@ -26,6 +26,26 @@ export type ChatMessageItemProps = {
   isTyping?: boolean;
 };
 
+export type ToolStatus = "loading" | "success" | "error";
+
+export type ToolStatusIconProps = {
+  status: ToolStatus;
+};
+
+export type ToolCallCardProps = {
+  label: string;
+  status: ToolStatus;
+  outputText?: string;
+};
+
+export type UserMessageContentProps = {
+  text: string;
+};
+
+export type AssistantMarkdownProps = {
+  text: string;
+};
+
 export type ProjectContext = {
   reference: string;
   focus: CombinedAgentEnum;
