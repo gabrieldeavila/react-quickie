@@ -2,6 +2,7 @@ import { type UIMessage } from "@ai-sdk/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   appendMessage,
+  appendPartsToLatestAssistantMessage,
   clearChatHistory,
   deleteConversationCascade,
   ensureConversation,
@@ -130,6 +131,17 @@ export const useChatHistory = (): UseChatHistoryResult => {
     [reloadConversations],
   );
 
+  const appendAssistantParts = useCallback(
+    async (
+      conversationId: string,
+      parts: UIMessage["parts"],
+    ): Promise<void> => {
+      await appendPartsToLatestAssistantMessage(conversationId, parts);
+      await reloadConversations();
+    },
+    [reloadConversations],
+  );
+
   const deleteConversation = useCallback(
     async (conversationId: string): Promise<void> => {
       await deleteConversationCascade(conversationId);
@@ -170,6 +182,7 @@ export const useChatHistory = (): UseChatHistoryResult => {
       createConversation,
       persistUserMessage,
       persistAssistantMessage,
+      appendAssistantParts,
       reloadConversations,
       deleteConversation,
       resetHistory,
@@ -183,6 +196,7 @@ export const useChatHistory = (): UseChatHistoryResult => {
       historyMessages,
       isHydrated,
       persistAssistantMessage,
+      appendAssistantParts,
       persistUserMessage,
       reloadConversations,
       resetHistory,

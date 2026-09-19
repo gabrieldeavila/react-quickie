@@ -7,6 +7,7 @@ import {
   createStorageTools,
 } from './tools';
 import { ContextService } from 'src/common/context/context.service';
+import { BashToolsService } from 'src/common/agents/tools/bash/bash.service';
 import { FrontendToolsService } from 'src/common/agents/tools/frontend/tool.service';
 import { GitToolsService } from 'src/common/agents/tools/git/git.service';
 import { PluginToolsService } from 'src/common/agents/plugin/tools/tools.plugins.service';
@@ -19,6 +20,7 @@ export class ChatService {
     private readonly memoryService: MemoryService,
     private readonly storageService: StorageService,
     private readonly contextService: ContextService,
+    private readonly bashToolsService: BashToolsService,
     private readonly frontendToolsService: FrontendToolsService,
     private readonly gitToolsService: GitToolsService,
     private readonly pluginToolsService: PluginToolsService,
@@ -44,6 +46,7 @@ export class ChatService {
       ...createStorageTools(this.storageService),
       ...createProjectTools(this.projectService),
       ...createMemoryTools(this.memoryService),
+      ...this.bashToolsService.createBashTools(),
       ...customTools,
     };
   }

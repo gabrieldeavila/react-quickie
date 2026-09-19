@@ -153,6 +153,22 @@ export const upsertMessage = async (
   await chatDb.messages.put(message);
 };
 
+export const appendPartsToLatestAssistantMessage = async (
+  conversationId: string,
+  parts: UIMessage["parts"],
+): Promise<void> => {
+  const messages = await listMessagesByConversation(conversationId);
+  const latestAssistant = [...messages]
+    .reverse()
+    .find((message) => message.role === "assistant");
+
+  if (!latestAssistant) return;
+
+  await chatDb.messages.update(latestAssistant.id, {
+    parts: [...(latestAssistant.parts ?? []), ...parts],
+  });
+};
+
 export const listConversations = async (): Promise<ChatConversation[]> => {
   return chatDb.conversations.orderBy("lastMessageAt").reverse().toArray();
 };

@@ -18,6 +18,10 @@ export interface UseChatHistoryResult {
     content: string,
     parts?: UIMessage["parts"],
   ) => Promise<void>;
+  appendAssistantParts: (
+    conversationId: string,
+    parts: UIMessage["parts"],
+  ) => Promise<void>;
   reloadConversations: () => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;
   resetHistory: () => Promise<void>;

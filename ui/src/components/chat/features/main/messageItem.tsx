@@ -5,6 +5,7 @@ import {
 } from "@/helpers/tool-ui-mapping.helper";
 import { AssistantMarkdown } from "@/components/primitives/assistantMarkdown";
 import { ToolCallCard } from "@/components/primitives/toolCallCard";
+import { BashApprovalCard } from "@/components/primitives/bashApprovalCard";
 import { UserMessageContent } from "@/components/primitives/userMessageContent";
 import type {
   ChatMessageItemProps,
@@ -51,7 +52,14 @@ function stringifyToolOutput(output: unknown): string {
     }
 
     if (toolOutput.success === true) {
-      return toolOutput.message || "Tool executada com sucesso.";
+      const message = toolOutput.message || "Tool executada com sucesso.";
+      if (toolOutput.data === undefined) return message;
+
+      const data =
+        typeof toolOutput.data === "string"
+          ? toolOutput.data
+          : JSON.stringify(toolOutput.data, null, 2);
+      return `${message}\n\n${data}`;
     }
   }
 
@@ -104,6 +112,9 @@ export const ChatMessageItem = memo(function ChatMessageItem({
   const roleClass =
     message.role === "user" ? "user-message" : "assistant-message";
   const messageText = getMessageText(message);
+  const isApprovalControlMessage =
+    message.role === "user" &&
+    messageText.startsWith("[bash-approval-control]");
 
   const renderAssistantPart = useCallback(
     (part: (typeof message.parts)[number], index: number) => {
@@ -122,6 +133,33 @@ export const ChatMessageItem = memo(function ChatMessageItem({
       const toolPart = isToolOutputPart(part) ? part : undefined;
       const output = toolPart?.output;
       const state = toolPart?.state;
+      const approval =
+        output && typeof output === "object"
+          ? (output as {
+              approvalRequired?: boolean;
+              approvalId?: string;
+              command?: string;
+              cwd?: string;
+              reason?: string;
+            })
+          : undefined;
+
+      if (
+        approval?.approvalRequired &&
+        approval.approvalId &&
+        approval.command
+      ) {
+        return (
+          <BashApprovalCard
+            key={`${message.id}-approval-${index}`}
+            approvalId={approval.approvalId}
+            command={approval.command}
+            cwd={approval.cwd ?? ""}
+            reason={approval.reason ?? "Este comando requer sua aprovação."}
+          />
+        );
+      }
+
       const hasError = output?.success === false || state === "output-error";
       const status: ToolStatus = hasError
         ? "error"
@@ -140,6 +178,8 @@ export const ChatMessageItem = memo(function ChatMessageItem({
     },
     [message],
   );
+
+  if (isApprovalControlMessage) return null;
 
   return (
     <article className={`message ${roleClass}`}>
