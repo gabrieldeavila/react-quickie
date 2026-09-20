@@ -31,7 +31,7 @@ const editFileInputSchema = z.object({
   oldContent: z
     .string()
     .describe(
-      'O bloco de código exato que deve ser substituído no arquivo. Deve corresponder perfeitamente ao conteúdo atual.',
+      'O bloco de código exato que deve ocorrer uma única vez no arquivo. Deve corresponder perfeitamente ao conteúdo atual.',
     ),
   newContent: z
     .string()

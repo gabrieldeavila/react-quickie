@@ -228,11 +228,18 @@ export class StorageService {
     filePath: string,
     oldContent: string,
     newContent: string,
-  ): Promise<void> {
+  ): Promise<{ replacements: number; line: number }> {
     const targetDir = this.contextService.get('root')!;
     const fullPath = path.join(targetDir, filePath);
+    let temporaryPath: string | undefined;
 
     try {
+      if (!oldContent) {
+        throw new BadRequestException(
+          'oldContent não pode estar vazio para uma substituição segura.',
+        );
+      }
+
       const exists = await fs.pathExists(fullPath);
       if (!exists) {
         throw new NotFoundException(
@@ -241,26 +248,53 @@ export class StorageService {
       }
 
       const rawCurrentContent = await fs.readFile(fullPath, 'utf-8');
-
+      const lineEnding = rawCurrentContent.includes('\r\n') ? '\r\n' : '\n';
       const currentContent = rawCurrentContent.replace(/\r\n/g, '\n');
       const normalizedOldContent = oldContent.replace(/\r\n/g, '\n');
+      const normalizedNewContent = newContent.replace(/\r\n/g, '\n');
 
-      if (!currentContent.includes(normalizedOldContent)) {
+      let occurrences = 0;
+      let searchIndex = 0;
+      let occurrenceIndex = currentContent.indexOf(
+        normalizedOldContent,
+        searchIndex,
+      );
+
+      while (occurrenceIndex !== -1) {
+        occurrences++;
+        searchIndex = occurrenceIndex + normalizedOldContent.length;
+        occurrenceIndex = currentContent.indexOf(
+          normalizedOldContent,
+          searchIndex,
+        );
+      }
+
+      if (occurrences === 0) {
         throw new BadRequestException(
           `O bloco de código fornecido em oldContent não foi encontrado no arquivo "${filePath}". Verifique a indentação, as quebras de linha ou se você incluiu contexto suficiente, e tente novamente.`,
         );
       }
 
-      const updatedContent = currentContent.replace(
-        normalizedOldContent,
-        newContent.replace(/\r\n/g, '\n'),
-      );
+      if (occurrences > 1) {
+        throw new BadRequestException(
+          `O bloco de código fornecido em oldContent ocorre ${occurrences} vezes no arquivo "${filePath}". Inclua mais contexto para tornar a substituição única.`,
+        );
+      }
 
-      await fs.writeFile(fullPath, updatedContent, 'utf-8');
-      await this.linterService.formatAndLintFile(fullPath);
+      const updatedContent = currentContent
+        .replace(normalizedOldContent, normalizedNewContent)
+        .replace(/\n/g, lineEnding);
+
+      temporaryPath = `${fullPath}.${process.pid}.${Date.now()}.tmp`;
+      await fs.writeFile(temporaryPath, updatedContent, 'utf-8');
+      await fs.rename(temporaryPath, fullPath);
+      temporaryPath = undefined;
+
+      const line = currentContent
+        .slice(0, currentContent.indexOf(normalizedOldContent))
+        .split('\n').length;
+      return { replacements: 1, line };
     } catch (error) {
-      console.log(error, `Erro ao editar o arquivo: ${filePath}`);
-
       if (
         error instanceof NotFoundException ||
         error instanceof BadRequestException
@@ -271,6 +305,10 @@ export class StorageService {
       throw new InternalServerErrorException(
         'Erro ao editar o arquivo no repositório.',
       );
+    } finally {
+      if (temporaryPath) {
+        await fs.remove(temporaryPath).catch(() => undefined);
+      }
     }
   }
 
@@ -284,7 +322,7 @@ export class StorageService {
       return this.overwriteFile(filePath, newContent);
     }
 
-    return this.replaceContentInFile(filePath, oldContent, newContent);
+    await this.replaceContentInFile(filePath, oldContent, newContent);
   }
 
   async regexSearchForContentInFiles(
