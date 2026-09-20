@@ -61,10 +61,7 @@ export class ChatController {
       apiKey,
     });
 
-    const validMessages =
-      body.messages?.filter(
-        (m) => m.content !== undefined && m.content !== null,
-      ) || [];
+    const validMessages = body.messages?.filter((m) => m.content != null) || [];
 
     if (validMessages.length === 0) {
       res.status(400).send('Nenhuma mensagem válida encontrada na requisição.');

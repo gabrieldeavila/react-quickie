@@ -56,7 +56,7 @@ export function BashApprovalCard({
         : JSON.stringify(result.result ?? "");
     const continuation =
       action === "approve"
-        ? `${APPROVAL_CONTROL_PREFIX} O usuário aprovou a execução de ${command}. Resultado do Bash:\n${resultText}\nContinue a tarefa.`
+        ? `${APPROVAL_CONTROL_PREFIX} O resultado da execução de ${command} é:\n${resultText}\n Vá para a próxima etapa.`
         : action === "reject"
           ? `${APPROVAL_CONTROL_PREFIX} O usuário negou a execução de ${command}. Não execute esse comando e continue de outra forma.`
           : `${APPROVAL_CONTROL_PREFIX} O usuário não quer executar ${command}. Considere este comando alternativo sugerido pelo usuário: ${alternative.trim()}`;
