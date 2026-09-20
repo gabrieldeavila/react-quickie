@@ -152,6 +152,22 @@ export const ChatMessageItem = memo(function ChatMessageItem({
 
   const renderAssistantPart = useCallback(
     (part: (typeof message.parts)[number], index: number) => {
+      const completedApprovalIds = new Set(
+        message.parts.flatMap((messagePart) => {
+          if (!messagePart || typeof messagePart !== "object") return [];
+
+          const candidate = messagePart as {
+            approvalId?: unknown;
+            state?: unknown;
+          };
+
+          return candidate.state === "output-available" &&
+            typeof candidate.approvalId === "string"
+            ? [candidate.approvalId]
+            : [];
+        }),
+      );
+
       if (part.type === "text") {
         return (
           <AssistantMarkdown
@@ -190,6 +206,7 @@ export const ChatMessageItem = memo(function ChatMessageItem({
             command={approval.command}
             cwd={approval.cwd ?? ""}
             reason={approval.reason ?? "Este comando requer sua aprovação."}
+            completed={completedApprovalIds.has(approval.approvalId)}
           />
         );
       }

@@ -135,8 +135,13 @@ export const useChatHistory = (): UseChatHistoryResult => {
     async (
       conversationId: string,
       parts: UIMessage["parts"],
+      approvalId?: string,
     ): Promise<void> => {
-      await appendPartsToLatestAssistantMessage(conversationId, parts);
+      await appendPartsToLatestAssistantMessage(
+        conversationId,
+        parts,
+        approvalId,
+      );
       await reloadConversations();
     },
     [reloadConversations],

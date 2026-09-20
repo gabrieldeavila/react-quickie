@@ -72,7 +72,9 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
   const handleFinish = useCallback(
     ({ message }: { message: any }) => {
       const content = getMessageText(message).trim();
-      if (activeConversationId && content) {
+      const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
+
+      if (activeConversationId && (content || hasParts)) {
         void history.persistAssistantMessage(
           activeConversationId,
           content,

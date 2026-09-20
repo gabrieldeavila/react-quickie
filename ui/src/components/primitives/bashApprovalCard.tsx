@@ -8,16 +8,23 @@ type Props = {
   command: string;
   cwd: string;
   reason: string;
+  completed?: boolean;
 };
 
 const APPROVAL_CONTROL_PREFIX = "[bash-approval-control]";
 
-export function BashApprovalCard({ approvalId, command, cwd, reason }: Props) {
+export function BashApprovalCard({
+  approvalId,
+  command,
+  cwd,
+  reason,
+  completed = false,
+}: Props) {
   const { sendMessageRef, setMessages, history, activeConversationId } =
     useChatBaseContext();
   const [alternative, setAlternative] = useState("");
   const [status, setStatus] = useState<"pending" | "loading" | "done">(
-    "pending",
+    completed ? "done" : "pending",
   );
 
   const resolve = async (action: "approve" | "reject" | "revise") => {
@@ -61,7 +68,8 @@ export function BashApprovalCard({ approvalId, command, cwd, reason }: Props) {
         state: "output-available",
         input: { command },
         output: result.result,
-      } as UIMessage["parts"][number];
+        approvalId,
+      } as unknown as UIMessage["parts"][number];
 
       // O resultado entra no topo da última mensagem do agente, antes do texto
       // que ele produziu após receber o contexto da aprovação.

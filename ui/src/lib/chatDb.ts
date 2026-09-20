@@ -153,20 +153,47 @@ export const upsertMessage = async (
   await chatDb.messages.put(message);
 };
 
+const hasApprovalId = (message: ChatMessageRecord, approvalId: string): boolean => {
+  return (message.parts ?? []).some((part) => {
+    if (!part || typeof part !== "object") return false;
+
+    const candidate = part as { approvalId?: unknown; output?: unknown };
+    if (candidate.approvalId === approvalId) return true;
+    if (!candidate.output || typeof candidate.output !== "object") return false;
+
+    return "approvalId" in candidate.output && candidate.output.approvalId === approvalId;
+  });
+};
+
 export const appendPartsToLatestAssistantMessage = async (
   conversationId: string,
   parts: UIMessage["parts"],
+  approvalId?: string,
 ): Promise<void> => {
-  const messages = await listMessagesByConversation(conversationId);
-  const latestAssistant = [...messages]
-    .reverse()
-    .find((message) => message.role === "assistant");
+  const attempts = approvalId ? 20 : 1;
 
-  if (!latestAssistant) return;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const messages = await listMessagesByConversation(conversationId);
+    const assistantMessages = messages.filter(
+      (message) => message.role === "assistant",
+    );
+    const targetMessage = approvalId
+      ? [...assistantMessages].reverse().find((message) =>
+          hasApprovalId(message, approvalId),
+        )
+      : assistantMessages.at(-1);
 
-  await chatDb.messages.update(latestAssistant.id, {
-    parts: [...(latestAssistant.parts ?? []), ...parts],
-  });
+    if (targetMessage) {
+      await chatDb.messages.update(targetMessage.id, {
+        parts: [...(targetMessage.parts ?? []), ...parts],
+      });
+      return;
+    }
+
+    if (attempt < attempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  }
 };
 
 export const listConversations = async (): Promise<ChatConversation[]> => {

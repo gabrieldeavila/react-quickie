@@ -21,6 +21,7 @@ export interface UseChatHistoryResult {
   appendAssistantParts: (
     conversationId: string,
     parts: UIMessage["parts"],
+    approvalId?: string,
   ) => Promise<void>;
   reloadConversations: () => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;
