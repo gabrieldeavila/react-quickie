@@ -3,4 +3,6 @@ export interface BaseRequestContext {
   mode?: string;
   specialty?: string;
   planningModeEnabled?: boolean;
+  bashApprovalPending?: boolean;
+  abortGeneration?: () => void;
 }

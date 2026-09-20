@@ -9,6 +9,7 @@ import {
 } from 'ai';
 import { type Response } from 'express';
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
+import { ContextService } from 'src/common/context/context.service';
 import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ChatService } from './chat.service';
 
@@ -30,6 +31,7 @@ export class ChatController {
     private configService: ConfigService,
     private readonly promptsService: PromptsService,
     private readonly chatService: ChatService,
+    private readonly contextService: ContextService,
   ) {}
 
   @Post()
@@ -45,6 +47,11 @@ export class ChatController {
     };
 
     res.once('close', abortUpstreamRequest);
+
+    const requestContext = this.contextService.get();
+    if (requestContext) {
+      requestContext.abortGeneration = abortUpstreamRequest;
+    }
 
     const apiKey = this.configService.get<string>('OPENAI_KEY');
     const modelEnv = this.configService.get<string>('OPENAI_MODEL');
@@ -71,7 +78,12 @@ export class ChatController {
       messages: validMessages,
       tools: this.chatService.getTools(),
       instructions,
-      stopWhen: isStepCount(50),
+      stopWhen: [
+        isStepCount(50),
+        ({ steps }) =>
+          steps.length > 0 &&
+          Boolean(this.contextService.get()?.bashApprovalPending),
+      ],
       abortSignal: abortController.signal,
     });
 

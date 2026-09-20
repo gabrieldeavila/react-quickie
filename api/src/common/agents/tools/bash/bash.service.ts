@@ -57,6 +57,14 @@ export class BashToolsService {
               rootPath,
               assessment.reason ?? 'Este comando requer aprovação.',
             );
+
+            // O resultado precisa ser transmitido ao cliente para que o card
+            // seja renderizado. O controller usa esta flag como condição de
+            // parada do stream, evitando que o modelo inicie outro passo sem
+            // abortar a resposta antes do tool-output chegar ao frontend.
+            const requestContext = this.contextService.get();
+            if (requestContext) requestContext.bashApprovalPending = true;
+
             return {
               success: false,
               approvalRequired: true,

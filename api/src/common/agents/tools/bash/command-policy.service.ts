@@ -45,10 +45,18 @@ export class CommandPolicyService {
       };
     }
 
-    if (/[>|]|>>|\$\(|`/.test(normalized)) {
+    // Pipelines and conditional chaining are safe for read-only commands. The
+    // mutation check above still catches commands such as `rm`, `touch`, and
+    const commandWithoutSafeNullRedirects = normalized.replace(
+      /\d?\s*>\s*\/?dev\/null\b/g,
+      '',
+    );
+
+    if (/[<>]|\$\(|`/.test(commandWithoutSafeNullRedirects)) {
       return {
         decision: 'approval_required',
-        reason: 'O comando contém redirecionamento ou execução encadeada.',
+        reason:
+          'O comando contém redirecionamento para arquivo ou execução aninhada.',
       };
     }
 
@@ -74,7 +82,16 @@ export class CommandPolicyService {
     const resolvedRoot = resolve(rootPath);
 
     return absolutePaths.some((value) => {
-      const candidate = resolve(value.trim());
+      const candidatePath = value.trim();
+
+      // `/dev/null` is a harmless standard stream target commonly used by
+      // read-only inspection commands (`2>/dev/null`). It is not workspace
+      // access and must not trigger an approval request.
+      if (/^\/?dev\/null(?:\b|["'])/.test(candidatePath)) {
+        return false;
+      }
+
+      const candidate = resolve(candidatePath);
       return (
         candidate !== resolvedRoot &&
         !candidate.startsWith(`${resolvedRoot}${sep}`)
