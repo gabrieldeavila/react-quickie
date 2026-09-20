@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Toggle from "../../../primitives/toggle";
 import {
   CREATE_PROJECT_URL,
@@ -9,10 +9,20 @@ import type {
   CreateProjectPayload,
   ProjectTemplate,
 } from "~types/interface/project.interface";
-import { useChatBaseContext } from "../../context/context";
+import {
+  useChatBaseContext,
+  useChatServicesContext,
+} from "../../context/context";
 
 export function ChatModalNewProject() {
   const { isCreateModalOpen, setIsCreateModalOpen } = useChatBaseContext();
+  const { isBackendMode, isAgnosticMode } = useChatServicesContext();
+
+  const defaultTemplate: ProjectTemplate = isBackendMode
+    ? "nest-base"
+    : isAgnosticMode
+      ? "nest-vite-base"
+      : "vite-base";
 
   const [projectName, setProjectName] = useState("");
   const [selectedPath, setSelectedPath] = useState("");
@@ -22,12 +32,29 @@ export function ChatModalNewProject() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const availableTemplateOptions = useMemo(
+    () =>
+      PROJECT_TEMPLATE_OPTIONS.filter((option) =>
+        isBackendMode
+          ? option.value === "nest-base"
+          : isAgnosticMode
+            ? option.value === "nest-vite-base"
+            : option.value !== "nest-base" && option.value !== "nest-vite-base",
+      ),
+    [isAgnosticMode, isBackendMode],
+  );
+
+  useEffect(() => {
+    setProjectTemplate(defaultTemplate);
+  }, [defaultTemplate]);
+
   const resetForm = useCallback(() => {
     setProjectName("");
     setSelectedPath("");
-    setProjectTemplate("vite-base");
+    setProjectTemplate(defaultTemplate);
     setInitializeGit(true);
-  }, []);
+    setError(null);
+  }, [defaultTemplate]);
 
   const onClose = useCallback(() => {
     resetForm();
@@ -83,8 +110,14 @@ export function ChatModalNewProject() {
       >
         <div className="chat-modal__header">
           <div>
-            <h2 id="project-create-title">Novo projeto</h2>
-            <p>Escolha a pasta, o tipo de projeto e se quer iniciar git.</p>
+            <h2 id="project-create-title">
+              {isBackendMode
+                ? "Novo projeto backend"
+                : isAgnosticMode
+                  ? "Novo servidor fullstack"
+                  : "Novo projeto frontend"}
+            </h2>
+            <p>Escolha a pasta, o template e se quer iniciar git.</p>
           </div>
           <button
             type="button"
@@ -116,7 +149,7 @@ export function ChatModalNewProject() {
                 setProjectTemplate(event.target.value as ProjectTemplate)
               }
             >
-              {PROJECT_TEMPLATE_OPTIONS.map((option) => (
+              {availableTemplateOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

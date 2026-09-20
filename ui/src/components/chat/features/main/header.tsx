@@ -14,12 +14,15 @@ const ChatHeader = memo(() => {
     setIsCreateModalOpen,
     setDraftContext,
     projectContext,
-    messages,
     setIsRootModalOpen,
   } = useChatBaseContext();
-  console.log(messages);
-  const { chatStatusLabel, isFrontendMode, handleCreateConversation } =
-    useChatServicesContext();
+  const {
+    chatStatusLabel,
+    isFrontendMode,
+    isBackendMode,
+    isAgnosticMode,
+    handleCreateConversation,
+  } = useChatServicesContext();
 
   const activeConversationTitle: string = useMemo(
     () => history.activeConversation?.title ?? "Nova conversa",
@@ -43,9 +46,15 @@ const ChatHeader = memo(() => {
           <span className="chat-status-pill">{chatStatusLabel}</span>{" "}
           <ChatModePopover />
           <ChatSpecialtyPopover />
-          {isFrontendMode ? (
+          {isFrontendMode || isBackendMode || isAgnosticMode ? (
             <Button
-              title="Novo projeto"
+              title={
+                isBackendMode
+                  ? "Novo backend"
+                  : isAgnosticMode
+                    ? "Novo servidor fullstack"
+                    : "Novo frontend"
+              }
               icon={FiFolderPlus}
               onClick={() => setIsCreateModalOpen(true)}
             />

@@ -9,6 +9,11 @@ export const PROJECT_TEMPLATE_OPTIONS: Array<{
 }> = [
   { label: "vite-base (react router)", value: "vite-base" },
   { label: "next-base", value: "next-base" },
+  { label: "nest-base (backend)", value: "nest-base" },
+  {
+    label: "Nest + Vite (servidor fullstack)",
+    value: "nest-vite-base",
+  },
 ];
 
 export const MAX_VISIBLE_MESSAGES = 500;

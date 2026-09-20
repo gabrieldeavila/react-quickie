@@ -34,5 +34,7 @@ export type ChatServicesContextValue = {
   isChatPending: boolean;
   chatStatusLabel: string;
   isFrontendMode: boolean;
+  isBackendMode: boolean;
+  isAgnosticMode: boolean;
   handleCreateConversation: () => Promise<void>;
 };

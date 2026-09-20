@@ -1,4 +1,8 @@
-export type ProjectTemplate = "vite-base" | "next-base";
+export type ProjectTemplate =
+  | "vite-base"
+  | "next-base"
+  | "nest-base"
+  | "nest-vite-base";
 
 export interface CreateProjectPayload {
   name: string;

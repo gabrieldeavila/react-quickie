@@ -31,11 +31,9 @@ export function ChatServicesProvider({ children }: { children: ReactNode }) {
     [status],
   );
 
-  const isFrontendMode: boolean = useMemo(
-    () => projectContext.focus === AgentFocusEnum.FRONTEND,
-    [projectContext.focus],
-  );
-
+  const isFrontendMode = projectContext.focus === AgentFocusEnum.FRONTEND;
+  const isBackendMode = projectContext.focus === AgentFocusEnum.BACKEND;
+  const isAgnosticMode = projectContext.focus === AgentFocusEnum.AGNOSTIC;
   const handleCreateConversation = useServiceChatCreate();
 
   const value = useMemo(
@@ -45,13 +43,17 @@ export function ChatServicesProvider({ children }: { children: ReactNode }) {
       chatStatusLabel,
       handleCreateConversation,
       isFrontendMode,
+      isBackendMode,
+      isAgnosticMode,
     }),
     [
+      renderedMessages,
+      isChatPending,
       chatStatusLabel,
       handleCreateConversation,
-      isChatPending,
       isFrontendMode,
-      renderedMessages,
+      isBackendMode,
+      isAgnosticMode,
     ],
   );
 
