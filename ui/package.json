@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/react": "^4.0.23",
     "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-virtual": "^3.14.13",
     "ai": "^7.0.22",
     "axios": "^1.18.1",
     "dexie": "^3.2.4",
