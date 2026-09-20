@@ -7,8 +7,10 @@ import { AssistantMarkdown } from "@/components/primitives/assistantMarkdown";
 import { ToolCallCard } from "@/components/primitives/toolCallCard";
 import { BashApprovalCard } from "@/components/primitives/bashApprovalCard";
 import { UserMessageContent } from "@/components/primitives/userMessageContent";
+import { SubagentStatusCard } from "@/components/primitives/subagentStatusCard";
 import type {
   ChatMessageItemProps,
+  SubagentStatus,
   ToolStatus,
 } from "~types/interface/chat.interface";
 import { memo, useCallback } from "react";
@@ -81,6 +83,37 @@ function shortenToolPath(path?: string, maxSegments = 4): string {
   return `…/${segments.slice(-maxSegments).join("/")}`;
 }
 
+function getSubagentStatuses(parts: unknown[]): SubagentStatus[] {
+  const statuses = new Map<string, SubagentStatus>();
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") continue;
+    const candidate = part as Record<string, unknown>;
+    if (candidate.type !== "data-subagent") continue;
+
+    const data = candidate.data;
+    if (!data || typeof data !== "object") continue;
+    const value = data as Record<string, unknown>;
+    if (
+      typeof value.id !== "string" ||
+      typeof value.name !== "string" ||
+      typeof value.task !== "string" ||
+      !["running", "completed", "failed"].includes(String(value.status))
+    ) {
+      continue;
+    }
+
+    statuses.set(value.id, {
+      id: value.id,
+      name: value.name,
+      task: value.task,
+      status: value.status as SubagentStatus["status"],
+    });
+  }
+
+  return [...statuses.values()];
+}
+
 function getToolLabel(
   part: Record<string, unknown>,
   fallbackLabel: string,
@@ -112,6 +145,7 @@ export const ChatMessageItem = memo(function ChatMessageItem({
   const roleClass =
     message.role === "user" ? "user-message" : "assistant-message";
   const messageText = getMessageText(message);
+  const subagentStatuses = getSubagentStatuses(message.parts);
   const isApprovalControlMessage =
     message.role === "user" &&
     messageText.startsWith("[bash-approval-control]");
@@ -191,7 +225,10 @@ export const ChatMessageItem = memo(function ChatMessageItem({
             <span />
           </div>
         ) : message.role === "assistant" ? (
-          message.parts.map(renderAssistantPart)
+          <>
+            <SubagentStatusCard agents={subagentStatuses} />
+            {message.parts.map(renderAssistantPart)}
+          </>
         ) : message.role === "user" ? (
           <UserMessageContent text={messageText} />
         ) : (

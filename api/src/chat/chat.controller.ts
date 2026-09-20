@@ -2,6 +2,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { Body, Controller, Post, Res, UseInterceptors } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  createUIMessageStream,
   isStepCount,
   ModelMessage,
   pipeUIMessageStreamToResponse,
@@ -73,23 +74,33 @@ export class ChatController {
     const instructions = await this.promptsService.getInstructions();
 
     const model = openai(modelEnv!);
-    const result = streamText({
-      model,
-      messages: validMessages,
-      tools: this.chatService.getTools(),
-      instructions,
-      stopWhen: [
-        isStepCount(50),
-        ({ steps }) =>
-          steps.length > 0 &&
-          Boolean(this.contextService.get()?.bashApprovalPending),
-      ],
-      abortSignal: abortController.signal,
+    const stream = createUIMessageStream({
+      execute: ({ writer }) => {
+        if (requestContext) {
+          requestContext.emitSubagentEvent = (event) => {
+            writer.write({ type: 'data-subagent', data: event });
+          };
+        }
+
+        const result = streamText({
+          model,
+          messages: validMessages,
+          tools: this.chatService.getTools(),
+          instructions,
+          stopWhen: [
+            isStepCount(50),
+            ({ steps }) =>
+              steps.length > 0 &&
+              Boolean(this.contextService.get()?.bashApprovalPending),
+          ],
+          abortSignal: abortController.signal,
+        });
+
+        writer.merge(result.toUIMessageStream());
+      },
+      onError: () => 'Não foi possível concluir a resposta do agente.',
     });
 
-    pipeUIMessageStreamToResponse({
-      response: res,
-      stream: result.toUIMessageStream(),
-    });
+    pipeUIMessageStreamToResponse({ response: res, stream });
   }
 }

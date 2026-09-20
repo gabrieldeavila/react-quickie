@@ -28,6 +28,13 @@ export type ChatMessageItemProps = {
 
 export type ToolStatus = "loading" | "success" | "error";
 
+export type SubagentStatus = {
+  id: string;
+  name: string;
+  task: string;
+  status: "running" | "completed" | "failed";
+};
+
 export type ToolStatusIconProps = {
   status: ToolStatus;
 };

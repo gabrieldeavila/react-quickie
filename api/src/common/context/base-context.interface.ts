@@ -5,4 +5,10 @@ export interface BaseRequestContext {
   planningModeEnabled?: boolean;
   bashApprovalPending?: boolean;
   abortGeneration?: () => void;
+  emitSubagentEvent?: (event: {
+    id: string;
+    name: string;
+    task: string;
+    status: 'running' | 'completed' | 'failed';
+  }) => void;
 }
