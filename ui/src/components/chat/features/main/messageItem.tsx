@@ -13,7 +13,7 @@ import type {
   SubagentStatus,
   ToolStatus,
 } from "~types/interface/chat.interface";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import "@/styles/chat-tools.css";
 import "@/styles/chat-user-message.css";
 
@@ -145,14 +145,13 @@ export const ChatMessageItem = memo(function ChatMessageItem({
   const roleClass =
     message.role === "user" ? "user-message" : "assistant-message";
   const messageText = getMessageText(message);
-  const subagentStatuses = getSubagentStatuses(message.parts);
-  const isApprovalControlMessage =
-    message.role === "user" &&
-    messageText.startsWith("[bash-approval-control]");
-
-  const renderAssistantPart = useCallback(
-    (part: (typeof message.parts)[number], index: number) => {
-      const completedApprovalIds = new Set(
+  const subagentStatuses = useMemo(
+    () => getSubagentStatuses(message.parts),
+    [message.parts],
+  );
+  const completedApprovalIds = useMemo(
+    () =>
+      new Set(
         message.parts.flatMap((messagePart) => {
           if (!messagePart || typeof messagePart !== "object") return [];
 
@@ -166,8 +165,15 @@ export const ChatMessageItem = memo(function ChatMessageItem({
             ? [candidate.approvalId]
             : [];
         }),
-      );
+      ),
+    [message.parts],
+  );
+  const isApprovalControlMessage =
+    message.role === "user" &&
+    messageText.startsWith("[bash-approval-control]");
 
+  const renderAssistantPart = useCallback(
+    (part: (typeof message.parts)[number], index: number) => {
       if (part.type === "text") {
         return (
           <AssistantMarkdown
@@ -227,7 +233,7 @@ export const ChatMessageItem = memo(function ChatMessageItem({
         />
       );
     },
-    [message],
+    [completedApprovalIds, message],
   );
 
   if (isApprovalControlMessage) return null;
