@@ -1,6 +1,7 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { UIMessage } from "ai";
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { FiRefreshCw } from "react-icons/fi";
 import {
   useChatBaseContext,
   useChatServicesContext,
@@ -10,8 +11,12 @@ import { ChatEmptyState } from "./empty";
 import { ChatMessageItem } from "./messageItem";
 
 const ChatMessagesList = memo(() => {
-  const { messages } = useChatBaseContext();
+  const { messages, error, clearError, regenerate } = useChatBaseContext();
   const { isChatPending } = useChatServicesContext();
+  const handleRetry = useCallback(() => {
+    clearError();
+    void regenerate();
+  }, [clearError, regenerate]);
 
   const isEmpty: boolean = messages.length === 0;
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -34,7 +39,10 @@ const ChatMessagesList = memo(() => {
     if (isEmpty && !isChatPending) return;
 
     const frame = requestAnimationFrame(() => {
-      if (visibleMessages.length > 0) {
+      if (error) {
+        const container = scrollRef.current;
+        container?.scrollTo({ top: container.scrollHeight, behavior: "auto" });
+      } else if (visibleMessages.length > 0) {
         virtualizer.scrollToIndex(visibleMessages.length - 1, {
           align: "end",
           behavior: "auto",
@@ -43,7 +51,7 @@ const ChatMessagesList = memo(() => {
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [isEmpty, isChatPending, visibleMessages.length, virtualizer]);
+  }, [error, isEmpty, isChatPending, visibleMessages.length, virtualizer]);
 
   return (
     <div
@@ -92,6 +100,20 @@ const ChatMessagesList = memo(() => {
         </div>
       ) : null}
 
+      {error && !isChatPending ? (
+        <div className="chat-request-error" role="alert">
+          <p>{error.message || "Não foi possível gerar uma resposta."}</p>
+          <button
+            type="button"
+            className="chat-request-error__retry"
+            onClick={handleRetry}
+            disabled={isChatPending}
+          >
+            <FiRefreshCw aria-hidden="true" />
+            Tentar novamente
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 });

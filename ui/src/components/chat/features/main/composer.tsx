@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
-import { FiPause, FiRefreshCw, FiSend, FiX } from "react-icons/fi";
+import { FiPause, FiSend, FiX } from "react-icons/fi";
 import {
   useChatBaseContext,
   useChatServicesContext,
@@ -11,9 +11,6 @@ export function ChatComposer() {
     input,
     hasInput,
     status,
-    error,
-    clearError,
-    regenerate,
     setInput,
     stop,
     pastedImages,
@@ -31,11 +28,6 @@ export function ChatComposer() {
     () => !hasInput || (status !== "ready" && status !== "error"),
     [hasInput, status],
   );
-
-  const handleRetry = useCallback(() => {
-    clearError();
-    void regenerate();
-  }, [clearError, regenerate]);
 
   const resizeTextarea = useCallback(() => {
     const textarea = textareaRef.current;
@@ -81,20 +73,6 @@ export function ChatComposer() {
   return (
     <div className="chat-input-section">
       <div className="chat-composer">
-        {error ? (
-          <div className="chat-request-error" role="alert">
-            <p>{error.message || "Não foi possível gerar uma resposta."}</p>
-            <button
-              type="button"
-              className="chat-request-error__retry"
-              onClick={handleRetry}
-              disabled={isChatPending}
-            >
-              <FiRefreshCw aria-hidden="true" />
-              Tentar novamente
-            </button>
-          </div>
-        ) : null}
         {pastedImages.length > 0 ? (
           <div className="chat-pasted-images" aria-label="Imagens para enviar">
             {pastedImages.map((image) => (
