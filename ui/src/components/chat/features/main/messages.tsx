@@ -20,6 +20,17 @@ const ChatMessagesList = memo(() => {
 
   const isEmpty: boolean = messages.length === 0;
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const shouldFollowScrollRef = useRef(true);
+  const lastMessageIdRef = useRef<string | undefined>(undefined);
+
+  const handleScroll = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    shouldFollowScrollRef.current = distanceFromBottom <= 80;
+  }, []);
 
   const visibleMessages: UIMessage[] = useMemo(() => {
     if (messages.length <= MAX_VISIBLE_MESSAGES) return messages;
@@ -36,26 +47,32 @@ const ChatMessagesList = memo(() => {
   });
 
   useEffect(() => {
+    const latestMessage = messages[messages.length - 1];
+    const isNewUserMessage =
+      latestMessage?.role === "user" &&
+      latestMessage.id !== lastMessageIdRef.current;
+
+    if (isNewUserMessage) shouldFollowScrollRef.current = true;
+    lastMessageIdRef.current = latestMessage?.id;
+
     if (isEmpty && !isChatPending) return;
 
     const frame = requestAnimationFrame(() => {
-      if (error) {
-        const container = scrollRef.current;
-        container?.scrollTo({ top: container.scrollHeight, behavior: "auto" });
-      } else if (visibleMessages.length > 0) {
-        virtualizer.scrollToIndex(visibleMessages.length - 1, {
-          align: "end",
-          behavior: "auto",
-        });
-      }
+      const container = scrollRef.current;
+      if (!container || !shouldFollowScrollRef.current) return;
+
+      // Scroll instantly on each streamed update so the response stays visible
+      // without introducing smooth-scroll animation that can lag behind tokens.
+      container.scrollTo({ top: container.scrollHeight, behavior: "auto" });
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [error, isEmpty, isChatPending, visibleMessages.length, virtualizer]);
+  }, [error, isEmpty, isChatPending, messages]);
 
   return (
     <div
       ref={scrollRef}
+      onScroll={handleScroll}
       className="chat-messages"
       aria-live="polite"
       aria-relevant="additions text"
