@@ -20,7 +20,7 @@ export type ChatBaseContextValue = {
   assistantPersistedIdsRef: RefObject<Set<string>>;
   activeConversationIdRef: RefObject<string | null>;
   sendMessageRef: RefObject<
-    ((message: { text: string }) => Promise<void>) | null
+    ((message: { text: string; files?: import("ai").FileUIPart[] }) => Promise<void>) | null
   >;
   history: UseChatHistoryResult;
   initialMessages: UIMessage[];

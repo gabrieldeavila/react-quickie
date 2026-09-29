@@ -60,15 +60,25 @@ export const useChatHistory = (): UseChatHistoryResult => {
       if (currentConversationId !== activeConversationId) return;
 
       setHistoryMessages(
-        records.map((record) => ({
-          id: record.id,
-          role: record.role,
-          parts:
-            record.parts?.length && record.parts.length > 0
-              ? record.parts
-              : [{ type: "text", text: record.content }],
-          content: record.content,
-        })),
+        records.map((record) => {
+          const storedParts = record.parts?.length ? record.parts : [];
+          const hasStoredText = storedParts.some(
+            (part) => part.type === "text",
+          );
+          const parts =
+            storedParts.length > 0
+              ? record.content && !hasStoredText
+                ? [{ type: "text" as const, text: record.content }, ...storedParts]
+                : storedParts
+              : [{ type: "text" as const, text: record.content }];
+
+          return {
+            id: record.id,
+            role: record.role,
+            parts,
+            content: record.content,
+          };
+        }),
       );
     };
 
@@ -110,9 +120,13 @@ export const useChatHistory = (): UseChatHistoryResult => {
   );
 
   const persistUserMessage = useCallback(
-    async (conversationId: string, content: string): Promise<void> => {
-      await ensureConversation(conversationId, content);
-      await appendMessage(conversationId, "user", content);
+    async (
+      conversationId: string,
+      content: string,
+      parts?: UIMessage["parts"],
+    ): Promise<void> => {
+      await ensureConversation(conversationId, content || "Imagem");
+      await appendMessage(conversationId, "user", content, parts);
       await reloadConversations();
     },
     [reloadConversations],

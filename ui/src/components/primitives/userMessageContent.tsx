@@ -8,6 +8,7 @@ const USER_MESSAGE_COLLAPSED_LINE_CLAMP = String(USER_MESSAGE_COLLAPSED_LINES);
 
 export const UserMessageContent = memo(function UserMessageContent({
   text,
+  images = [],
 }: UserMessageContentProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -29,7 +30,10 @@ export const UserMessageContent = memo(function UserMessageContent({
 
   useEffect(() => {
     const element = textRef.current;
-    if (!element) return;
+    if (!element || !text) {
+      setIsTruncated(false);
+      return;
+    }
 
     const nextIsTruncated =
       element.scrollHeight > USER_MESSAGE_COLLAPSED_MAX_HEIGHT + 1;
@@ -44,23 +48,41 @@ export const UserMessageContent = memo(function UserMessageContent({
 
   return (
     <div className="user-message-body">
-      <div
-        ref={textRef}
-        className={`message-user-text${!isExpanded && isTruncated ? " message-user-text--clamped" : ""}`}
-        style={userTextStyle}
-        aria-expanded={isExpanded}
-      >
-        {text}
-      </div>
-      {isTruncated ? (
-        <button
-          type="button"
-          className="message-expand-toggle"
-          onClick={handleToggleExpanded}
-          aria-label={isExpanded ? "Recolher mensagem" : "Expandir mensagem"}
-        >
-          {isExpanded ? "Mostrar menos" : "Mostrar mais"}
-        </button>
+      {text ? (
+        <>
+          <div
+            ref={textRef}
+            className={`message-user-text${!isExpanded && isTruncated ? " message-user-text--clamped" : ""}`}
+            style={userTextStyle}
+            aria-expanded={isExpanded}
+          >
+            {text}
+          </div>
+          {isTruncated ? (
+            <button
+              type="button"
+              className="message-expand-toggle"
+              onClick={handleToggleExpanded}
+              aria-label={
+                isExpanded ? "Recolher mensagem" : "Expandir mensagem"
+              }
+            >
+              {isExpanded ? "Mostrar menos" : "Mostrar mais"}
+            </button>
+          ) : null}
+        </>
+      ) : null}
+      {images.length > 0 ? (
+        <div className="user-message-images">
+          {images.map((image, index) => (
+            <img
+              key={`${image.filename ?? "imagem"}-${index}`}
+              src={image.url}
+              alt={image.filename ?? `Imagem enviada ${index + 1}`}
+              loading="lazy"
+            />
+          ))}
+        </div>
       ) : null}
     </div>
   );

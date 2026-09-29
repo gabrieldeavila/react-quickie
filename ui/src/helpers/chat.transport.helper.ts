@@ -1,26 +1,27 @@
 import { DefaultChatTransport } from "ai";
+import type { CombinedAgentEnum } from "../../types/enum/agent.enum";
 import type {
-  CombinedAgentEnum
-} from "../../types/enum/agent.enum";
-import type {
-  ChatMessagePayload,
   ChatRequestBody,
+  ChatRequestMessage,
 } from "../../types/interface/chat.interface";
 import type { CreateChatTransportParams } from "../../types/interface/transport.interface";
 import { CHAT_API_URL } from "~types/consts/project.const";
 
 function normalizeMessage(
   message: NonNullable<ChatRequestBody["messages"]>[number],
-): ChatMessagePayload {
-  let contentText = message.content ?? "";
-  if (!contentText && message.parts?.length) {
-    contentText = message.parts
-      .filter((part) => part.type === "text")
-      .map((part) => part.text ?? "")
-      .join("\n");
-  }
+): ChatRequestMessage {
+  const sourceParts = message.parts?.length
+    ? message.parts
+    : message.content
+      ? [{ type: "text", text: message.content }]
+      : [];
+  const parts = sourceParts.filter(
+    (part) =>
+      part.type === "text" ||
+      (part.type === "file" && part.mediaType?.startsWith("image/")),
+  );
 
-  return { role: message.role, content: contentText };
+  return { role: message.role, parts };
 }
 
 export function createChatTransport({

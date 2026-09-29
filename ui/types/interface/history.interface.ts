@@ -12,6 +12,7 @@ export interface UseChatHistoryResult {
   persistUserMessage: (
     conversationId: string,
     content: string,
+    parts?: UIMessage["parts"],
   ) => Promise<void>;
   persistAssistantMessage: (
     conversationId: string,

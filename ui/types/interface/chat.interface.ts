@@ -1,20 +1,21 @@
 import type { UIMessage } from "@ai-sdk/react";
 import type { CombinedAgentEnum } from "../enum/agent.enum";
 
-export interface ChatMessagePayload {
-  role: string;
-  content: string;
-}
-
 export interface ChatRequestMessagePart {
   type: string;
   text?: string;
+  mediaType?: string;
+  filename?: string;
+  url?: string;
+  [key: string]: unknown;
 }
 
 export interface ChatRequestMessage {
+  id?: string;
   role: string;
   content?: string;
   parts?: ChatRequestMessagePart[];
+  [key: string]: unknown;
 }
 
 export interface ChatRequestBody {
@@ -47,6 +48,7 @@ export type ToolCallCardProps = {
 
 export type UserMessageContentProps = {
   text: string;
+  images?: Array<{ url: string; filename?: string }>;
 };
 
 export type AssistantMarkdownProps = {

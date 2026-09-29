@@ -1,8 +1,23 @@
 .user-message-body {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.5rem;
   max-width: 100%;
+}
+
+.user-message-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.user-message-images img {
+  display: block;
+  max-width: min(100%, 360px);
+  max-height: 320px;
+  object-fit: contain;
+  border: 1px solid var(--chat-border);
+  border-radius: 8px;
 }
 
 .message-user-text {

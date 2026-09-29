@@ -253,7 +253,14 @@ export const ChatMessageItem = memo(function ChatMessageItem({
             {message.parts.map(renderAssistantPart)}
           </>
         ) : message.role === "user" ? (
-          <UserMessageContent text={messageText} />
+          <UserMessageContent
+            text={messageText}
+            images={message.parts.flatMap((part) =>
+              part.type === "file" && part.mediaType.startsWith("image/")
+                ? [{ url: part.url, filename: part.filename }]
+                : [],
+            )}
+          />
         ) : (
           messageText
         )}

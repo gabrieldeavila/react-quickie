@@ -1,18 +1,28 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { Body, Controller, Post, Res, UseInterceptors } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  InternalServerErrorException,
+  Post,
+  Res,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  convertToModelMessages,
   createUIMessageStream,
   isStepCount,
-  ModelMessage,
   pipeUIMessageStreamToResponse,
   streamText,
+  type UIMessage,
 } from 'ai';
 import { type Response } from 'express';
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { ContextService } from 'src/common/context/context.service';
 import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ChatService } from './chat.service';
+import { parseMessages } from './helpers/parse-messages.helper';
 
 @UseInterceptors(
   BuildContextInterceptor((req) => {
@@ -36,10 +46,26 @@ export class ChatController {
   ) {}
 
   @Post()
-  async chat(
-    @Body() body: { messages?: Array<ModelMessage> },
-    @Res() res: Response,
-  ) {
+  async chat(@Body() body: { messages?: unknown }, @Res() res: Response) {
+    let validMessages: UIMessage[];
+    let modelMessages;
+    try {
+      validMessages = parseMessages(body.messages);
+      modelMessages = await convertToModelMessages(validMessages);
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        'Não foi possível processar as mensagens enviadas.',
+      );
+    }
+
+    const modelEnv = this.configService.get<string>('OPENAI_MODEL');
+    if (!modelEnv) {
+      throw new InternalServerErrorException(
+        'A variável OPENAI_MODEL não está configurada.',
+      );
+    }
+
     const abortController = new AbortController();
     const abortUpstreamRequest = () => {
       if (!res.writableEnded) {
@@ -55,22 +81,20 @@ export class ChatController {
     }
 
     const apiKey = this.configService.get<string>('OPENAI_KEY');
-    const modelEnv = this.configService.get<string>('OPENAI_MODEL');
 
     const openai = createOpenAI({
       apiKey,
     });
 
-    const validMessages = body.messages?.filter((m) => m.content != null) || [];
-
-    if (validMessages.length === 0) {
-      res.status(400).send('Nenhuma mensagem válida encontrada na requisição.');
-      return;
+    if (modelMessages.length === 0) {
+      throw new BadRequestException(
+        'Nenhuma mensagem válida encontrada na requisição.',
+      );
     }
 
     const instructions = await this.promptsService.getInstructions();
 
-    const model = openai(modelEnv!);
+    const model = openai(modelEnv);
     const stream = createUIMessageStream({
       execute: ({ writer }) => {
         if (requestContext) {
@@ -81,7 +105,7 @@ export class ChatController {
 
         const result = streamText({
           model,
-          messages: validMessages,
+          messages: modelMessages,
           tools: this.chatService.getTools(),
           instructions,
           stopWhen: [
