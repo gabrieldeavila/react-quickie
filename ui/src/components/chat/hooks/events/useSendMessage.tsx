@@ -5,6 +5,7 @@ const useSendMessage = () => {
   const {
     input,
     status,
+    clearError,
     history,
     activeConversationIdRef,
     pendingConversationIdRef,
@@ -15,8 +16,12 @@ const useSendMessage = () => {
 
   const handleSendMessage = useCallback(async () => {
     const trimmedInput: string = input.trim();
-    if ((!trimmedInput && pastedImages.length === 0) || status !== "ready")
+    if (
+      (!trimmedInput && pastedImages.length === 0) ||
+      (status !== "ready" && status !== "error")
+    ) {
       return;
+    }
 
     const userParts = pastedImages.map((image) => ({
       type: image.type,
@@ -35,6 +40,7 @@ const useSendMessage = () => {
       ...userParts,
     ];
     await history.persistUserMessage(conversationId, trimmedInput, persistedParts);
+    clearError();
     void sendMessageRef.current?.({
       text: trimmedInput,
       ...(userParts.length > 0 ? { files: userParts } : {}),
@@ -42,6 +48,7 @@ const useSendMessage = () => {
     clearInput();
   }, [
     activeConversationIdRef,
+    clearError,
     clearInput,
     history,
     input,
