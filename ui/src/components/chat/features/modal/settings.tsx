@@ -1,4 +1,3 @@
-import { PlanningModeLabel } from "~types/enum/planning-mode.enum";
 import { useChatBaseContext } from "../../context/context";
 import { useCallback } from "react";
 import type { ProjectContext } from "~types/interface/chat.interface";
@@ -33,12 +32,10 @@ export function ChatModalSettings() {
         draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
       focus: draftContext.focus,
       specialty: draftContext.specialty,
-      planningModeEnabled: draftContext.planningModeEnabled,
     });
     setIsRootModalOpen(false);
   }, [
     draftContext.focus,
-    draftContext.planningModeEnabled,
     draftContext.reference,
     draftContext.specialty,
     setIsRootModalOpen,
@@ -90,39 +87,6 @@ export function ChatModalSettings() {
               placeholder="Ex: /src, app/frontend, nome do projeto"
             />
           </label>
-
-          <div className="chat-toggle-card">
-            <div className="chat-toggle-card__copy">
-              <span className="chat-control__label">Modo de planejamento</span>
-              <p className="chat-toggle-card__description">
-                {draftContext.planningModeEnabled
-                  ? "O chat vai priorizar organização, etapas e validação antes de agir."
-                  : "O chat vai responder de forma mais direta, sem a camada extra de planejamento."}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              role="switch"
-              aria-checked={draftContext.planningModeEnabled}
-              aria-label={`Modo de planejamento ${draftContext.planningModeEnabled ? "ligado" : "desligado"}`}
-              className={`chat-toggle-switch ${draftContext.planningModeEnabled ? "chat-toggle-switch--on" : "chat-toggle-switch--off"}`}
-              onClick={() =>
-                handleChangeDraft(
-                  "planningModeEnabled",
-                  !draftContext.planningModeEnabled,
-                )
-              }
-            >
-              <span className="chat-toggle-switch__track" aria-hidden="true" />
-              <span className="chat-toggle-switch__thumb" aria-hidden="true" />
-              <span className="chat-toggle-switch__state" aria-hidden="true">
-                {draftContext.planningModeEnabled
-                  ? PlanningModeLabel.ON
-                  : PlanningModeLabel.OFF}
-              </span>
-            </button>
-          </div>
         </div>
 
         <div className="chat-modal__actions">

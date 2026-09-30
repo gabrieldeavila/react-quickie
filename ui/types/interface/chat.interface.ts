@@ -59,5 +59,4 @@ export type ProjectContext = {
   reference: string;
   focus: CombinedAgentEnum;
   specialty: string;
-  planningModeEnabled: boolean;
 };

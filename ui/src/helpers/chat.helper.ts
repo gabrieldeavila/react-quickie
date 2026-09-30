@@ -64,10 +64,6 @@ export function readProjectContext(): ProjectContext {
       specialty: isAgentSpecialty(parsed.specialty)
         ? parsed.specialty
         : DEFAULT_PROJECT_CONTEXT.specialty,
-      planningModeEnabled:
-        typeof parsed.planningModeEnabled === "boolean"
-          ? parsed.planningModeEnabled
-          : DEFAULT_PROJECT_CONTEXT.planningModeEnabled,
     };
   } catch {
     return DEFAULT_PROJECT_CONTEXT;
@@ -92,6 +88,5 @@ export function serializeProjectContext(context: ProjectContext): string {
     reference: context.reference,
     focus: context.focus,
     specialty: context.specialty,
-    planningModeEnabled: context.planningModeEnabled,
   });
 }

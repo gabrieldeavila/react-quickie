@@ -4,5 +4,4 @@ export interface CreateChatTransportParams {
   projectRoot: string;
   focus: CombinedAgentEnum;
   specialty: string;
-  planningModeEnabled: boolean;
 }

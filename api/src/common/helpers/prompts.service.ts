@@ -16,9 +16,9 @@ export class PromptsService {
   private readonly contentPath = path.join(process.cwd(), 'src');
 
   async getInstructions(): Promise<Instructions> {
+    const behaviorRules = await this.getBehaviorRules();
     const modeSkills = await this.getModeSkills();
     const pluginSkills = await this.getPluginSkills();
-    const isPlanning = this.contextService.get('planningModeEnabled');
 
     const instructions: Instructions = [
       {
@@ -27,17 +27,16 @@ export class PromptsService {
       },
     ];
 
+    if (Array.isArray(behaviorRules)) {
+      instructions.push(...behaviorRules);
+    }
+
     if (Array.isArray(modeSkills)) {
       instructions.push(...modeSkills);
     }
 
     if (Array.isArray(pluginSkills)) {
       instructions.push(...pluginSkills);
-    }
-
-    if (isPlanning) {
-      const planningSkills = await this.getPlanningSkills();
-      if (Array.isArray(planningSkills)) instructions.push(...planningSkills);
     }
 
     const memorySkills = await this.getMemorySkills();
@@ -167,27 +166,20 @@ export class PromptsService {
     return instructions;
   }
 
-  async getPlanningSkills(): Promise<Instructions | null> {
-    const pathPlanning = 'common/agents/skills/planning.md';
-    const pathSearch = path.join(this.contentPath, pathPlanning);
+  async getBehaviorRules(): Promise<Instructions | null> {
+    const behaviorPath = path.join(
+      this.contentPath,
+      'common/agents/skills/behavior.md',
+    );
 
-    const exists = await fs.pathExists(pathSearch);
-
-    if (!exists) return null;
+    if (!(await fs.pathExists(behaviorPath))) return null;
 
     const content =
-      await this.markdownService.getMarkdownFile(pathSearch)?.html;
+      await this.markdownService.getMarkdownFile(behaviorPath)?.html;
 
-    const instructions: Instructions = [];
+    if (!content?.length) return null;
 
-    if (content.length) {
-      instructions.push({
-        content,
-        role: 'system',
-      });
-    }
-
-    return instructions;
+    return [{ content, role: 'system' }];
   }
 
   async getMemorySkills(): Promise<Instructions | null> {

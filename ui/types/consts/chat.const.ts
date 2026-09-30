@@ -28,7 +28,6 @@ export const DEFAULT_PROJECT_CONTEXT: ProjectContext = {
   reference: "/workspace",
   focus: AgentFocusEnum.AGNOSTIC,
   specialty: AgentSpecialtyEnum.NONE,
-  planningModeEnabled: false,
 };
 
 export const CHAT_MODE_OPTIONS: PopoverOption<CombinedAgentEnum>[] = [

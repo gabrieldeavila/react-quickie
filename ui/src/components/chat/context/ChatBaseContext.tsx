@@ -54,14 +54,8 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
         projectRoot: projectContext.reference,
         focus: projectContext.focus,
         specialty: projectContext.specialty,
-        planningModeEnabled: projectContext.planningModeEnabled,
       }),
-    [
-      projectContext.focus,
-      projectContext.planningModeEnabled,
-      projectContext.reference,
-      projectContext.specialty,
-    ],
+    [projectContext.focus, projectContext.reference, projectContext.specialty],
   );
 
   const handleError = useCallback((error: unknown) => {

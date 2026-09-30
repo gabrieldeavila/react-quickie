@@ -32,7 +32,6 @@ import { parseMessages } from './helpers/parse-messages.helper';
       root: body.root as string | undefined,
       mode: body.chatMode as string | undefined,
       specialty: body.chatSpecialty as string | undefined,
-      planningModeEnabled: body.planningModeEnabled as boolean | undefined,
     };
   }),
 )

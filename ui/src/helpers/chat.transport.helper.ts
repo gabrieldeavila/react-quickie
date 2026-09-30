@@ -32,7 +32,6 @@ export function createChatTransport({
   projectRoot,
   focus,
   specialty,
-  planningModeEnabled,
 }: CreateChatTransportParams) {
   return new DefaultChatTransport({
     api: CHAT_API_URL,
@@ -42,7 +41,6 @@ export function createChatTransport({
           root?: string;
           chatMode?: CombinedAgentEnum;
           chatSpecialty?: string;
-          planningModeEnabled?: boolean;
         };
         if (body.messages) {
           body.messages = body.messages.flatMap((message) => {
@@ -53,7 +51,6 @@ export function createChatTransport({
         body.root = projectRoot;
         body.chatMode = focus;
         body.chatSpecialty = specialty;
-        body.planningModeEnabled = planningModeEnabled;
         options.body = JSON.stringify(body);
       }
       return fetch(url, options);
