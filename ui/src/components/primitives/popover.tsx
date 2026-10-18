@@ -2,9 +2,11 @@ import type {
   PopoverOption,
   PopoverProps,
 } from "../../../types/interface/primitive-popover.interface";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import type { IconType } from "react-icons";
 import { FiMinusCircle } from "react-icons/fi";
+import { PopoverTrigger } from "./popover-trigger";
+import { usePopoverPanel } from "./usePopoverPanel";
 
 export function Popover<T extends string | number>({
   value,
@@ -13,11 +15,11 @@ export function Popover<T extends string | number>({
   ariaLabel,
   title,
   defaultIcon: DefaultIcon,
+  triggerLabel,
+  placement = "down",
 }: PopoverProps<T>) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [openDirection, setOpenDirection] = useState<"left" | "right">("right");
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const panelRef = useRef<HTMLDivElement | null>(null);
+  const { isOpen, toggle, close, openDirection, containerRef, panelRef } =
+    usePopoverPanel();
 
   const currentOption: PopoverOption<T> | undefined = useMemo(
     () => options.find((option) => option.value === value),
@@ -27,67 +29,22 @@ export function Popover<T extends string | number>({
   const TriggerIcon: IconType =
     currentOption?.icon ?? DefaultIcon ?? FiMinusCircle;
 
-  useEffect(() => {
-    const handlePointerDown = (event: MouseEvent): void => {
-      if (!containerRef.current?.contains(event.target as Node))
-        setIsOpen(false);
-    };
-    const handleEscape = (event: KeyboardEvent): void => {
-      if (event.key === "Escape") setIsOpen(false);
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!isOpen) return;
-    const updateDirection = (): void => {
-      const container = containerRef.current;
-      const panel = panelRef.current;
-      if (!container || !panel) return;
-      const containerRect = container.getBoundingClientRect();
-      const panelWidth = panel.offsetWidth || 220;
-      const spaceRight = window.innerWidth - containerRect.left;
-      const spaceLeft = containerRect.right;
-      setOpenDirection(
-        spaceRight < panelWidth + 16 && spaceLeft >= panelWidth
-          ? "left"
-          : "right",
-      );
-    };
-    updateDirection();
-    window.addEventListener("resize", updateDirection);
-    window.addEventListener("scroll", updateDirection, true);
-    return () => {
-      window.removeEventListener("resize", updateDirection);
-      window.removeEventListener("scroll", updateDirection, true);
-    };
-  }, [isOpen]);
-
   return (
     <div className="chat-mode-popover" ref={containerRef}>
-      <button
-        type="button"
-        className="chat-mode-popover__trigger"
-        onClick={() => setIsOpen((current: boolean) => !current)}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        aria-label={ariaLabel}
-        title={title}
-      >
-        <span className="chat-mode-popover__icon" aria-hidden="true">
-          <TriggerIcon className="chat-mode-popover__icon-svg" />
-        </span>
-      </button>
+      <PopoverTrigger
+        icon={TriggerIcon}
+        label={triggerLabel}
+        isOpen={isOpen}
+        onClick={toggle}
+        ariaLabel={ariaLabel}
+        title={triggerLabel ? `${title}: ${triggerLabel}` : title}
+        hasPopup="listbox"
+      />
 
       {isOpen ? (
         <div
           ref={panelRef}
-          className={`chat-mode-popover__panel chat-mode-popover__panel--${openDirection}`}
+          className={`chat-mode-popover__panel chat-mode-popover__panel--${openDirection} chat-mode-popover__panel--${placement}`}
           role="listbox"
           aria-label={ariaLabel}
         >
@@ -102,7 +59,7 @@ export function Popover<T extends string | number>({
                 className={`chat-mode-popover__option ${isSelected ? "chat-mode-popover__option--selected" : ""}`}
                 onClick={() => {
                   onChange(option.value);
-                  setIsOpen(false);
+                  close();
                 }}
                 role="option"
                 aria-selected={isSelected}

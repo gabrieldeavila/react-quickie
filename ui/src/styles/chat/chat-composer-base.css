@@ -1,8 +1,6 @@
 .chat-input-section {
   flex: 0 0 auto;
-  padding: 18px 20px 22px;
-  border-top: 1px solid var(--chat-border);
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.03));
+  padding: 8px 12px 12px;
   display: flex;
   justify-content: center;
 }
@@ -12,7 +10,7 @@
   max-width: 700px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .chat-pasted-images {
@@ -60,90 +58,4 @@
   margin: 0;
   color: var(--chat-text);
   font-size: 0.85rem;
-}
-
-.input-wrapper {
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-  width: 100%;
-  max-width: 700px;
-}
-
-.chat-input {
-  flex: 1;
-  min-height: 58px;
-  max-height: 160px;
-  resize: none;
-  overflow-y: auto;
-  border: 1px solid var(--chat-border-strong);
-  background: rgba(6, 10, 15, 0.55);
-  color: var(--chat-text);
-  padding: 16px;
-  outline: none;
-  box-sizing: border-box;
-  line-height: 1.45;
-  field-sizing: content;
-}
-
-.chat-input::placeholder {
-  color: rgba(145, 160, 180, 0.8);
-}
-
-.chat-input:focus {
-  border-color: rgba(124, 140, 255, 0.6);
-  background: rgba(8, 12, 18, 0.72);
-  box-shadow: 0 0 0 4px rgba(124, 140, 255, 0.12);
-}
-
-.send-button {
-  width: 58px;
-  height: 58px;
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border: 1px solid rgba(124, 140, 255, 0.35);
-  border-radius: 7px;
-  color: #f5f7ff;
-  background: linear-gradient(
-    135deg,
-    rgba(124, 140, 255, 0.95),
-    rgba(138, 92, 246, 0.92)
-  );
-  cursor: pointer;
-  transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
-    opacity 0.22s ease;
-}
-
-.send-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 30px rgba(124, 140, 255, 0.22);
-}
-
-.send-button--pause {
-  border-color: var(--chat-border-strong);
-  color: var(--chat-text);
-  background: var(--chat-surface);
-}
-
-.send-button--pause:hover:not(:disabled) {
-  border-color: var(--chat-accent);
-  background: var(--chat-surface-hover, var(--chat-surface));
-  box-shadow: none;
-}
-
-.send-button:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
-}
-
-.send-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.send-button svg {
-  width: 20px;
-  height: 20px;
 }

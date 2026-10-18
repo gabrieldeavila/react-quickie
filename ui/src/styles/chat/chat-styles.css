@@ -9,6 +9,7 @@
 @import "./messages.css";
 @import "./chat-markdown-base.css";
 @import "./chat-composer-base.css";
+@import "./chat-composer-field.css";
 @import "./chat-modal-backdrop.css";
 @import "./chat-responsive.css";
 @import "./chat-modal.css";

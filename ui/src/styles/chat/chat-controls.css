@@ -78,6 +78,34 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
+.chat-mode-popover__trigger--chip {
+  width: auto;
+  height: 26px;
+  gap: 5px;
+  padding: 0 6px;
+  min-width: 0;
+  color: var(--chat-text-muted);
+  font-size: 0.78rem;
+}
+
+.chat-mode-popover__trigger-label {
+  max-width: 120px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chat-mode-popover__chevron {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+.chat-mode-popover__trigger--chip .chat-mode-popover__icon-svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
 .chat-mode-popover__icon {
   display: inline-flex;
   align-items: center;
@@ -115,4 +143,11 @@
 
 .chat-mode-popover__panel--left {
   right: 0;
+}
+
+.chat-mode-popover__panel--up {
+  top: auto;
+  bottom: calc(100% + 8px);
+  max-height: min(360px, 60vh);
+  overflow-y: auto;
 }

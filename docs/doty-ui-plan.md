@@ -215,21 +215,65 @@ Notes:
 
 ## Phase 3 — Pickers move into the message box (Session D)
 
-- [ ] `domain/build-agent-picker-options.ts` + `.spec.ts`: merges `CHAT_MODE_OPTIONS` and `CHAT_SPECIALTY_OPTIONS` into one grouped list, filtered by host features.
-- [ ] `components/AgentPicker.tsx`: one picker for mode and specialty, replacing [modePopover.tsx](../ui/src/components/chat/features/main/modePopover.tsx) and [specialtyPopover.tsx](../ui/src/components/chat/features/main/specialtyPopover.tsx).
-- [ ] `components/ComposerToolbar.tsx`: agent picker, model picker and context-usage badge inside the message box.
-- [ ] The message box becomes one compact rounded field, with the send/stop button inside it.
-- [ ] `components/HeaderOverflowMenu.tsx`: a "⋯" menu with settings and new project. After this, the header holds only the title, new chat and "⋯".
+- [x] `domain/build-agent-picker-options.ts` + `.spec.ts`: merges `CHAT_MODE_OPTIONS` and `CHAT_SPECIALTY_OPTIONS` into one grouped list, filtered by host features.
+- [x] `components/AgentPicker.tsx`: one picker for mode and specialty, replacing [modePopover.tsx](../ui/src/components/chat/features/main/modePopover.tsx) and [specialtyPopover.tsx](../ui/src/components/chat/features/main/specialtyPopover.tsx).
+- [x] `components/ComposerToolbar.tsx`: agent picker, model picker and context-usage badge inside the message box.
+- [x] The message box becomes one compact rounded field, with the send/stop button inside it.
+- [x] `components/HeaderOverflowMenu.tsx`: a "⋯" menu with settings and new project. After this, the header holds only the title, new chat and "⋯".
 
 #### Progress
 
 ```
-Status: not started
-Branch: —
-Last commit: —
-Done: —
+Status: done
+Branch: feat/ui-a-english-ui
+Last commit: fa3ad98 + the following feat(ui) commit (code + this block)
+Done:
+  - Agent picker (ui/src/features/agent-picker/):
+    domain/build-agent-picker-options.ts (+ spec): one group per mode (filtered with
+    filterModeOptions), each followed by its specialties minus "No specialty". A mode row
+    selects {focus, specialty: "none"}; a specialty row selects {focus, specialty}.
+    domain/describe-agent-choice.ts (+ spec): trigger text ("Frontend" / "Frontend ·
+    Forms") and isSameAgentChoice (a specialty the mode doesn't offer counts as none).
+    components/AgentPicker.tsx + AgentPickerRow.tsx render it.
+    components/chat/hooks/events/useAgentChoice.ts binds it to projectContext.
+    modePopover.tsx and specialtyPopover.tsx deleted.
+  - Popover primitive: open/close/flip logic extracted to primitives/usePopoverPanel.ts;
+    primitives/popover-trigger.tsx renders either the icon button or a labelled chip
+    (icon + label + chevron). PopoverProps gained `triggerLabel` and `placement`
+    ("up" opens above the trigger, scrolls past 360px).
+  - Message box: components/chat/features/main/composer.tsx moved to composer/index.tsx
+    and split into PastedImages.tsx, SendButton.tsx and ComposerToolbar.tsx. The field is
+    one rounded box (styles/chat/chat-composer-field.css) with the textarea on top and the
+    toolbar below: [Agent ▾] [Model ▾] … usage badges, then a 30px send/stop button.
+    ModelPicker is now a chip showing the model name and opens upwards.
+  - Usage: UsageHeaderBadges renamed to UsageBadges (lives in the toolbar, still only
+    once the conversation has messages). ContextUsageBadge text is "64%", with
+    "Context window used: 64%" as title/aria-label.
+  - Header: title, new chat (＋) and the "⋯" menu only.
+    features/header-menu/components/HeaderOverflowMenu.tsx (generic items list) +
+    domain/new-project-label.ts (+ spec: label per mode, null when the host can't
+    create projects or the mode has no template) + hooks/events/useHeaderMenuItems.ts.
 Left: —
-Notes: —
+Notes:
+  - Placement deviates slightly from the plan's bare `components/` paths:
+    AgentPicker lives in features/agent-picker/, HeaderOverflowMenu in
+    features/header-menu/, and ComposerToolbar in components/chat/features/main/composer/
+    because it reads the chat contexts like the rest of the composer.
+  - Behaviour change: picking a mode now resets the specialty to "none" (before, the old
+    specialty was kept when switching modes).
+  - Status pill now shows only on "error". "Responding" is shown by the stop button
+    inside the message box. Narrow it further if a real offline state is added.
+  - isFrontendMode/isBackendMode/isAgnosticMode stay in ChatServicesContext: the
+    new-project modal still uses them.
+  - ConversationUsageBadge (total cost/tokens) moved into the toolbar with the context
+    badge, borderless and smaller. Drop it there if the toolbar gets too crowded.
+  - Session E: the header row now has only the title, ＋ and ⋯, so the title can become
+    the conversation-switcher button without fighting other controls. Session G: the ⋯
+    items come from useHeaderMenuItems, reusable for the view/title commands.
+  - No browser on this machine, so the layout was checked by reading the CSS, not by eye.
+    Worth a look in the VS Code panel (especially the upward pickers at narrow widths).
+  - Checks: ui typecheck, lint and tests (33 files / 126 tests) green; vite build OK.
+    vscode/ and api/ untouched.
 ```
 
 ---

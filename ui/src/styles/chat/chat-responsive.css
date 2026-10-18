@@ -1,6 +1,5 @@
 @media (max-width: 768px) {
-  .chat-messages,
-  .chat-input-section {
+  .chat-messages {
     padding-left: 16px;
     padding-right: 16px;
   }
@@ -41,12 +40,6 @@
 
 .markdown-content {
   max-width: 86%;
-}
-
-.send-button {
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {

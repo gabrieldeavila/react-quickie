@@ -1,0 +1,108 @@
+/* The message box: one rounded field holding the textarea and its toolbar. */
+.chat-composer__field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 12px;
+  background: rgba(6, 10, 15, 0.55);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.chat-composer__field:focus-within {
+  border-color: rgba(124, 140, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(124, 140, 255, 0.12);
+}
+
+.chat-composer__field .chat-input {
+  width: 100%;
+  min-height: 44px;
+  max-height: 160px;
+  resize: none;
+  overflow-y: auto;
+  border: none;
+  border-radius: 12px 12px 0 0;
+  background: transparent;
+  color: var(--chat-text);
+  padding: 12px 12px 4px;
+  outline: none;
+  box-sizing: border-box;
+  line-height: 1.45;
+  field-sizing: content;
+}
+
+.chat-composer__field .chat-input::placeholder {
+  color: rgba(145, 160, 180, 0.8);
+}
+
+.chat-composer__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px 6px;
+}
+
+.chat-composer__pickers,
+.chat-composer__trailing {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.chat-composer__trailing {
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.chat-composer__trailing .chat-usage-badge {
+  height: 24px;
+  padding: 0 4px;
+  border: none;
+  font-size: 0.75rem;
+}
+
+.send-button {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 8px;
+  color: #f5f7ff;
+  background: linear-gradient(
+    135deg,
+    rgba(124, 140, 255, 0.95),
+    rgba(138, 92, 246, 0.92)
+  );
+  cursor: pointer;
+  transition: opacity 0.18s ease;
+}
+
+.send-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.send-button--pause {
+  color: var(--chat-text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.send-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.send-button:focus-visible {
+  outline: 2px solid rgba(124, 140, 255, 0.9);
+  outline-offset: 2px;
+}
+
+.send-button svg {
+  width: 16px;
+  height: 16px;
+}
