@@ -93,7 +93,27 @@ describe('selectRequestModel', () => {
 describe('resolveSubagentModel', () => {
   const defaultModel = resolveDefaultModel(providers, env);
 
-  it('prefers DOTY_SUBAGENT_MODEL', () => {
+  it("prefers the agent's frontmatter model", () => {
+    expect(
+      resolveSubagentModel(providers, {
+        agentModel: 'openai:gpt-6-luna',
+        subagentModel: 'anthropic:claude-haiku-5-5',
+        defaultModel,
+      })?.ref,
+    ).toBe('openai:gpt-6-luna');
+  });
+
+  it('skips an agent model whose provider has no key', () => {
+    expect(
+      resolveSubagentModel(providers, {
+        agentModel: 'deepseek:deepseek-v4-pro',
+        subagentModel: 'anthropic:claude-haiku-5-5',
+        defaultModel,
+      })?.ref,
+    ).toBe('anthropic:claude-haiku-5-5');
+  });
+
+  it('then DOTY_SUBAGENT_MODEL', () => {
     expect(
       resolveSubagentModel(providers, {
         subagentModel: 'anthropic:claude-haiku-5-5',

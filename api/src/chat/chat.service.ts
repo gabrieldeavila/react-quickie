@@ -13,7 +13,7 @@ import { FrontendToolsService } from 'src/common/agents/tools/frontend/tool.serv
 import { GitToolsService } from 'src/common/agents/tools/git/git.service';
 import { PluginToolsService } from 'src/common/agents/plugin/tools/tools.plugins.service';
 import { MemoryService } from 'src/common/helpers/memory.service';
-import { SubagentService } from './subagent.service';
+import { SubagentToolService } from 'src/subagents/data/subagent-tool.service';
 import { McpToolsService } from 'src/mcp/data/mcp-tools.service';
 import {
   buildToolApprovalMap,
@@ -31,7 +31,7 @@ export class ChatService {
     private readonly frontendToolsService: FrontendToolsService,
     private readonly gitToolsService: GitToolsService,
     private readonly pluginToolsService: PluginToolsService,
-    private readonly subagentService: SubagentService,
+    private readonly subagentToolService: SubagentToolService,
     private readonly mcpToolsService: McpToolsService,
   ) {}
 
@@ -57,18 +57,22 @@ export class ChatService {
     toolApproval: ToolApprovalMap;
   }> {
     const root = this.contextService.get('root');
-    const mcp = root
-      ? await this.mcpToolsService.getToolkit(root)
-      : { tools: {}, approvalPolicies: {} };
+    const [mcp, subagents] = await Promise.all([
+      root
+        ? this.mcpToolsService.getToolkit(root)
+        : { tools: {}, approvalPolicies: {} },
+      this.subagentToolService.createToolkit(root),
+    ]);
 
     return {
-      tools: { ...mcp.tools, ...this.getBuiltInTools() },
-      toolApproval: root
-        ? buildToolApprovalMap({
-            ...mcp.approvalPolicies,
-            ...this.bashToolsService.createApprovalPolicies(root),
-          })
-        : {},
+      tools: { ...mcp.tools, ...this.getBuiltInTools(), ...subagents.tools },
+      // The subagent policy applies even without a root: a write-capable
+      // agent must never run unasked.
+      toolApproval: buildToolApprovalMap({
+        ...mcp.approvalPolicies,
+        ...(root ? this.bashToolsService.createApprovalPolicies(root) : {}),
+        ...subagents.approvalPolicies,
+      }),
     };
   }
 
@@ -78,7 +82,6 @@ export class ChatService {
       ...createProjectTools(this.projectService),
       ...createMemoryTools(this.memoryService),
       ...this.bashToolsService.createBashTools(),
-      ...this.subagentService.createTools(),
       ...this.getCustomTools(),
     };
   }

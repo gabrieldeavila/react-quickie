@@ -10,6 +10,8 @@ export type AppPaths = {
   repoParentDir: string;
   skillsDir: string;
   pluginSkillsDir: string;
+  /** Built-in subagent definitions (`*.md`). */
+  agentDefinitionsDir: string;
   storageDir: string;
   memoryDir: string;
   legacyMemoryDir: string;
@@ -41,6 +43,7 @@ export function resolveAppPaths({
     repoParentDir: path.resolve(repoDir, '..'),
     skillsDir: path.join(baseDir, 'common', 'agents', 'skills'),
     pluginSkillsDir: path.join(baseDir, 'common', 'agents', 'plugin', 'skills'),
+    agentDefinitionsDir: path.join(baseDir, 'subagents', 'definitions'),
     storageDir,
     memoryDir: path.join(storageDir, 'memory'),
     legacyMemoryDir: path.join(apiDir, 'storage', 'memory'),

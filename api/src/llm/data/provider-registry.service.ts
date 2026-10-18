@@ -44,8 +44,12 @@ export class ProviderRegistryService {
     return selectRequestModel(this.providers, requested, this.defaultModel);
   }
 
-  selectForSubagent(conversationModel?: string): SelectedModel | undefined {
+  selectForSubagent(
+    conversationModel?: string,
+    agentModel?: string,
+  ): SelectedModel | undefined {
     return resolveSubagentModel(this.providers, {
+      agentModel,
       subagentModel: this.env.DOTY_SUBAGENT_MODEL,
       conversationModel,
       defaultModel: this.defaultModel,

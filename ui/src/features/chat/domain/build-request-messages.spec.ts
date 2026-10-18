@@ -12,7 +12,11 @@ const toolPart = {
 describe("buildRequestMessages", () => {
   it("keeps text, images, tool calls, dynamic tools and reasoning", () => {
     const image = { type: "file", mediaType: "image/png", url: "data:x" };
-    const dynamic = { type: "dynamic-tool", toolName: "mcp__x__y", toolCallId: "c2" };
+    const dynamic = {
+      type: "dynamic-tool",
+      toolName: "mcp__x__y",
+      toolCallId: "c2",
+    };
     const reasoning = { type: "reasoning", text: "thinking" };
 
     const [user, assistant] = buildRequestMessages([
@@ -61,14 +65,22 @@ describe("buildRequestMessages", () => {
 
   it("falls back to content when a stored message has no parts, and fills ids", () => {
     expect(buildRequestMessages([{ role: "user", content: "hello" }])).toEqual([
-      { id: "request-0", role: "user", parts: [{ type: "text", text: "hello" }] },
+      {
+        id: "request-0",
+        role: "user",
+        parts: [{ type: "text", text: "hello" }],
+      },
     ]);
   });
 
   describe("conversations from the old approval flow", () => {
     it("drops the fake [bash-approval-control] user messages", () => {
       const result = buildRequestMessages([
-        { id: "u1", role: "user", parts: [{ type: "text", text: "run tests" }] },
+        {
+          id: "u1",
+          role: "user",
+          parts: [{ type: "text", text: "run tests" }],
+        },
         {
           id: "u2",
           role: "user",
@@ -100,5 +112,41 @@ describe("buildRequestMessages", () => {
 
       expect(message.parts).toEqual([toolPart, { type: "text", text: "done" }]);
     });
+  });
+
+  it("migrates old run_subagent calls and drops subagent steps", () => {
+    const [message] = buildRequestMessages([
+      {
+        id: "a1",
+        role: "assistant",
+        parts: [
+          {
+            type: "tool-run_subagent",
+            toolCallId: "c1",
+            state: "output-available",
+            input: { name: "pesquisa", task: "t" },
+            output: { success: true, subagentId: "x", result: "old" },
+          },
+          {
+            type: "tool-run_subagent",
+            toolCallId: "c2",
+            state: "output-available",
+            input: { agent: "explorer", task: "t" },
+            output: { status: "completed", text: "new", steps: [{ id: "s" }] },
+          },
+        ],
+      },
+    ]);
+
+    expect(message.parts.map((part) => [part.input, part.output])).toEqual([
+      [
+        { agent: "pesquisa", task: "t" },
+        { success: true, subagentId: "x", result: "old" },
+      ],
+      [
+        { agent: "explorer", task: "t" },
+        { status: "completed", text: "new" },
+      ],
+    ]);
   });
 });

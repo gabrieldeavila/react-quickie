@@ -47,11 +47,34 @@ export function getDeniedReason(part: ToolPartLike): string | undefined {
   return typeof reason === "string" && reason.trim() ? reason : undefined;
 }
 
-/** Bash approvals show the command; any other tool shows its raw input. */
+const BASH_TOOL = "run_bash_command";
+const SUBAGENT_TOOL = "run_subagent";
+
+type KnownInput = { command?: unknown; agent?: unknown; task?: unknown };
+
+/** Bash shows the command, a subagent its task; any other tool its raw input. */
 export function describeApprovalInput(approval: PendingApproval): string {
-  const input = approval.input as { command?: unknown } | undefined;
+  const input = approval.input as KnownInput | undefined;
   if (typeof input?.command === "string") return input.command;
+  if (approval.toolName === SUBAGENT_TOOL && typeof input?.task === "string") {
+    return input.task;
+  }
   return JSON.stringify(approval.input ?? {}, null, 2);
+}
+
+/** The card heading; `toolLabel` names tools without a special case (e.g. MCP). */
+export function describeApprovalTitle(
+  approval: PendingApproval,
+  toolLabel: string,
+): string {
+  if (approval.toolName === BASH_TOOL) {
+    return "O agente precisa de permissão para executar:";
+  }
+  const agent = (approval.input as KnownInput | undefined)?.agent;
+  if (approval.toolName === SUBAGENT_TOOL && typeof agent === "string") {
+    return `O subagente ${agent} quer fazer alterações:`;
+  }
+  return `O agente precisa de permissão para usar ${toolLabel}:`;
 }
 
 /** Denial reason that tells the model what the user wants instead. */

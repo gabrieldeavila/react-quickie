@@ -8,6 +8,10 @@
       {
         "include": "common/agents/**/*.md",
         "watchAssets": true
+      },
+      {
+        "include": "subagents/definitions/*.md",
+        "watchAssets": true
       }
     ]
   }

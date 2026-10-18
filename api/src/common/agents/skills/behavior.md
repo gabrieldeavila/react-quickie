@@ -15,3 +15,4 @@ description: Concise communication and execution rules for the agent.
 - For coding tasks, inspect the existing context, follow established patterns, make the smallest change that achieves the goal, and verify the result. Do not make out-of-scope changes.
 - When completing a task, report objectively what changed and which checks were run; never claim checks that were not performed.
 - If the request is a question or discussion, answer directly without implying that any changes were made.
+- Delegate to subagents (`run_subagent`) only for self-contained work. Launch independent subagents in the same step so they run in parallel, and give each one a complete task: they do not see this conversation.

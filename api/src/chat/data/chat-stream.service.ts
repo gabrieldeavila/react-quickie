@@ -7,7 +7,6 @@ import {
   type ToolSet,
   type UIMessage,
 } from 'ai';
-import { ContextService } from 'src/common/context/context.service';
 import { PromptsService } from 'src/common/helpers/prompts.service';
 import { ProviderRegistryService } from 'src/llm/data/provider-registry.service';
 import type { SelectedModel } from 'src/llm/domain/find-model';
@@ -31,7 +30,6 @@ export class ChatStreamService {
   constructor(
     private readonly providerRegistry: ProviderRegistryService,
     private readonly promptsService: PromptsService,
-    private readonly contextService: ContextService,
     private readonly approvalSecretService: ApprovalSecretService,
   ) {}
 
@@ -50,16 +48,9 @@ export class ChatStreamService {
     const agentToolApproval = selected.model.supportsTools ? toolApproval : {};
     const instructions = await this.promptsService.getInstructions();
     const approvalSecret = await this.approvalSecretService.get();
-    const requestContext = this.contextService.get();
 
     return createUIMessageStream({
       execute: ({ writer }) => {
-        if (requestContext) {
-          requestContext.emitSubagentEvent = (event) => {
-            writer.write({ type: 'data-subagent', data: event });
-          };
-        }
-
         const result = streamText({
           model,
           messages,

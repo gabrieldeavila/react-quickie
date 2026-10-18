@@ -4,45 +4,12 @@ import { AssistantMarkdown } from "@/components/primitives/assistantMarkdown";
 import { AssistantToolPart } from "@/features/chat/components/AssistantToolPart";
 import { isLegacyApprovalControlMessage } from "@/features/chat/domain/legacy-approval";
 import { UserMessageContent } from "@/components/primitives/userMessageContent";
-import { SubagentStatusCard } from "@/components/primitives/subagentStatusCard";
-import type {
-  ChatMessageItemProps,
-  SubagentStatus,
-} from "~types/interface/chat.interface";
+import { SubagentGroup } from "@/features/subagents/components/SubagentGroup";
+import { groupSubagentParts } from "@/features/subagents/domain/group-subagent-parts";
+import type { ChatMessageItemProps } from "~types/interface/chat.interface";
 import { memo, useCallback, useMemo, type ComponentProps } from "react";
 import "@/styles/chat-tools.css";
 import "@/styles/chat-user-message.css";
-
-function getSubagentStatuses(parts: unknown[]): SubagentStatus[] {
-  const statuses = new Map<string, SubagentStatus>();
-
-  for (const part of parts) {
-    if (!part || typeof part !== "object") continue;
-    const candidate = part as Record<string, unknown>;
-    if (candidate.type !== "data-subagent") continue;
-
-    const data = candidate.data;
-    if (!data || typeof data !== "object") continue;
-    const value = data as Record<string, unknown>;
-    if (
-      typeof value.id !== "string" ||
-      typeof value.name !== "string" ||
-      typeof value.task !== "string" ||
-      !["running", "completed", "failed"].includes(String(value.status))
-    ) {
-      continue;
-    }
-
-    statuses.set(value.id, {
-      id: value.id,
-      name: value.name,
-      task: value.task,
-      status: value.status as SubagentStatus["status"],
-    });
-  }
-
-  return [...statuses.values()];
-}
 
 export const ChatMessageItem = memo(function ChatMessageItem({
   message,
@@ -52,8 +19,8 @@ export const ChatMessageItem = memo(function ChatMessageItem({
   const roleClass =
     message.role === "user" ? "user-message" : "assistant-message";
   const messageText = getMessageText(message);
-  const subagentStatuses = useMemo(
-    () => getSubagentStatuses(message.parts),
+  const partGroups = useMemo(
+    () => groupSubagentParts(message.parts),
     [message.parts],
   );
   const isApprovalControlMessage = isLegacyApprovalControlMessage(message);
@@ -96,10 +63,20 @@ export const ChatMessageItem = memo(function ChatMessageItem({
             <span />
           </div>
         ) : message.role === "assistant" ? (
-          <>
-            <SubagentStatusCard agents={subagentStatuses} />
-            {message.parts.map(renderAssistantPart)}
-          </>
+          partGroups.map((group) =>
+            group.kind === "subagents" ? (
+              <SubagentGroup
+                key={`${message.id}-subagents-${group.items[0].index}`}
+                messageId={message.id}
+                items={
+                  group.items as ComponentProps<typeof SubagentGroup>["items"]
+                }
+                isLatestMessage={isLatest}
+              />
+            ) : (
+              renderAssistantPart(group.part, group.index)
+            ),
+          )
         ) : message.role === "user" ? (
           <UserMessageContent
             text={messageText}

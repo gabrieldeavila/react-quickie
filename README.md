@@ -103,7 +103,7 @@ A API só oferece os provedores que têm chave configurada em `api/.env`. Cada c
 | `OPENAI_COMPATIBLE_MODELS`   | Modelos desse servidor, separados por vírgula (ex.: `llama3.3,qwen3-coder`).                 |
 | `OPENAI_MODEL`               | Modelo extra da OpenAI que não está no catálogo.                                             |
 | `DOTY_DEFAULT_MODEL`         | Modelo padrão no formato `provedor:modelo`. Sem ele: `openai:$OPENAI_MODEL`, depois o primeiro disponível. |
-| `DOTY_SUBAGENT_MODEL`        | Modelo dos subagentes. Sem ele, os subagentes usam o modelo da conversa.                     |
+| `DOTY_SUBAGENT_MODEL`        | Modelo dos subagentes que não definem `model`. Sem ele, os subagentes usam o modelo da conversa. |
 
 O catálogo ([provider-catalog.ts](api/src/llm/domain/provider-catalog.ts)) lista os modelos atuais de cada provedor com suas capacidades. Modelos que vêm só de variáveis de ambiente entram com capacidades conservadoras: ferramentas sim, imagens e raciocínio não.
 
@@ -151,6 +151,34 @@ O Doty usa ferramentas de servidores [MCP](https://modelcontextprotocol.io) (Git
 | `DOTY_MCP_IDLE_TIMEOUT_MS`    | Fecha servidores sem uso após esse tempo. Padrão: `600000`.    |
 
 Recursos, prompts, sampling e OAuth do MCP ainda não são suportados; use tokens em `headers`.
+
+## Subagentes
+
+O agente principal delega tarefas com `run_subagent`, escolhendo um tipo de agente. Cada tipo é um arquivo Markdown com frontmatter:
+
+- embutidos: [api/src/subagents/definitions](api/src/subagents/definitions) — `explorer` (leitura), `reviewer` (leitura + Git) e `implementer` (edita arquivos e roda Bash);
+- por projeto: `<raiz do projeto>/.doty/agents/*.md`. Um agente do projeto substitui o embutido de mesmo nome.
+
+```md
+---
+name: docs
+description: Atualiza a documentação. Use quando o código mudou e o README precisa acompanhar.
+tools: [read_file, list_folders, edit_file, "mcp__github__*"]
+model: inherit          # ou "anthropic:claude-haiku-5-5"
+maxSteps: 15
+writes: true
+---
+Você atualiza a documentação do projeto. …
+```
+
+- `tools` aceita globs. Subagentes nunca recebem `run_subagent`, e um agente com `writes: false` não recebe ferramentas de escrita nem Bash, mesmo que estejam na lista.
+- **Aprovação:** delegar a um agente com `writes: true` pede aprovação na hora da delegação. Dentro do subagente, comandos Bash e ferramentas MCP que pediriam aprovação não rodam: voltam no resultado como "precisa de aprovação" para o agente principal executar pelo fluxo normal.
+- O progresso (passos e texto) aparece ao vivo no card do subagente; o agente principal recebe só a resposta final.
+- Modelo: `model` do agente → `DOTY_SUBAGENT_MODEL` → modelo da conversa → padrão. Um modelo sem chave configurada é ignorado.
+
+| Variável                      | Descrição                                                         |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `DOTY_MAX_PARALLEL_SUBAGENTS` | Subagentes rodando ao mesmo tempo; os demais esperam na fila. Padrão: `4`. |
 
 ## Workspace e dados
 

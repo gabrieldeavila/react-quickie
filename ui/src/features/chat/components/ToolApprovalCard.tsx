@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   describeApprovalInput,
+  describeApprovalTitle,
   type PendingApproval,
 } from "../domain/tool-approval";
 import { useToolApproval } from "../hooks/useToolApproval";
@@ -25,9 +26,10 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
   return (
     <div className="bash-approval-card" role="alert">
       <strong>
-        {isBash
-          ? "O agente precisa de permissão para executar:"
-          : `O agente precisa de permissão para usar ${getMcpToolLabel(approval.toolName) ?? approval.toolName}:`}
+        {describeApprovalTitle(
+          approval,
+          getMcpToolLabel(approval.toolName) ?? approval.toolName,
+        )}
       </strong>
       <pre>{describeApprovalInput(approval)}</pre>
       {!isAnswerable ? (

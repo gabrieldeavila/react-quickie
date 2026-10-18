@@ -14,6 +14,9 @@ describe('resolveAppPaths', () => {
     expect(paths.pluginSkillsDir).toBe(
       '/repo/api/dist/common/agents/plugin/skills',
     );
+    expect(paths.agentDefinitionsDir).toBe(
+      '/repo/api/dist/subagents/definitions',
+    );
     expect(paths.templatesDir).toBe('/repo/templates');
     expect(paths.legacyMemoryDir).toBe('/repo/api/storage/memory');
   });

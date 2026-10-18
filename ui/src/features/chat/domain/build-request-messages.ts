@@ -1,7 +1,9 @@
+import { compactSubagentOutput } from "./compact-subagent-output";
 import {
   isLegacyApprovalControlMessage,
   isLegacySyntheticToolPart,
 } from "./legacy-approval";
+import { migrateLegacySubagentPart } from "./legacy-subagent";
 
 export type RequestPart = { type: string; [key: string]: unknown };
 
@@ -43,6 +45,10 @@ export function isRequestPart(part: RequestPart): boolean {
   );
 }
 
+function toRequestPart(part: RequestPart): RequestPart {
+  return compactSubagentOutput(migrateLegacySubagentPart(part));
+}
+
 function sourceParts(message: SourceMessage): RequestPart[] {
   if (message.parts?.length) return message.parts;
   return message.content ? [{ type: "text", text: message.content }] : [];
@@ -55,7 +61,7 @@ export function buildRequestMessages(
   return messages.flatMap((message, index) => {
     if (isLegacyApprovalControlMessage(message)) return [];
 
-    const parts = sourceParts(message).filter(isRequestPart);
+    const parts = sourceParts(message).filter(isRequestPart).map(toRequestPart);
     // useChat can keep empty assistant placeholders after interrupted/failed
     // turns. They are UI state, not conversation content.
     if (parts.length === 0) return [];

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildAlternativeReason,
   describeApprovalInput,
+  describeApprovalTitle,
   getDeniedReason,
   getPendingApproval,
 } from "./tool-approval";
@@ -57,8 +58,43 @@ describe("approval texts", () => {
       }),
     ).toBe("npm i");
     expect(
-      describeApprovalInput({ approvalId: "a", toolName: "x", input: { a: 1 } }),
+      describeApprovalInput({
+        approvalId: "a",
+        toolName: "x",
+        input: { a: 1 },
+      }),
     ).toBe('{\n  "a": 1\n}');
+  });
+
+  it("shows a subagent's task", () => {
+    expect(
+      describeApprovalInput({
+        approvalId: "a",
+        toolName: "run_subagent",
+        input: { agent: "implementer", task: "Add a test" },
+      }),
+    ).toBe("Add a test");
+  });
+
+  it("titles the card by tool", () => {
+    const approval = (toolName: string, input: unknown = {}) => ({
+      approvalId: "a",
+      toolName,
+      input,
+    });
+
+    expect(describeApprovalTitle(approval("run_bash_command"), "x")).toBe(
+      "O agente precisa de permissão para executar:",
+    );
+    expect(
+      describeApprovalTitle(
+        approval("run_subagent", { agent: "implementer" }),
+        "x",
+      ),
+    ).toBe("O subagente implementer quer fazer alterações:");
+    expect(describeApprovalTitle(approval("mcp__gh__x"), "gh › x")).toBe(
+      "O agente precisa de permissão para usar gh › x:",
+    );
   });
 
   it("builds the alternative-command reason for the model", () => {
