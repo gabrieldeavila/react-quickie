@@ -126,7 +126,7 @@ export class ApiProcess implements vscode.Disposable {
     if (child.exitCode === null) {
       log.appendLine('[doty] API did not answer in time; stopping it');
       await this.stop();
-      this.fail('A API do Doty não respondeu a tempo. Veja o canal de saída "Doty".');
+      this.fail('The Doty API did not respond in time. See the "Doty" output channel.');
     }
   }
 
@@ -142,7 +142,7 @@ export class ApiProcess implements vscode.Disposable {
 
     const plan = planRestart(this.attempts, Date.now() - this.startedAt);
     if (!plan) {
-      this.fail('A API do Doty parou várias vezes. Use "Doty: Restart API" depois de ver os logs.');
+      this.fail('The Doty API stopped several times. Check the logs, then run "Doty: Restart API".');
       return;
     }
 

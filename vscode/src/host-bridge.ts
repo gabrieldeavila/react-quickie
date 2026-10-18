@@ -57,7 +57,7 @@ export class HostBridge {
 async function openFile({ path, line, root }: OpenFileMessage): Promise<void> {
   const resolved = resolveOpenFilePath(path, root, getWorkspaceRoots());
   if (!resolved) {
-    void vscode.window.showWarningMessage(`Doty: "${path}" está fora do workspace.`);
+    void vscode.window.showWarningMessage(`Doty: "${path}" is outside the workspace.`);
     return;
   }
 
@@ -68,6 +68,6 @@ async function openFile({ path, line, root }: OpenFileMessage): Promise<void> {
       preview: true,
     });
   } catch {
-    void vscode.window.showWarningMessage(`Doty: não foi possível abrir "${path}".`);
+    void vscode.window.showWarningMessage(`Doty: couldn't open "${path}".`);
   }
 }

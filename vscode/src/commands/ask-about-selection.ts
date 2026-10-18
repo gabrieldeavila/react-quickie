@@ -6,7 +6,7 @@ import type { HostBridge } from '../host-bridge';
 export async function askAboutSelection(bridge: HostBridge): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.selection.isEmpty) {
-    void vscode.window.showInformationMessage('Doty: selecione um trecho de código primeiro.');
+    void vscode.window.showInformationMessage('Doty: select some code first.');
     return;
   }
 

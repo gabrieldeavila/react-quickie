@@ -17,7 +17,7 @@ Doty mostly runs in a narrow VS Code side panel, but the layout is built like a 
 | G | 5 — Panel title-bar actions in VS Code | Removes the header row entirely in the editor | M | E |
 | H | 6 — Theme tokens + keyboard | Matches the user's VS Code theme; keyboard-first | S | E |
 
-Recommended order: A and B in parallel, then C → D → E, then F, G and H in any order.
+Recommended order: A and B (they touch different folders, so they may run at the same time), then C → D → E, then F, G and H one at a time. "Depends on" means that session's Progress block says `Status: done`. Every session works on the same branch (see below).
 
 All new code follows the repo conventions: small single-purpose files, pure rules in `domain/` with `*.spec.ts`, and state in `hooks/`. Components only render.
 
@@ -25,8 +25,8 @@ All new code follows the repo conventions: small single-purpose files, pure rule
 
 Each phase is done in its own agent session, and no session remembers the previous ones. **This file is the only record of what was done.** Every session must:
 
-1. **Start** by reading this whole file, especially the **Progress** blocks of the phases this one depends on. Also run `git log --oneline -15` to check that those phases are actually merged.
-2. **Branch** from up-to-date `main`: `feat/ui-<session letter>-<short-name>` (for example `feat/ui-c-visual-cleanup`).
+1. **Start** by reading this whole file, especially the **Progress** blocks of the phases this one depends on. They must say `Status: done`. Also run `git log --oneline -15` to check that their commits are there. If a dependency isn't done, stop and say so.
+2. **Don't create a branch.** All sessions work on one shared branch, `feat/ui-a-english-ui` (the one Session A started on), one after another, so nothing has to be synced or merged between sessions. Check it with `git branch --show-current`; if you're on another branch, `git switch feat/ui-a-english-ui` (only when the working tree is clean). The branch is merged into `main` once, after the last session.
 3. **Tick checkboxes** (`- [x]`) in the phase's own section as each item is finished. Don't tick anything that isn't done and verified.
 4. **Record pin points.** After each meaningful step, and always before the session ends, update the phase's **Progress** block with:
    - `Status`: `not started` / `in progress` / `done` / `blocked`
@@ -34,8 +34,8 @@ Each phase is done in its own agent session, and no session remembers the previo
    - `Done`: what changed, with the main files touched
    - `Left`: unchecked items, plus anything new that turned up
    - `Notes`: decisions made, deviations from this plan, pitfalls, anything the next session must know
-5. **Commit** the plan update together with the code (or as a final `docs(ui-plan): …` commit), so the progress travels with the branch.
-6. **Edit only your own phase's section and Progress block.** If something in another phase must change, write it in your `Notes` and don't edit that phase. This avoids merge conflicts between parallel sessions.
+5. **Commit** small, focused commits on the shared branch, with the plan update included (or as a final `docs(ui-plan): …` commit). Stage only the files you changed (`git add <paths>`; never `git add -A` or `git commit -a`), because another session may have uncommitted work in the same checkout.
+6. **Edit only your own phase's section and Progress block.** If something in another phase must change, write it in your `Notes` and don't edit that phase.
 7. **Finish** with `pnpm` type-check, lint and tests passing in every package touched, and say so in `Notes`. If something fails and you can't fix it, set `Status: blocked` and explain why.
 
 ## Current problems
@@ -82,21 +82,40 @@ Many `*.spec.ts` files check the Portuguese strings directly. Update them alongs
 - [x] **Saved data**: [chatDb.ts](../ui/src/lib/chatDb.ts) and [useChatHistory.ts](../ui/src/components/chat/hooks/start/useChatHistory.ts). The default title "Nova conversa" becomes "New conversation". Conversations already saved under the old title keep it. Optionally, add a small one-time migration that renames that exact default title.
 - [x] **Mode and specialty names** in `~types/consts/chat.const`.
 - [x] **Date formatting**: `formatTimestamp` uses the `en` locale.
-- [ ] **VS Code extension**: [extension.ts](../vscode/src/extension.ts), [host-bridge.ts](../vscode/src/host-bridge.ts) and the command titles in `vscode/package.json`.
-- [ ] Specs updated; the search for leftover Portuguese in `ui/` and `vscode/` comes back clean.
+- [x] **VS Code extension**: [extension.ts](../vscode/src/extension.ts), [host-bridge.ts](../vscode/src/host-bridge.ts) and the command titles in `vscode/package.json`.
+- [x] Specs updated; the search for leftover Portuguese in `ui/` and `vscode/` comes back clean.
 
 #### Progress
 
 ```
-Status: in progress
+Status: done
 Branch: feat/ui-a-english-ui
-Last commit: (this commit) feat(ui): switch interface text to English
-Done: ui/ translated: components/chat/*, primitives, host/components,
-  helpers/tool-ui-mapping.helper.ts, features/{chat,mcp,models,subagents,usage},
-  types/consts/{chat,project}.const.ts, time.helper.ts (locale "en").
-  Title rules moved out of lib/chatDb.ts into lib/conversation-title.ts (+ spec).
-Left: vscode/ (extension.ts, host-bridge.ts, package.json, commands), final sweep.
-Notes: ui type-check, lint and tests green.
+Last commit: 62e357f (ui) + the following commit (vscode + this block)
+Done:
+  - ui/: all user-facing text in English, with no i18n layer. Touched components/chat/*
+    (header, sidebar, composer, empty, messages, mode/specialty popovers, settings and
+    new-project dialogs, hooks), components/primitives, host/components,
+    helpers/tool-ui-mapping.helper.ts, features/{chat,mcp,models,subagents,usage},
+    types/consts/{chat,project}.const.ts. formatTimestamp uses the "en" locale.
+  - Saved data: title rules moved from lib/chatDb.ts to lib/conversation-title.ts (+ spec).
+    DEFAULT_CONVERSATION_TITLE = "New conversation"; header.tsx imports it.
+  - vscode/: api-process.ts, host-bridge.ts, doty-view-provider.ts, commands/*,
+    README.md. extension.ts and package.json command titles were already English.
+  - Specs that asserted Portuguese strings were updated, and so was Portuguese test data.
+Left: —
+Notes:
+  - Legacy title migration: isDefaultConversationTitle also matches "Nova conversa". On
+    hydrate, migrateDefaultConversationTitles renames it to the first user message, or to
+    "New conversation" when there is none. Custom titles are untouched.
+  - Wording picked for later phases: mode "Agnostic", specialty "No specialty",
+    status pill "Online" / "Responding" / "Error", "sub-agent" (hyphenated) in labels.
+  - Not translated (not user-facing): ui/.agents/repo-router.md (agent instructions).
+  - The checked-in vscode/doty.vsix still has the old strings. Rebuild it after
+    Session B lands (Session G already plans a rebuild).
+  - Accent grep with xargs/BSD grep gives false positives on ×, …, ›, ⟨ (byte matching);
+    check with perl -CSD.
+  - Checks: ui type-check, lint and tests (30 files / 114 tests) green;
+    vscode type-check and tests (5 files / 18 tests) green. vscode has no lint script.
 ```
 
 ### Session B — API (0b + 0c)

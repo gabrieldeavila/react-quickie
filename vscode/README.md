@@ -1,39 +1,39 @@
-# Doty para VSCode
+# Doty for VS Code
 
-O chat do Doty na barra lateral do VSCode. A extensão inicia a API do Doty com o Node do próprio VSCode (não precisa ter Node instalado) e mostra a mesma interface num webview. As ferramentas só agem nas pastas abertas no workspace.
+The Doty chat in the VS Code sidebar. The extension starts the Doty API with VS Code's own Node (you don't need Node installed) and shows the same interface in a webview. Tools only act on the folders open in the workspace.
 
-## Instalação (`.vsix` local)
+## Installation (local `.vsix`)
 
-Na raiz do repositório:
+From the repository root:
 
 ```bash
 npm install
-npm run build              # api, ui e vscode
+npm run build              # api, ui and vscode
 npm run package --prefix vscode
 code --install-extension vscode/doty.vsix
 ```
 
-Depois abra uma pasta, rode **Doty: Set API key** e clique no ícone do Doty na barra de atividades.
+Then open a folder, run **Doty: Set API key** and click the Doty icon in the activity bar.
 
-## Comandos
+## Commands
 
-| Comando | O que faz |
+| Command | What it does |
 |---|---|
-| Doty: Set API key | Guarda a chave da Anthropic, OpenAI, DeepSeek ou de um servidor OpenAI-compatible no chaveiro do sistema (SecretStorage) e reinicia a API. |
-| Doty: Ask about selection | Manda o código selecionado (arquivo e linhas) para o campo de mensagem. Também está no menu de contexto do editor. |
-| Doty: Restart API | Reinicia a API e recarrega a view. |
-| Doty: Show logs | Mostra a saída da API (canal "Doty"). |
+| Doty: Set API key | Stores the Anthropic, OpenAI, DeepSeek or OpenAI-compatible server key in the system keychain (SecretStorage) and restarts the API. |
+| Doty: Ask about selection | Sends the selected code (file and lines) to the message box. Also available in the editor context menu. |
+| Doty: Restart API | Restarts the API and reloads the view. |
+| Doty: Show logs | Shows the API output (the "Doty" channel). |
 
-## Configurações
+## Settings
 
-- `doty.defaultModel`: modelo padrão no formato `provedor:modelo` (o mesmo que `DOTY_DEFAULT_MODEL`).
-- `doty.openaiCompatible.baseUrl` e `doty.openaiCompatible.models`: servidor OpenAI-compatible.
+- `doty.defaultModel`: default model as `provider:model` (same as `DOTY_DEFAULT_MODEL`).
+- `doty.openaiCompatible.baseUrl` and `doty.openaiCompatible.models`: OpenAI-compatible server.
 
-## Como funciona
+## How it works
 
-- A API escuta em `127.0.0.1`, numa porta livre, e exige um token aleatório (`DOTY_AUTH_TOKEN`) em toda requisição.
-- `DOTY_WORKSPACE_ROOTS` recebe as pastas do workspace. Com várias pastas, escolha uma nas configurações do chat.
-- Os dados (memória, confiança MCP, `mcp.json` global) ficam no armazenamento da extensão, não em `~/.doty`.
-- O histórico das conversas fica no IndexedDB do webview e é separado do histórico da interface no navegador.
-- Se a API cair, ela é reiniciada com espera crescente; depois de 5 quedas seguidas, use **Doty: Restart API**.
-- Indisponível no VSCode: **Novo projeto** (os templates não vão no pacote) e o modo **Agent Builder** (ele edita o código-fonte do próprio Doty).
+- The API listens on `127.0.0.1`, on a free port, and requires a random token (`DOTY_AUTH_TOKEN`) on every request.
+- `DOTY_WORKSPACE_ROOTS` receives the workspace folders. With several folders, pick one in the chat settings.
+- Data (memory, MCP trust, global `mcp.json`) lives in the extension's storage, not in `~/.doty`.
+- Conversation history lives in the webview's IndexedDB, separate from the browser interface's history.
+- If the API crashes, it restarts with increasing delays; after 5 crashes in a row, use **Doty: Restart API**.
+- Not available in VS Code: **New project** (the templates aren't packaged) and **Agent Builder** mode (it edits Doty's own source code).

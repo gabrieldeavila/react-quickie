@@ -7,19 +7,19 @@ export async function setApiKey(secrets: ProviderSecrets): Promise<void> {
   const items = await Promise.all(
     PROVIDER_KEYS.map(async (provider) => ({
       label: provider.label,
-      description: (await secrets.has(provider.id)) ? 'configurada' : undefined,
+      description: (await secrets.has(provider.id)) ? 'configured' : undefined,
       id: provider.id,
     })),
   );
 
   const picked = await vscode.window.showQuickPick(items, {
-    title: 'Doty: provedor da chave',
+    title: 'Doty: key provider',
   });
   if (!picked) return;
 
   const value = await vscode.window.showInputBox({
-    title: `Doty: chave ${picked.label}`,
-    prompt: 'Deixe vazio para remover a chave.',
+    title: `Doty: ${picked.label} key`,
+    prompt: 'Leave empty to remove the key.',
     password: true,
     ignoreFocusOut: true,
   });
@@ -28,6 +28,6 @@ export async function setApiKey(secrets: ProviderSecrets): Promise<void> {
   // The API restarts through SecretStorage.onDidChange (see extension.ts).
   await secrets.set(picked.id, value);
   void vscode.window.showInformationMessage(
-    value.trim() ? `Doty: chave ${picked.label} salva.` : `Doty: chave ${picked.label} removida.`,
+    value.trim() ? `Doty: ${picked.label} key saved.` : `Doty: ${picked.label} key removed.`,
   );
 }
