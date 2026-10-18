@@ -140,6 +140,12 @@ describe('SubagentRunnerService (nested approval)', () => {
     expect(final.steps).toEqual([
       expect.objectContaining({ tool: 'run_bash_command', state: 'denied' }),
     ]);
+    // Two steps of 1 in / 1 out each; the mock model has no pricing.
+    expect(final.usage).toMatchObject({
+      model: 'openai:mock',
+      usage: { inputTokens: 2, outputTokens: 2 },
+      costUsd: undefined,
+    });
   });
 
   it('runs auto-approved commands', async () => {
@@ -252,7 +258,7 @@ describe('run_subagent inside the parent stream', () => {
       toolApproval: buildToolApprovalMap(approvalPolicies),
     });
 
-    const parts = [];
+    const parts: string[] = [];
     for await (const part of result.fullStream) parts.push(part.type);
     expect(parts).toContain('tool-approval-request');
     expect(parts).not.toContain('tool-result');

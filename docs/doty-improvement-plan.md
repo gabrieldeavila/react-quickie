@@ -1,6 +1,6 @@
 # Doty — improvement plan
 
-Status: proposal · Date: 2026-10-17 · Base: `main` @ `9609782` · AI SDK `ai@7.0.22`
+Status: phases 0–6 implemented on `feat/phase-1-tool-history` (`fcbf447`…`2293ea9`); Phase 7 done · Date: 2026-10-17, updated 2026-10-18 · Base: `main` @ `9609782` · AI SDK `ai@7.0.22`
 
 This document lists what should change in Doty and how it will most likely be done. Decisions marked **(decided)** were agreed on; everything else is a recommendation that can be revisited during implementation.
 
@@ -15,6 +15,7 @@ This document lists what should change in Doty and how it will most likely be do
 | 4 | Subagents v2 | Typed agents, live progress, parallel runs, write-capable agents | L |
 | 5 | VSCode extension | Same UI + API embedded in the editor | L |
 | 6 | Context management, usage/cost, stop | Long chats stay within the context window; visible cost; reliable abort | M |
+| 7 | Follow-ups: full cost, `read_file` cap, CI, provider retries, file splits | Gaps found after phases 0–6 shipped | M |
 
 Order **(decided)**: History → Providers → MCP → Subagents → VSCode. Phase 0 is small and goes first because later phases depend on it. Phase 6 items can be done in between (tool-output truncation is part of Phase 1).
 
@@ -342,13 +343,55 @@ Install the `.vsix`, open a folder, set a key, chat in the sidebar: tools act on
 
 ---
 
+## Phase 7 — Follow-ups
+
+Gaps found when checking phases 0–6 against the code.
+
+### 7.1 Count every model call in the cost **(done)**
+Phase 6.1 only reads the main stream's `totalUsage`. Subagent runs (`subagent-runner.service.ts`) and compaction summaries (`context-compaction.service.ts`) call models too, and their tokens are not counted, so the footer under-reports.
+- The subagent's final tool output carries `usage: { model, usage, costUsd }`, priced per step by the runner; `ContextCompactionService.fit` returns `summaryUsage` next to the summary.
+- `message-metadata-tracker.ts` adds them to the turn: `usage` stays the main model's (it drives the "context % used" estimate), and a new `extraUsage: [{ model, usage, costUsd }]` list is priced per model with `estimate-cost`. `costUsd` is the sum of everything.
+- UI: the turn footer shows the total cost; the tooltip splits main / subagents / compaction.
+- Specs: tracker merges extra usage; cost sum across different models.
+
+### 7.2 Cap `read_file` output **(done)**
+Phase 1 truncation only covers older turns. Bash and MCP results are capped, but `StorageService.readFile` returns whole files, so one large file can fill the context window before the 75% check runs.
+- `workspace/domain/cap-file-content.ts`, applied in the `read_file` tool: over 50k chars (same as bash `MAX_OUTPUT_SIZE`) → return the first part plus `[truncated: N lines total, read with lineStart/lineEnd]`. Line-range reads are capped too.
+- Spec: under/over the limit, line-range read, multibyte text.
+
+### 7.3 CI **(done)**
+There is no `.github/`, so type errors in specs slipped through (Jest passes without full type checks). Add `.github/workflows/ci.yml`: one job per package (`api`, `ui`, `vscode`): `pnpm install --frozen-lockfile`, `typecheck`, lint (`lint:check` in the API, since `lint` runs `--fix`; `vscode` has no lint), `test`. Runs on pushes to `main` and on PRs.
+
+### 7.4 Provider errors and retries **(done)**
+With four providers and parallel subagents, rate limits (429) and overloads (529/503) will happen. Today `maxRetries` is the SDK default everywhere and errors only reach the UI as a generic stream error.
+- `DOTY_MAX_RETRIES` (default 2) passed to `streamText` in the chat, the subagent runner and compaction.
+- `llm/domain/describe-provider-error.ts` (used by `describe-stream-error.ts`): rate-limit (429), overload (5xx/529), rejected or missing key messages that name the provider and say how many attempts failed. Subagent failures still report the provider's raw message to the parent model.
+- The concurrency limiter (4.3) stays the main protection for subagents.
+
+### 7.5 Split the remaining large files **(done)**
+Still over ~200 lines: `storage.service.ts` (397, grew in Phase 0), `storage.tools.ts` (347), `project.service.ts` (341), `git.service.ts` (318), `createAgent/tool.ts` (303), `prompts.service.ts` (239). Split by operation (read / write / search; git read vs. write), no behavior change, one PR per file.
+
+Done: each file is now a thin service over `domain/` rules (with specs) and small IO modules. Bugs found and fixed while splitting:
+- **Shell injection (security).** The git tools ran `exec` with model input in the command string (`commitHash`, `files`, search filters; escaping `"` doesn't stop `$(…)`), and `install_depency` spawned `pnpm` with `shell: true`. Neither is approval-gated, and the read-only `reviewer` subagent has the git tools. Both now use argument arrays without a shell, and revisions / package names can't start with `-` (so `--output=…` can't be passed as an option).
+- **`create_agent` path and code injection.** `name` was joined into file paths (`../../x` escaped the plugin folder) and `label`/`icon` were pasted into generated TypeScript. Input is validated first (`createAgent/domain/validate-agent-input.ts`), and the label is inserted as a JSON string literal.
+- **`edit_file` mangled `$` patterns.** `String.replace` expanded `$$`, `$&` and `$1` in the new code (`` `$${price}` `` became `` `${price}` ``). `workspace/domain/replace-unique-block.ts` slices instead.
+- **`get_uncommitted_changes` failed before the first commit.** It matched git's old "bad revision 'HEAD'" message, which current git no longer prints; it now checks `git rev-parse --verify HEAD`.
+- **Project agents sent twice.** `.agents/*.md` instructions were loaded once for the mode skills and again for the plugin skills; now once.
+
+Still open (not part of this split): `install_depency` and `create_commit` run without asking, though the bash policy would ask for an install or a commit. Consider adding them to the `toolApproval` map.
+
+### Done when
+The cost footer matches the provider dashboard for a turn that used subagents; reading a 1 MB file doesn't trigger compaction; CI is green on every PR.
+
+---
+
 ## Cross-cutting checklist per PR
 - New rule → pure function in `domain/` + `*.spec.ts`.
-- Keep files < ~200 lines; split while touching large ones (`storage.tools.ts` 347 lines, `git.service.ts` 318, `createAgent/tool.ts` 309, `messageItem.tsx` 270).
+- Keep files < ~200 lines; split while touching large ones.
 - No new `utils.ts`/`helpers.ts` dumping grounds.
 - Update `README.md` (env vars, MCP config, VSCode install) at the end of each phase.
 
 ## Open questions (decide during implementation)
-1. Phase 1: should file-edit tools also require approval by default, or only through an opt-in "ask before edits" setting? Recommended: opt-in.
+1. Phase 1: should file-edit tools also require approval by default, or only through an opt-in "ask before edits" setting? Recommended: opt-in. Not implemented yet (file edits never ask); the `toolApproval` map is ready for it.
 2. Phase 2: hard-coded model lists vs fetching `/v1/models` from each provider. Recommended: catalog for known models (needed for pricing/capabilities) + env-listed extras.
 3. Phase 5: publish to the Marketplace or ship the `.vsix` locally only.

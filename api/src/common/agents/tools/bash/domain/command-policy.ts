@@ -71,7 +71,8 @@ function referencesOutsideWorkspace(
   command: string,
   rootPath: string,
 ): boolean {
-  const absolutePaths = command.match(/(?:^|[\s])\/(?:[^\s"']+)/g) ?? [];
+  const absolutePaths: string[] =
+    command.match(/(?:^|[\s])\/(?:[^\s"']+)/g) ?? [];
   const resolvedRoot = resolve(rootPath);
 
   return absolutePaths.some((value) => {

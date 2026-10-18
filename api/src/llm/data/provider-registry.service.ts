@@ -5,6 +5,7 @@ import { availableProviders } from '../domain/available-providers';
 import { firstAvailableModel, type SelectedModel } from '../domain/find-model';
 import type { LlmEnv, ProviderInfo } from '../domain/model-catalog.types';
 import { PROVIDER_CATALOG } from '../domain/provider-catalog';
+import { readMaxRetries } from '../domain/read-max-retries';
 import { resolveDefaultModel } from '../domain/resolve-default-model';
 import { resolveSubagentModel } from '../domain/resolve-subagent-model';
 import { selectRequestModel } from '../domain/select-request-model';
@@ -18,11 +19,14 @@ export class ProviderRegistryService {
   private readonly providers: ProviderInfo[];
   private readonly defaultModel: SelectedModel | undefined;
   private readonly registry: ReturnType<typeof createProviderRegistry>;
+  /** `DOTY_MAX_RETRIES`: passed to every model call (chat, subagents, summaries). */
+  readonly maxRetries: number;
 
   constructor(configService: ConfigService) {
     this.env = readLlmEnv(configService);
     this.providers = availableProviders(PROVIDER_CATALOG, this.env);
     this.defaultModel = resolveDefaultModel(this.providers, this.env);
+    this.maxRetries = readMaxRetries(this.env.DOTY_MAX_RETRIES);
     this.registry = createProviderRegistry(
       buildRegistryProviders(
         this.providers.map((provider) => provider.id),

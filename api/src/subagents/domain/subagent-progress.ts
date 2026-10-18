@@ -1,3 +1,5 @@
+import type { ModelUsage } from 'src/llm/domain/model-usage.types';
+import { addModelUsage } from 'src/llm/domain/price-usage';
 import { summarizeToolInput } from './summarize-tool-input';
 
 export type SubagentStatus =
@@ -23,6 +25,8 @@ export type SubagentProgress = {
   needsApproval: string[];
   error?: string;
   steps: SubagentStep[];
+  /** Tokens and cost of every step so far; the parent adds them to its turn. */
+  usage?: ModelUsage;
 };
 
 export type SubagentEvent =
@@ -41,6 +45,7 @@ export type SubagentEvent =
       toolCallId: string;
     }
   | { type: 'text-delta'; text: string }
+  | { type: 'usage'; usage: ModelUsage }
   | { type: 'finish' }
   | { type: 'fail'; error: string }
   | { type: 'abort' };
@@ -147,6 +152,10 @@ export function applySubagentEvent(
       return applyDenied(run, event.toolCallId);
     case 'text-delta':
       return applyText(run, event.text);
+    case 'usage':
+      return withProgress(run, {
+        usage: addModelUsage(run.progress.usage, event.usage),
+      });
     case 'finish':
       return withProgress(run, {
         status: 'completed',

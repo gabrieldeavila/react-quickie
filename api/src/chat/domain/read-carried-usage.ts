@@ -1,23 +1,39 @@
 import type { UIMessage } from 'ai';
+import { isCost, isTokenUsage } from 'src/llm/domain/is-token-usage';
 import type { TokenUsage } from 'src/llm/domain/token-usage.types';
+import type { ExtraUsage } from './chat-message-metadata.types';
 
 /** Usage already recorded on the assistant message a request continues. */
-export type CarriedUsage = { usage: TokenUsage; costUsd?: number };
+export type CarriedUsage = {
+  usage: TokenUsage;
+  /** Whole turn so far, extras included. */
+  costUsd?: number;
+  extraUsage?: ExtraUsage[];
+};
 
-const USAGE_KEYS: Array<keyof TokenUsage> = [
-  'inputTokens',
-  'outputTokens',
-  'cacheReadTokens',
-  'cacheWriteTokens',
-  'reasoningTokens',
-];
+const SOURCES = new Set<unknown>(['subagent', 'compaction']);
 
-function isTokenUsage(value: unknown): value is TokenUsage {
-  if (!value || typeof value !== 'object') return false;
-  const record = value as Record<string, unknown>;
-  return USAGE_KEYS.every(
-    (key) => typeof record[key] === 'number' && record[key] >= 0,
-  );
+function toExtraUsage(value: unknown): ExtraUsage | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const entry = value as Record<string, unknown>;
+  if (!SOURCES.has(entry.source) || typeof entry.model !== 'string') {
+    return undefined;
+  }
+  if (!isTokenUsage(entry.usage)) return undefined;
+  return {
+    source: entry.source as ExtraUsage['source'],
+    model: entry.model,
+    usage: entry.usage,
+    costUsd: isCost(entry.costUsd) ? entry.costUsd : undefined,
+  };
+}
+
+function readExtraUsage(value: unknown): ExtraUsage[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const entries = value
+    .map(toExtraUsage)
+    .filter((entry): entry is ExtraUsage => entry !== undefined);
+  return entries.length > 0 ? entries : undefined;
 }
 
 /**
@@ -33,12 +49,12 @@ export function readCarriedUsage(
   if (last?.role !== 'assistant') return undefined;
 
   const metadata = last.metadata as
-    { usage?: unknown; costUsd?: unknown } | undefined;
+    { usage?: unknown; costUsd?: unknown; extraUsage?: unknown } | undefined;
   if (!isTokenUsage(metadata?.usage)) return undefined;
 
-  const { costUsd } = metadata;
   return {
     usage: metadata.usage,
-    costUsd: typeof costUsd === 'number' && costUsd >= 0 ? costUsd : undefined,
+    costUsd: isCost(metadata.costUsd) ? metadata.costUsd : undefined,
+    extraUsage: readExtraUsage(metadata.extraUsage),
   };
 }

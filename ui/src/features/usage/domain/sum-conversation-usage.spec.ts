@@ -31,4 +31,13 @@ describe("sumConversationUsage", () => {
         .costUsd,
     ).toBeUndefined();
   });
+
+  it("counts subagent and summary tokens of each turn", () => {
+    const extra = { source: "subagent", model: "c", usage: usage(50, 5) };
+    expect(
+      sumConversationUsage([
+        assistant({ model: "a", usage: usage(100, 10), extraUsage: [extra] }),
+      ]),
+    ).toMatchObject({ inputTokens: 150, outputTokens: 15 });
+  });
 });

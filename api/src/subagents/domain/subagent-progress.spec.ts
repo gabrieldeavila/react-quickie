@@ -83,7 +83,7 @@ describe('subagent progress', () => {
     expect(final.progress.text).toBe('Found it in a.ts.');
   });
 
-  it.each([
+  it.each<[SubagentEvent, string]>([
     [{ type: 'finish' }, 'completed'],
     [{ type: 'fail', error: 'rate limited' }, 'failed'],
     [{ type: 'abort' }, 'aborted'],
@@ -98,5 +98,26 @@ describe('subagent progress', () => {
     expect(play([{ type: 'fail', error: 'rate limited' }]).progress.error).toBe(
       'rate limited',
     );
+  });
+
+  it('sums the usage of every step', () => {
+    const tokens = (input: number) => ({
+      inputTokens: input,
+      outputTokens: 1,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      reasoningTokens: 0,
+    });
+
+    const { progress } = play([
+      { type: 'usage', usage: { model: 'a:b', usage: tokens(10), costUsd: 1 } },
+      { type: 'usage', usage: { model: 'a:b', usage: tokens(5), costUsd: 2 } },
+    ]);
+
+    expect(progress.usage).toMatchObject({
+      model: 'a:b',
+      usage: { inputTokens: 15, outputTokens: 2 },
+      costUsd: 3,
+    });
   });
 });

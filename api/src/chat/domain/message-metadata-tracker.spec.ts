@@ -80,4 +80,88 @@ describe('createMessageMetadataTracker', () => {
     });
     expect(metadata?.costUsd).toBeCloseTo(0.01 + (50 * 2 + 5 * 10) / 1e6);
   });
+
+  describe('extra usage', () => {
+    const tokens = (input: number, output: number) => ({
+      inputTokens: input,
+      outputTokens: output,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      reasoningTokens: 0,
+    });
+    const subagentResult = (preliminary?: boolean) =>
+      part({
+        type: 'tool-result',
+        toolName: 'run_subagent',
+        preliminary,
+        output: {
+          status: 'completed',
+          usage: { model: 'c:d', usage: tokens(500, 50), costUsd: 0.2 },
+        },
+      });
+
+    it('adds the final subagent result to the turn, priced by its model', () => {
+      const summary = {
+        source: 'compaction' as const,
+        model: 'e:f',
+        usage: tokens(800, 80),
+        costUsd: 0.05,
+      };
+      const track = createMessageMetadataTracker({
+        ref: 'a:b',
+        pricing,
+        extraUsage: [summary],
+      });
+      track(subagentResult(true));
+      track(subagentResult());
+
+      const metadata = track(
+        part({ type: 'finish', totalUsage: usage(1000, 100) }),
+      );
+
+      expect(metadata?.usage).toMatchObject({ inputTokens: 1000 });
+      expect(metadata?.extraUsage).toEqual([
+        summary,
+        {
+          source: 'subagent',
+          model: 'c:d',
+          usage: tokens(500, 50),
+          costUsd: 0.2,
+        },
+      ]);
+      expect(metadata?.costUsd).toBeCloseTo(
+        (1000 * 2 + 100 * 10) / 1e6 + 0.2 + 0.05,
+      );
+    });
+
+    it('keeps carried extras without counting their cost twice', () => {
+      const carriedExtra = {
+        source: 'subagent' as const,
+        model: 'c:d',
+        usage: tokens(1, 1),
+        costUsd: 0.3,
+      };
+      const track = createMessageMetadataTracker({
+        ref: 'a:b',
+        carried: {
+          usage: tokens(10, 1),
+          costUsd: 0.4,
+          extraUsage: [carriedExtra],
+        },
+      });
+      track(subagentResult());
+
+      const metadata = track(part({ type: 'finish', totalUsage: usage(5, 1) }));
+
+      expect(metadata?.extraUsage).toHaveLength(2);
+      expect(metadata?.extraUsage?.[0]).toBe(carriedExtra);
+      expect(metadata?.costUsd).toBeCloseTo(0.4 + 0.2);
+    });
+
+    it('leaves extraUsage out when there is none', () => {
+      const track = createMessageMetadataTracker({ ref: 'a:b', pricing });
+      const metadata = track(part({ type: 'finish', totalUsage: usage(1, 1) }));
+      expect(metadata).not.toHaveProperty('extraUsage', expect.anything());
+    });
+  });
 });

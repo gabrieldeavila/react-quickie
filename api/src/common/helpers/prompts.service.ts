@@ -1,239 +1,71 @@
 import { Injectable } from '@nestjs/common';
-import { Instructions } from 'ai';
-import { MarkdownService } from './markdown.module';
-import { ContextService } from '../context/context.service';
-import { MemoryService } from './memory.service';
-import * as fs from 'fs-extra';
+import type { Instructions, SystemModelMessage } from 'ai';
 import path from 'path';
 import { getAppPaths } from 'src/config/app-paths';
+import { ContextService } from '../context/context.service';
+import { MarkdownService } from './markdown.module';
+import { MemoryService } from './memory.service';
+import { formatProjectMemory } from './prompts/domain/format-project-memory';
+import {
+  loadProjectAgents,
+  loadSkillDirectory,
+  loadSkillFile,
+  type ReadMarkdown,
+} from './prompts/skill-loaders';
 
 @Injectable()
 export class PromptsService {
+  private readonly readMarkdown: ReadMarkdown;
+
   constructor(
-    private readonly markdownService: MarkdownService,
+    markdownService: MarkdownService,
     private readonly contextService: ContextService,
     private readonly memoryService: MemoryService,
-  ) {}
+  ) {
+    this.readMarkdown = async (file) =>
+      (await markdownService.getMarkdownFile(file)?.html) ?? '';
+  }
 
+  /**
+   * System instructions for a request, in order: workspace, behavior rules,
+   * project agents, mode skills, plugin skills, memory rules, project memory.
+   */
   async getInstructions(): Promise<Instructions> {
-    const behaviorRules = await this.getBehaviorRules();
-    const modeSkills = await this.getModeSkills();
-    const pluginSkills = await this.getPluginSkills();
-
-    const instructions: Instructions = [
-      {
-        role: 'system',
-        content: `The user project is ${this.contextService.get('root')}`,
-      },
-    ];
-
-    if (Array.isArray(behaviorRules)) {
-      instructions.push(...behaviorRules);
-    }
-
-    if (Array.isArray(modeSkills)) {
-      instructions.push(...modeSkills);
-    }
-
-    if (Array.isArray(pluginSkills)) {
-      instructions.push(...pluginSkills);
-    }
-
-    const memorySkills = await this.getMemorySkills();
-
-    if (Array.isArray(memorySkills)) {
-      instructions.push(...memorySkills);
-    }
-
-    const projectRoot = this.contextService.get('root');
-    if (projectRoot) {
-      const projectMemory =
-        await this.memoryService.readProjectMemory(projectRoot);
-      const memoryContent = this.formatProjectMemory(projectMemory.topics);
-
-      if (memoryContent) {
-        instructions.push({
-          role: 'system',
-          content: `Project memory from the current workspace:\n${memoryContent}`,
-        });
-      }
-    }
-
-    return instructions;
-  }
-
-  async getModeSkills(): Promise<Instructions | null> {
-    const mode = this.contextService.get('mode');
-
-    const pathSkills = path.join(getAppPaths().skillsDir, `${mode}`);
-    const instructions = await this.getSkills(pathSkills);
-    return instructions;
-  }
-
-  async getPluginSkills(): Promise<Instructions | null> {
-    const mode = this.contextService.get('mode');
-
-    const pathPlugins = path.join(getAppPaths().pluginSkillsDir, `${mode}`);
-
-    const instructions = await this.getSkills(pathPlugins);
-    return instructions;
-  }
-
-  async getSkills(pathSearch: string): Promise<Instructions | null> {
-    const exists = await fs.pathExists(pathSearch);
-
-    const instructions: Instructions = [];
-
-    const projectAgents = await this.getProjectAgents();
-
-    if (Array.isArray(projectAgents)) {
-      instructions.push(...projectAgents);
-    }
-
-    if (!exists) {
-      return instructions;
-    }
-
-    const modeInstructions = await this.loadDirectorySkills(pathSearch);
-
-    if (Array.isArray(modeInstructions) && modeInstructions.length) {
-      instructions.push(...modeInstructions);
-    }
-
+    const { skillsDir, pluginSkillsDir } = getAppPaths();
+    const root = this.contextService.get('root');
+    const mode = `${this.contextService.get('mode')}`;
     const specialty = this.contextService.get('specialty');
+    const read = this.readMarkdown;
 
-    if (!specialty || specialty === 'none') {
-      return instructions;
-    }
-
-    const specialtyFilePath = `${pathSearch}/specialty/${specialty}.md`;
-    const existsSpecialtyInstructions = await fs.pathExists(specialtyFilePath);
-
-    if (existsSpecialtyInstructions) {
-      const contentSpecialty =
-        await this.markdownService.getMarkdownFile(specialtyFilePath)?.html;
-
-      if (contentSpecialty && contentSpecialty.length) {
-        instructions.push({
-          content: contentSpecialty,
-          role: 'system',
-        });
-      }
-    }
-
-    return instructions;
+    const groups: SystemModelMessage[][] = [
+      [{ role: 'system', content: `The user project is ${root}` }],
+      await loadSkillFile(read, path.join(skillsDir, 'behavior.md')),
+      await loadProjectAgents(read, root),
+      await loadSkillDirectory(read, path.join(skillsDir, mode), specialty),
+      await loadSkillDirectory(
+        read,
+        path.join(pluginSkillsDir, mode),
+        specialty,
+      ),
+      await loadSkillFile(read, path.join(skillsDir, 'memory.md')),
+      await this.getProjectMemory(root),
+    ];
+    return groups.flat();
   }
 
-  private async loadDirectorySkills(pathSearch: string): Promise<Instructions> {
-    const instructions: Instructions = [];
-
-    const indexPath = `${pathSearch}/index.md`;
-    const existsIndex = await fs.pathExists(indexPath);
-
-    if (existsIndex) {
-      const content =
-        await this.markdownService.getMarkdownFile(indexPath)?.html;
-
-      if (content && content.length) {
-        instructions.push({
-          content,
-          role: 'system',
-        });
-      }
-    }
-
-    const defaultPath = `${pathSearch}/default`;
-    const existsDefault = await fs.pathExists(defaultPath);
-
-    if (existsDefault) {
-      const files = await fs.readdir(defaultPath);
-
-      for (const file of files) {
-        const contentDefault = await this.markdownService.getMarkdownFile(
-          `${defaultPath}/${file}`,
-        )?.html;
-
-        if (contentDefault && contentDefault.length) {
-          instructions.push({
-            content: contentDefault,
+  private async getProjectMemory(
+    root: string | undefined,
+  ): Promise<SystemModelMessage[]> {
+    if (!root) return [];
+    const { topics } = await this.memoryService.readProjectMemory(root);
+    const memory = formatProjectMemory(topics);
+    return memory
+      ? [
+          {
             role: 'system',
-          });
-        }
-      }
-    }
-
-    return instructions;
-  }
-
-  async getBehaviorRules(): Promise<Instructions | null> {
-    const behaviorPath = path.join(getAppPaths().skillsDir, 'behavior.md');
-
-    if (!(await fs.pathExists(behaviorPath))) return null;
-
-    const content =
-      await this.markdownService.getMarkdownFile(behaviorPath)?.html;
-
-    if (!content?.length) return null;
-
-    return [{ content, role: 'system' }];
-  }
-
-  async getMemorySkills(): Promise<Instructions | null> {
-    const pathSearch = path.join(getAppPaths().skillsDir, 'memory.md');
-
-    const content =
-      await this.markdownService.getMarkdownFile(pathSearch)?.html;
-
-    const instructions: Instructions = [];
-
-    if (content?.length) {
-      instructions.push({
-        content,
-        role: 'system',
-      });
-    }
-
-    return instructions;
-  }
-
-  private formatProjectMemory(topics: Record<string, unknown>): string | null {
-    const entries = Object.entries(topics || {});
-
-    if (!entries.length) {
-      return null;
-    }
-
-    return entries
-      .map(([key, value]) => `- ${key}: ${JSON.stringify(value)}`)
-      .join('\n');
-  }
-
-  async getProjectAgents(): Promise<Instructions | null> {
-    const pathRoot = this.contextService.get('root')!;
-
-    const pathAgents = path.join(pathRoot, '.agents');
-
-    if (!fs.existsSync(pathAgents)) {
-      return null;
-    }
-
-    const files = await fs.readdir(pathAgents);
-
-    const instructions: Instructions = [];
-
-    for (const file of files) {
-      const content = await this.markdownService.getMarkdownFile(
-        `${pathAgents}/${file}`,
-      )?.html;
-
-      if (content.length) {
-        instructions.push({
-          content,
-          role: 'system',
-        });
-      }
-    }
-
-    return instructions;
+            content: `Project memory from the current workspace:\n${memory}`,
+          },
+        ]
+      : [];
   }
 }

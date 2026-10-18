@@ -36,4 +36,17 @@ describe('readCarriedUsage', () => {
       readCarriedUsage([message('assistant', { usage, costUsd: -1 })]),
     ).toEqual({ usage, costUsd: undefined });
   });
+
+  it('keeps valid extra usage entries and drops malformed ones', () => {
+    const extra = { source: 'subagent', model: 'a:b', usage, costUsd: 0.1 };
+
+    const carried = readCarriedUsage([
+      message('assistant', {
+        usage,
+        extraUsage: [extra, { source: 'other', model: 'a:b', usage }, 'x'],
+      }),
+    ]);
+
+    expect(carried?.extraUsage).toEqual([extra]);
+  });
 });

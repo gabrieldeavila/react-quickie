@@ -1,4 +1,4 @@
-import { InvalidToolApprovalSignatureError } from 'ai';
+import { APICallError, InvalidToolApprovalSignatureError } from 'ai';
 import {
   APPROVAL_EXPIRED_MESSAGE,
   describeStreamError,
@@ -19,5 +19,19 @@ describe('describeStreamError', () => {
   it('falls back to the generic message', () => {
     expect(describeStreamError(new Error('boom'))).toBe(GENERIC_STREAM_ERROR);
     expect(describeStreamError(undefined)).toBe(GENERIC_STREAM_ERROR);
+  });
+
+  it('names the provider for provider failures', () => {
+    const error = new APICallError({
+      message: 'rate limited',
+      url: 'https://api.anthropic.com/v1/messages',
+      requestBodyValues: {},
+      statusCode: 429,
+    });
+
+    expect(describeStreamError(error, 'anthropic')).toContain(
+      'anthropic recusou a chamada por limite de uso',
+    );
+    expect(describeStreamError(error)).toBe(GENERIC_STREAM_ERROR);
   });
 });

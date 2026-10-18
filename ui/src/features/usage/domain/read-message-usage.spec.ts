@@ -45,4 +45,17 @@ describe("readMessageUsage", () => {
       costUsd: undefined,
     });
   });
+
+  it("keeps valid extra usage entries only", () => {
+    const extra = { source: "subagent", model: "c:d", usage: usage(1, 1) };
+    expect(
+      readMessageUsage(
+        assistant({
+          model: "a:b",
+          usage: usage(1, 2),
+          extraUsage: [extra, { source: "x", model: "c", usage: usage(1, 1) }],
+        }),
+      )?.extraUsage,
+    ).toEqual([extra]);
+  });
 });

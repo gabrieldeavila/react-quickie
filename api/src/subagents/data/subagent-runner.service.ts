@@ -4,6 +4,8 @@ import { isStepCount, streamText } from 'ai';
 import { buildToolApprovalMap } from 'src/chat/domain/approval-policy';
 import { ContextService } from 'src/common/context/context.service';
 import { ProviderRegistryService } from 'src/llm/data/provider-registry.service';
+import { priceUsage } from 'src/llm/domain/price-usage';
+import { toTokenUsage } from 'src/llm/domain/to-token-usage';
 import type { AgentDefinition } from '../domain/agent-definition.types';
 import {
   ConcurrencyLimiter,
@@ -104,13 +106,20 @@ export class SubagentRunnerService {
       tools: selected.model.supportsTools ? toolkit.tools : {},
       toolApproval: buildToolApprovalMap(toolkit.approvalPolicies),
       stopWhen: isStepCount(definition.maxSteps),
+      maxRetries: this.providerRegistry.maxRetries,
       abortSignal,
     });
 
     let run = initial;
     let lastEmit = 0;
     for await (const part of result.fullStream) {
-      const event = toSubagentEvent(part, toolkit.approvalPolicies);
+      const event =
+        part.type === 'finish-step'
+          ? {
+              type: 'usage' as const,
+              usage: priceUsage(selected, toTokenUsage(part.usage)),
+            }
+          : toSubagentEvent(part, toolkit.approvalPolicies);
       if (!event) continue;
       run = applySubagentEvent(run, event);
 

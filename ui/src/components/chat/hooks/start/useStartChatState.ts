@@ -27,7 +27,11 @@ const useStartChatState = () => {
 
   const synchronizedMessagesRef = useRef(initialMessages);
   const statusRef = useRef(status);
-  statusRef.current = status;
+
+  // Declared before the effect that reads it, so it is current by then.
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   useEffect(() => {
     activeConversationIdRef.current = history.activeConversationId;

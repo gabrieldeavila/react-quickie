@@ -58,12 +58,8 @@ export class ChatStreamService {
     const agentToolApproval = selected.model.supportsTools ? toolApproval : {};
     const instructions = await this.promptsService.getInstructions();
     const approvalSecret = await this.approvalSecretService.get();
-    const messageMetadata = createMessageMetadataTracker({
-      ref: selected.ref,
-      pricing: selected.model.pricing,
-      carried: readCarriedUsage(uiMessages),
-    });
-
+    const onError = (error: unknown) =>
+      describeStreamError(error, selected.provider);
     return createUIMessageStream({
       execute: async ({ writer }) => {
         const fitted = await this.contextCompactionService.fit({
@@ -74,6 +70,14 @@ export class ChatStreamService {
           instructions,
           previousSummary: summary,
           abortSignal,
+        });
+        const messageMetadata = createMessageMetadataTracker({
+          ref: selected.ref,
+          pricing: selected.model.pricing,
+          carried: readCarriedUsage(uiMessages),
+          extraUsage: fitted.summaryUsage
+            ? [{ source: 'compaction', ...fitted.summaryUsage }]
+            : undefined,
         });
         if (fitted.compaction) {
           writer.write({
@@ -100,17 +104,18 @@ export class ChatStreamService {
                   })
               : undefined,
           stopWhen: isStepCount(MAX_STEPS),
+          maxRetries: this.providerRegistry.maxRetries,
           abortSignal,
         });
 
         writer.merge(
           result.toUIMessageStream({
-            onError: describeStreamError,
+            onError,
             messageMetadata,
           }),
         );
       },
-      onError: describeStreamError,
+      onError,
       // Without this the stream's `start` chunk carries a fresh message id and
       // the client renames its assistant message. With it, a continuation
       // after a tool approval (last message = assistant) keeps that message's
