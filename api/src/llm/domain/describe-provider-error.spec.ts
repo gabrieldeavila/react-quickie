@@ -1,9 +1,9 @@
 import { APICallError, LoadAPIKeyError, RetryError } from 'ai';
 import { describeProviderError } from './describe-provider-error';
 
-const apiError = (statusCode?: number) =>
+const apiError = (statusCode?: number, message = 'failed') =>
   new APICallError({
-    message: 'failed',
+    message,
     url: 'https://api.example.com/v1/messages',
     requestBodyValues: {},
     statusCode,
@@ -53,8 +53,21 @@ describe('describeProviderError', () => {
     );
   });
 
+  it('shows the provider message for an unknown model (404)', () => {
+    const error = apiError(404, "The model 'gpt-6.1-luna' does not exist");
+    expect(describeProviderError(error, 'openai')).toBe(
+      "openai recusou a chamada (404): The model 'gpt-6.1-luna' does not exist",
+    );
+  });
+
+  it('shows the provider message for a bad request (400)', () => {
+    expect(
+      describeProviderError(apiError(400, 'context too long'), 'deepseek'),
+    ).toContain('(400): context too long');
+  });
+
   it('leaves other errors to the caller', () => {
-    expect(describeProviderError(apiError(400), 'openai')).toBeUndefined();
+    expect(describeProviderError(apiError(409), 'openai')).toBeUndefined();
     expect(describeProviderError(apiError(), 'openai')).toBeUndefined();
     expect(describeProviderError(new Error('boom'), 'openai')).toBeUndefined();
   });

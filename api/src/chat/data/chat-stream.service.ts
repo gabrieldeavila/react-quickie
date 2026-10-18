@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   createUIMessageStream,
   isStepCount,
@@ -35,6 +35,8 @@ type ChatStreamInput = {
 
 @Injectable()
 export class ChatStreamService {
+  private readonly logger = new Logger(ChatStreamService.name);
+
   constructor(
     private readonly providerRegistry: ProviderRegistryService,
     private readonly promptsService: PromptsService,
@@ -58,8 +60,10 @@ export class ChatStreamService {
     const agentToolApproval = selected.model.supportsTools ? toolApproval : {};
     const instructions = await this.promptsService.getInstructions();
     const approvalSecret = await this.approvalSecretService.get();
-    const onError = (error: unknown) =>
-      describeStreamError(error, selected.provider);
+    const onError = (error: unknown) => {
+      this.logger.error(`Stream failed (${selected.ref})`, error);
+      return describeStreamError(error, selected.provider);
+    };
     return createUIMessageStream({
       execute: async ({ writer }) => {
         const fitted = await this.contextCompactionService.fit({

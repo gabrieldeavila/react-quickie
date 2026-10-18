@@ -8,6 +8,8 @@ type ProviderFailure = {
 
 const OVERLOADED_STATUSES = new Set([500, 502, 503, 504, 529]);
 const AUTH_STATUSES = new Set([401, 403]);
+/** Bad request or unknown model: the provider's own message says what. */
+const REJECTED_STATUSES = new Set([400, 404]);
 
 function unwrap(error: unknown): ProviderFailure {
   if (RetryError.isInstance(error)) {
@@ -48,6 +50,9 @@ export function describeProviderError(
   }
   if (AUTH_STATUSES.has(status)) {
     return `${provider} recusou a chave de API (${status}). Confira a chave configurada.`;
+  }
+  if (REJECTED_STATUSES.has(status)) {
+    return `${provider} recusou a chamada (${status}): ${cause.message}`;
   }
   return undefined;
 }
