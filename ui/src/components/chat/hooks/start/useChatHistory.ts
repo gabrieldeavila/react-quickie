@@ -2,7 +2,6 @@ import { type UIMessage } from "@ai-sdk/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   appendMessage,
-  appendPartsToLatestAssistantMessage,
   clearChatHistory,
   deleteConversationCascade,
   ensureConversation,
@@ -13,6 +12,7 @@ import {
 import type { ChatConversation } from "~types/interface/chat-db.interface";
 import type { UseChatHistoryResult } from "~types/interface/history.interface";
 import { ACTIVE_CHAT_STORAGE_KEY } from "~types/consts/chat.const";
+import { saveAssistantMessage } from "@/features/chat/api/save-assistant-message";
 
 const getStoredActiveConversationId = () => {
   if (typeof window === "undefined") return null;
@@ -133,29 +133,9 @@ export const useChatHistory = (): UseChatHistoryResult => {
   );
 
   const persistAssistantMessage = useCallback(
-    async (
-      conversationId: string,
-      content: string,
-      parts?: UIMessage["parts"],
-    ): Promise<void> => {
+    async (conversationId: string, message: UIMessage): Promise<void> => {
       await ensureConversation(conversationId);
-      await appendMessage(conversationId, "assistant", content, parts);
-      await reloadConversations();
-    },
-    [reloadConversations],
-  );
-
-  const appendAssistantParts = useCallback(
-    async (
-      conversationId: string,
-      parts: UIMessage["parts"],
-      approvalId?: string,
-    ): Promise<void> => {
-      await appendPartsToLatestAssistantMessage(
-        conversationId,
-        parts,
-        approvalId,
-      );
+      await saveAssistantMessage(conversationId, message);
       await reloadConversations();
     },
     [reloadConversations],
@@ -201,7 +181,6 @@ export const useChatHistory = (): UseChatHistoryResult => {
       createConversation,
       persistUserMessage,
       persistAssistantMessage,
-      appendAssistantParts,
       reloadConversations,
       deleteConversation,
       resetHistory,
@@ -215,7 +194,6 @@ export const useChatHistory = (): UseChatHistoryResult => {
       historyMessages,
       isHydrated,
       persistAssistantMessage,
-      appendAssistantParts,
       persistUserMessage,
       reloadConversations,
       resetHistory,

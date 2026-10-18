@@ -1,32 +1,10 @@
 import { DefaultChatTransport } from "ai";
 import type { CombinedAgentEnum } from "../../types/enum/agent.enum";
-import type {
-  ChatRequestBody,
-  ChatRequestMessage,
-} from "../../types/interface/chat.interface";
+import type { ChatRequestBody } from "../../types/interface/chat.interface";
 import type { CreateChatTransportParams } from "../../types/interface/transport.interface";
 import { CHAT_API_URL } from "~types/consts/project.const";
-
-function normalizeMessage(
-  message: NonNullable<ChatRequestBody["messages"]>[number],
-): ChatRequestMessage | undefined {
-  const sourceParts = message.parts?.length
-    ? message.parts
-    : message.content
-      ? [{ type: "text", text: message.content }]
-      : [];
-  const parts = sourceParts.filter(
-    (part) =>
-      part.type === "text" ||
-      (part.type === "file" && part.mediaType?.startsWith("image/")),
-  );
-
-  // useChat can keep empty assistant placeholders after interrupted/failed turns.
-  // They are UI state, not conversation content, and the API rejects empty messages.
-  if (parts.length === 0) return undefined;
-
-  return { role: message.role, parts };
-}
+import { buildRequestMessages } from "@/features/chat/domain/build-request-messages";
+import { truncateToolOutputs } from "@/features/chat/domain/truncate-tool-outputs";
 
 export function createChatTransport({
   projectRoot,
@@ -43,10 +21,9 @@ export function createChatTransport({
           chatSpecialty?: string;
         };
         if (body.messages) {
-          body.messages = body.messages.flatMap((message) => {
-            const normalizedMessage = normalizeMessage(message);
-            return normalizedMessage ? [normalizedMessage] : [];
-          });
+          body.messages = truncateToolOutputs(
+            buildRequestMessages(body.messages),
+          );
         }
         body.root = projectRoot;
         body.chatMode = focus;

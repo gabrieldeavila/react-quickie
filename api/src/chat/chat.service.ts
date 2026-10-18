@@ -13,6 +13,10 @@ import { GitToolsService } from 'src/common/agents/tools/git/git.service';
 import { PluginToolsService } from 'src/common/agents/plugin/tools/tools.plugins.service';
 import { MemoryService } from 'src/common/helpers/memory.service';
 import { SubagentService } from './subagent.service';
+import {
+  buildToolApprovalMap,
+  type ToolApprovalMap,
+} from './domain/approval-policy';
 
 @Injectable()
 export class ChatService {
@@ -52,5 +56,15 @@ export class ChatService {
       ...this.subagentService.createTools(),
       ...customTools,
     };
+  }
+
+  /** The `streamText({ toolApproval })` map for the current request's root. */
+  getToolApproval(): ToolApprovalMap {
+    const root = this.contextService.get('root');
+    if (!root) return {};
+
+    return buildToolApprovalMap({
+      ...this.bashToolsService.createApprovalPolicies(root),
+    });
   }
 }

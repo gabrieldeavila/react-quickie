@@ -25,6 +25,8 @@ export interface ChatRequestBody {
 export type ChatMessageItemProps = {
   message: UIMessage;
   isTyping?: boolean;
+  /** The last message in the chat; only it can still answer tool approvals. */
+  isLatest?: boolean;
 };
 
 export type ToolStatus = "loading" | "success" | "error";

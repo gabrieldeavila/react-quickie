@@ -2,7 +2,6 @@ export interface BaseRequestContext {
   root?: string;
   mode?: string;
   specialty?: string;
-  bashApprovalPending?: boolean;
   abortGeneration?: () => void;
   emitSubagentEvent?: (event: {
     id: string;
