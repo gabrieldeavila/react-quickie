@@ -21,6 +21,6 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    throw new UnauthorizedException('Token de acesso inválido.');
+    throw new UnauthorizedException('Invalid access token.');
   }
 }

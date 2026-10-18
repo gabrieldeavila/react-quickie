@@ -16,10 +16,7 @@ export async function withRoot<T>(
 ): Promise<ToolResult<T>> {
   const root = getRoot();
   if (!root) {
-    return formatToolError(
-      action,
-      new Error('Raiz do projeto não encontrada.'),
-    );
+    return formatToolError(action, new Error('Project root not found.'));
   }
   try {
     return await run(root);

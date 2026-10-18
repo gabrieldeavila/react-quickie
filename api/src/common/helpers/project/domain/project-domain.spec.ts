@@ -39,9 +39,7 @@ describe('assertPackageSpec', () => {
   it.each(['', '-g', '--global', 'lodash; rm -rf ~', 'a b'])(
     'rejects %p',
     (spec) => {
-      expect(() => assertPackageSpec(spec)).toThrow(
-        'Nome de dependência inválido',
-      );
+      expect(() => assertPackageSpec(spec)).toThrow('Invalid dependency name');
     },
   );
 

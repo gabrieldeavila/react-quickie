@@ -70,11 +70,11 @@ export class ProjectService {
       const isFullstack = template === FULLSTACK_TEMPLATE;
 
       if (!isFullstack && !(await pathExists(templatePath))) {
-        throw new Error(`Template '${template}' não encontrado.`);
+        throw new Error(`Template '${template}' not found.`);
       }
       if (await pathExists(projectPath)) {
         throw new Error(
-          `A pasta do projeto já existe: ${projectPath}. Escolha outro nome ou remova a pasta existente.`,
+          `The project folder already exists: ${projectPath}. Pick another name or remove the existing folder.`,
         );
       }
 
@@ -86,7 +86,7 @@ export class ProjectService {
       }
       await renamePackage(projectPath, name, template);
 
-      let output = `Projeto ${name} copiado do template '${template}'.\n`;
+      let output = `Copied project ${name} from template '${template}'.\n`;
       if (startGit) output += initGitRepository(projectPath);
       output += installProjectDependencies(projectPath, isFullstack);
 
@@ -100,7 +100,8 @@ export class ProjectService {
       return {
         success: false,
         error:
-          (error as Error).message || 'Erro desconhecido ao gerar os arquivos.',
+          (error as Error).message ||
+          'Unknown error while generating the files.',
       };
     }
   }
@@ -114,7 +115,7 @@ export class ProjectService {
         .filter((dirent) => dirent.isDirectory())
         .map((dirent) => dirent.name);
     } catch (error) {
-      throw new Error(`Erro ao ler o diretório: ${(error as Error).message}`);
+      throw new Error(`Failed to read the folder: ${(error as Error).message}`);
     }
   }
 

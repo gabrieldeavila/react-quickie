@@ -22,7 +22,7 @@ describe('capMcpToolResult', () => {
       content: [
         text('aaaa'),
         text('bbb'),
-        text('\n[saída truncada: 7 de 14 caracteres]'),
+        text('\n[output truncated: 7 of 14 characters]'),
       ],
       isError: false,
       truncated: true,

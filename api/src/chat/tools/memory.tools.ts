@@ -26,9 +26,9 @@ const memoryTopicsSchema = z.record(
 const saveMemoryInputSchema = z.object({
   project_root: z
     .string()
-    .describe('Root do projeto atual recebido na requisição.'),
+    .describe('Root of the current project, as received in the request.'),
   topics: memoryTopicsSchema.describe(
-    'Objetos de memória organizados por tópico, todos centralizados em um único arquivo.',
+    'Memory objects grouped by topic, all kept in a single file.',
   ),
 });
 
@@ -36,14 +36,14 @@ export function createMemoryTools(memoryService: MemoryService) {
   return {
     save_project_memory: tool({
       description:
-        'Salva memória centralizada do projeto atual em um único arquivo com múltiplos tópicos.',
+        'Saves the current project memory to a single file with multiple topics.',
       inputSchema: saveMemoryInputSchema,
       execute: async ({
         project_root,
         topics,
       }: z.infer<typeof saveMemoryInputSchema>) => {
         try {
-          console.log('vamos salvar a memoria');
+          console.log('saving project memory');
 
           const memory = await memoryService.saveProjectMemory(
             project_root,
@@ -51,8 +51,8 @@ export function createMemoryTools(memoryService: MemoryService) {
           );
           return JSON.stringify(memory, null, 2);
         } catch (error) {
-          console.log('erro ao salvar a memoria');
-          return formatToolError('salvar a memória do projeto', error);
+          console.log('failed to save project memory');
+          return formatToolError('save the project memory', error);
         }
       },
     }),

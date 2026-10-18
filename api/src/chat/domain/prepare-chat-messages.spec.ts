@@ -110,6 +110,6 @@ describe('prepareChatMessages', () => {
         [{ id: 's', role: 'system', parts: [{ type: 'text', text: 'x' }] }],
         tools,
       ),
-    ).rejects.toThrow(/Papel de mensagem inválido/);
+    ).rejects.toThrow(/Invalid message role/);
   });
 });

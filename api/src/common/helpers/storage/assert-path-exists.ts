@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import * as fs from 'fs-extra';
 
 /** What the missing path is, as the tool error names it. */
-export type PathKind = 'O arquivo' | 'O diretório' | 'O arquivo ou diretório';
+export type PathKind = 'File' | 'Folder' | 'File or folder';
 
 /** Throws `NotFoundException` with the path the model asked for. */
 export async function assertPathExists(
@@ -11,7 +11,5 @@ export async function assertPathExists(
   kind: PathKind,
 ): Promise<void> {
   if (await fs.pathExists(fullPath)) return;
-  throw new NotFoundException(
-    `${kind} no caminho "${requestedPath}" não foi encontrado.`,
-  );
+  throw new NotFoundException(`${kind} not found at "${requestedPath}".`);
 }

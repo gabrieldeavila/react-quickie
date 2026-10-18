@@ -1,7 +1,7 @@
 import type { LintErrorResult } from 'src/common/helpers/linter.service';
 import type { LineMatch } from 'src/common/helpers/storage/file-search.service';
 
-const NO_MATCHES = 'Nenhuma ocorrência encontrada.';
+const NO_MATCHES = 'No matches found.';
 
 export function formatListOutput(title: string, items: string[]) {
   return items.length
@@ -12,7 +12,7 @@ export function formatListOutput(title: string, items: string[]) {
 export function formatSearchMatches(matches: LineMatch[]) {
   return matches.length
     ? matches
-        .map((match) => `Linha ${match.line}: ${match.content}`.trim())
+        .map((match) => `Line ${match.line}: ${match.content}`.trim())
         .join('\n')
     : NO_MATCHES;
 }
@@ -29,13 +29,12 @@ function formatLintMessage(file: string, message: LintMessage) {
 }
 
 export function formatLintErrors(errors: LintErrorResult[]) {
-  if (!errors.length) return 'Nenhum erro de lint encontrado.';
+  if (!errors.length) return 'No lint errors found.';
   return errors
     .flatMap((error) => {
-      const file = error.filePath ?? 'Arquivo desconhecido';
+      const file = error.filePath ?? 'Unknown file';
       const messages = error.messages ?? [];
-      if (!messages.length)
-        return [`${file} - Nenhuma mensagem de lint disponível`];
+      if (!messages.length) return [`${file} - No lint message available`];
       return messages.map((message) => formatLintMessage(file, message));
     })
     .join('\n');

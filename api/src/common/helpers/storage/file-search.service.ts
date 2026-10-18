@@ -57,13 +57,13 @@ export class FileSearchService {
     } catch (error) {
       console.log(
         error,
-        'Erro ao executar a busca regex no diretório:',
+        'Failed to run the regex search in the folder:',
         targetPath,
       );
       if (error instanceof NotFoundException) throw error;
 
       throw new InternalServerErrorException(
-        'Erro ao listar arquivos do repositório.',
+        'Failed to list the repository files.',
       );
     }
   }
@@ -75,15 +75,15 @@ export class FileSearchService {
     const fullPath = this.workspaceService.resolve(filePath);
 
     try {
-      await assertPathExists(fullPath, filePath, 'O arquivo');
+      await assertPathExists(fullPath, filePath, 'File');
       const content = await fs.readFile(fullPath, 'utf-8');
       return matchLines(content, new RegExp(regexPattern));
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
 
-      console.log(error, `Erro ao buscar conteúdo no arquivo: ${filePath}`);
+      console.log(error, `Failed to search the file content: ${filePath}`);
       throw new InternalServerErrorException(
-        `Erro ao buscar conteúdo no arquivo ${filePath}.`,
+        `Failed to search the content of ${filePath}.`,
       );
     }
   }

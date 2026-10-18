@@ -16,7 +16,7 @@ export function formatCommitLog(stdout: string): string[] {
 /** `git status -s` + diff → the lines the uncommitted-changes tool returns. */
 export function formatChanges(statusOutput: string, diffOutput: string) {
   return [
-    'Arquivos:',
+    'Files:',
     ...nonEmptyLines(statusOutput).map((file) => `- ${file}`),
     '',
     'Diff:',

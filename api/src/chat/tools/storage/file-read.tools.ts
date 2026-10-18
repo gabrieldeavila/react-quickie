@@ -9,31 +9,31 @@ const listFoldersInputSchema = z.object({
   parentPath: z
     .string()
     .describe(
-      "Caminho relativo do diretório que será listado (ex: 'src/controllers', 'test/utils'). Use uma string vazia '' ou '.' para listar o diretório raiz.",
+      "Relative path of the folder to list (e.g. 'src/controllers', 'test/utils'). Use an empty string '' or '.' to list the root folder.",
     ),
 });
 
 const readFileInputSchema = z.object({
-  path: z.string().describe('Caminho do arquivo'),
+  path: z.string().describe('File path'),
   lineStart: z
     .number()
     .int()
     .positive()
     .optional()
-    .describe('Linha inicial opcional para ler apenas um bloco'),
+    .describe('Optional first line, to read only a block'),
   lineEnd: z
     .number()
     .int()
     .positive()
     .optional()
-    .describe('Linha final opcional para ler apenas um bloco'),
+    .describe('Optional last line, to read only a block'),
 });
 
 export function createFileReadTools(files: FileReadService) {
   return {
     list_folders: tool({
       description:
-        'Lista os arquivos e subdiretórios de um caminho especificado. O sistema já opera a partir da raiz (root) do projeto de forma invisível. Forneça apenas caminhos relativos.',
+        'Lists the files and subfolders of a path. Paths are already resolved from the project root, so pass relative paths only.',
       inputSchema: listFoldersInputSchema,
       execute: async ({
         parentPath,
@@ -41,17 +41,16 @@ export function createFileReadTools(files: FileReadService) {
         try {
           const entries = await files.listFilesInDirectory(parentPath);
           return formatListOutput(
-            `Arquivos e pastas encontrados em ${parentPath || '.'}`,
+            `Files and folders in ${parentPath || '.'}`,
             entries,
           );
         } catch (error) {
-          return formatToolError('listar as pastas informadas', error);
+          return formatToolError('list the given folders', error);
         }
       },
     }),
     read_file: tool({
-      description:
-        'Lê o conteúdo de um arquivo inteiro ou apenas um bloco específico',
+      description: 'Reads a whole file, or only a specific block of lines',
       inputSchema: readFileInputSchema,
       execute: async ({
         path,
@@ -62,7 +61,7 @@ export function createFileReadTools(files: FileReadService) {
           const content = await files.readFile(path, lineStart, lineEnd);
           return capFileContent(content);
         } catch (error) {
-          return formatToolError('ler o arquivo solicitado', error);
+          return formatToolError('read the requested file', error);
         }
       },
     }),

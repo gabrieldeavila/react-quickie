@@ -8,7 +8,7 @@ describe('validateProjectName', () => {
   });
 
   it.each(['.', '..', 'a/b', '../x', '   '])('rejects %p', (name) => {
-    expect(() => validateProjectName(name)).toThrow('inválido');
+    expect(() => validateProjectName(name)).toThrow('invalid');
   });
 });
 
@@ -27,10 +27,10 @@ describe('resolveTargetDir', () => {
 
   it('needs a root for relative or missing targets', () => {
     expect(() => resolveTargetDir(undefined, 'apps')).toThrow(
-      'Caminho relativo exige',
+      'A relative path needs',
     );
     expect(() => resolveTargetDir(undefined, undefined)).toThrow(
-      'Informe uma pasta de destino',
+      'Give a target folder',
     );
   });
 });

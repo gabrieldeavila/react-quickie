@@ -4,43 +4,43 @@ import { formatToolError } from 'src/common/agents/tools/shared/format-tool-erro
 import type { FileWriteService } from 'src/common/helpers/storage/file-write.service';
 
 const createFileInputSchema = z.object({
-  name: z.string().describe('Nome do arquivo'),
-  content: z.string().describe('Conteúdo do arquivo'),
+  name: z.string().describe('File name'),
+  content: z.string().describe('File content'),
 });
 
 const editFileInputSchema = z.object({
   name: z
     .string()
     .describe(
-      "Caminho relativo do arquivo a ser editado (ex: 'src/utils/format.ts').",
+      "Relative path of the file to edit (e.g. 'src/utils/format.ts').",
     ),
   oldContent: z
     .string()
     .describe(
-      'O bloco de código exato que deve ocorrer uma única vez no arquivo. Deve corresponder perfeitamente ao conteúdo atual.',
+      'The exact code block, which must occur exactly once in the file. It must match the current content exactly.',
     ),
   newContent: z
     .string()
-    .describe('O novo código ou texto que substituirá o bloco especificado.'),
+    .describe('The new code or text that replaces the given block.'),
 });
 
 const overwriteFileInputSchema = z.object({
   name: z
     .string()
     .describe(
-      "Caminho relativo do arquivo a ser sobrescrito (ex: 'src/utils/format.ts').",
+      "Relative path of the file to overwrite (e.g. 'src/utils/format.ts').",
     ),
-  newContent: z.string().describe('O novo conteúdo completo do arquivo.'),
+  newContent: z.string().describe('The new full content of the file.'),
 });
 
 const deleteFileInputSchema = z.object({
-  name: z.string().describe('Nome do arquivo'),
+  name: z.string().describe('File name'),
 });
 
 export function createFileWriteTools(files: FileWriteService) {
   return {
     create_file: tool({
-      description: 'Cria um novo arquivo',
+      description: 'Creates a new file',
       inputSchema: createFileInputSchema,
       execute: async ({
         name,
@@ -48,15 +48,15 @@ export function createFileWriteTools(files: FileWriteService) {
       }: z.infer<typeof createFileInputSchema>) => {
         try {
           await files.createFile(name, content || '');
-          return `Arquivo "${name}" criado com sucesso.`;
+          return `Created file "${name}".`;
         } catch (error) {
-          return formatToolError('criar o arquivo', error);
+          return formatToolError('create the file', error);
         }
       },
     }),
     edit_file: tool({
       description:
-        'Edita um arquivo existente substituindo somente o bloco exato de código em oldContent. Prefira sempre esta opção para evitar sobrescrever o arquivo inteiro.',
+        'Edits an existing file by replacing only the exact code block in oldContent. Always prefer this over overwriting the whole file.',
       inputSchema: editFileInputSchema,
       inputExamples: [
         {
@@ -74,15 +74,15 @@ export function createFileWriteTools(files: FileWriteService) {
       }: z.infer<typeof editFileInputSchema>) => {
         try {
           await files.replaceContentInFile(name, oldContent, newContent);
-          return `Arquivo "${name}" editado com sucesso.`;
+          return `Edited file "${name}".`;
         } catch (error) {
-          return formatToolError('editar o arquivo', error);
+          return formatToolError('edit the file', error);
         }
       },
     }),
     overwrite_file: tool({
       description:
-        'Sobrescreve todo o conteúdo de um arquivo existente. Use somente quando não for possível aplicar uma alteração específica a um bloco de código.',
+        'Overwrites the whole content of an existing file. Use it only when a targeted edit to a code block is not possible.',
       inputSchema: overwriteFileInputSchema,
       execute: async ({
         name,
@@ -90,22 +90,22 @@ export function createFileWriteTools(files: FileWriteService) {
       }: z.infer<typeof overwriteFileInputSchema>) => {
         try {
           await files.overwriteFile(name, newContent);
-          return `Arquivo "${name}" sobrescrito com sucesso.`;
+          return `Overwrote file "${name}".`;
         } catch (error) {
-          return formatToolError('sobrescrever o arquivo', error);
+          return formatToolError('overwrite the file', error);
         }
       },
     }),
     delete_file: tool({
       description:
-        'Deleta um arquivo existente. Apenas faça isso se tiver certeza de que deseja remover o arquivo, pois esta ação é irreversível.',
+        'Deletes an existing file. Only do this when you are sure the file should go, because it cannot be undone.',
       inputSchema: deleteFileInputSchema,
       execute: async ({ name }: z.infer<typeof deleteFileInputSchema>) => {
         try {
           await files.deleteFile(name);
-          return `Arquivo "${name}" deletado com sucesso.`;
+          return `Deleted file "${name}".`;
         } catch (error) {
-          return formatToolError('deletar o arquivo', error);
+          return formatToolError('delete the file', error);
         }
       },
     }),

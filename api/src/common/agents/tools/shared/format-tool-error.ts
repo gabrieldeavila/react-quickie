@@ -25,11 +25,11 @@ function getErrorMessage(error: unknown): string {
     try {
       return JSON.stringify(error);
     } catch {
-      return 'Erro desconhecido.';
+      return 'Unknown error.';
     }
   }
 
-  return 'Erro desconhecido.';
+  return 'Unknown error.';
 }
 
 export function toolSuccess<T>(message: string, data: T): ToolResult<T> {
@@ -51,5 +51,5 @@ export function formatToolError(
   action: string,
   error: unknown,
 ): ToolResult<never> {
-  return toolFailure(`Não foi possível ${action}.`, error);
+  return toolFailure(`Could not ${action}.`, error);
 }

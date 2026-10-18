@@ -45,19 +45,19 @@ describe('validateAttachments', () => {
       validateAttachments([
         message('user', [imagePart(pngDataUrl(10), 'image/jpeg')]),
       ]),
-    ).toThrow(/dado incorporado válido/);
+    ).toThrow(/valid embedded data/);
     expect(() =>
       validateAttachments([
         message('user', [imagePart('https://x.test/a.png')]),
       ]),
-    ).toThrow(/dado incorporado válido/);
+    ).toThrow(/valid embedded data/);
   });
 
   it('rejects more than 4 images in one message', () => {
     const parts = Array.from({ length: 5 }, () => imagePart());
 
     expect(() => validateAttachments([message('user', parts)])).toThrow(
-      /até 4 imagens/,
+      /up to 4 images/,
     );
   });
 
@@ -66,12 +66,12 @@ describe('validateAttachments', () => {
       validateAttachments([
         message('user', [imagePart('data:image/png;base64,')]),
       ]),
-    ).toThrow(/até 5 MB/);
+    ).toThrow(/5 MB or smaller/);
     expect(() =>
       validateAttachments([
         message('user', [imagePart(pngDataUrl(5 * 1024 * 1024 + 1))]),
       ]),
-    ).toThrow(/até 5 MB/);
+    ).toThrow(/5 MB or smaller/);
   });
 
   it('truncates long file names to 255 characters', () => {

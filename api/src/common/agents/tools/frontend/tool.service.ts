@@ -26,18 +26,18 @@ export class FrontendToolsService {
     return {
       create_component_blueprint: tool({
         description:
-          'Gera a estrutura boilerplate completa de um componente React complexo, criando múltiplos arquivos como index, contexts (Base e Services) e types. Use essa tool sempre que precisar criar uma nova feature ou componente complexo.',
+          'Generates the full boilerplate for a complex React component, creating several files such as index, contexts (Base and Services) and types. Use this tool whenever you need to create a new feature or complex component.',
         inputSchema: z.object({
           name: z
             .string()
-            .regex(/^[A-Za-z][A-Za-z0-9]*$/, 'Use apenas letras e números.')
+            .regex(/^[A-Za-z][A-Za-z0-9]*$/, 'Use letters and digits only.')
             .describe(
-              'Nome do componente ou feature em PascalCase (ex: UserProfile, DashboardMatrix). Ele será usado para nomear as funções, tipos e a pasta principal.',
+              'Component or feature name in PascalCase (e.g. UserProfile, DashboardMatrix). It names the functions, types and main folder.',
             ),
           targetPath: z
             .string()
             .describe(
-              "Caminho relativo do diretório onde o componente será criado (ex: 'src/components', 'src/features'). A raiz do projeto já está implícita.",
+              "Relative path of the folder where the component is created (e.g. 'src/components', 'src/features'). The project root is implied.",
             ),
         }),
         execute: ({
@@ -51,8 +51,8 @@ export class FrontendToolsService {
             const rootPath = this.contextService.get('root');
             if (!rootPath) {
               return formatToolError(
-                'gerar o blueprint do componente',
-                new Error('Raiz do projeto não encontrada.'),
+                'generate the component blueprint',
+                new Error('Project root not found.'),
               );
             }
 
@@ -60,11 +60,11 @@ export class FrontendToolsService {
             const result = createComponent(name, pathToAdd, rootPath);
 
             return toolSuccess(
-              'Blueprint do componente gerado com sucesso.',
+              'Component blueprint generated.',
               normalizeBlueprint(result),
             );
           } catch (error) {
-            return formatToolError('gerar o blueprint do componente', error);
+            return formatToolError('generate the component blueprint', error);
           }
         },
       }),

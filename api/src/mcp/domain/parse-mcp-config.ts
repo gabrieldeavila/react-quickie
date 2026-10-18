@@ -35,7 +35,7 @@ function parseServer(
     return {
       name,
       source,
-      error: `Configuração inválida: informe "command" (stdio) ou "type" + "url" (http/sse).`,
+      error: `Invalid config: set "command" (stdio) or "type" + "url" (http/sse).`,
     };
   }
 
@@ -44,12 +44,12 @@ function parseServer(
     return {
       name,
       source,
-      error: `Variáveis de ambiente ausentes: ${missing.join(', ')}`,
+      error: `Missing environment variables: ${missing.join(', ')}`,
     };
   }
 
   if (!isStdioServer(value) && !URL.canParse(value.url)) {
-    return { name, source, error: `URL inválida: ${value.url}` };
+    return { name, source, error: `Invalid URL: ${value.url}` };
   }
   return { name, source, config: value };
 }
@@ -63,13 +63,13 @@ export function parseMcpConfig(
   options: ParseOptions,
 ): ParsedMcpConfig {
   const json = parseJson(text);
-  if (!json.ok) return { servers: [], error: 'JSON inválido.' };
+  if (!json.ok) return { servers: [], error: 'Invalid JSON.' };
 
   const file = mcpConfigFileSchema.safeParse(json.value);
   if (!file.success) {
     return {
       servers: [],
-      error: 'O arquivo precisa de um objeto "mcpServers".',
+      error: 'The file needs an "mcpServers" object.',
     };
   }
 

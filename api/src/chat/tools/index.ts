@@ -9,103 +9,88 @@ export type ToolUiMetadata = {
 
 export const TOOL_UI_MAPPING: Record<string, ToolUiMetadata> = {
   list_folders: {
-    uiLabel: 'Listando arquivos e pastas...',
-    uiDescription:
-      'O sistema está examinando a estrutura de diretórios solicitada.',
+    uiLabel: 'Listing files and folders...',
+    uiDescription: 'Looking at the requested folder structure.',
   },
   create_file: {
-    uiLabel: 'Criando arquivo...',
-    uiDescription: 'O sistema está gerando um novo arquivo no projeto.',
+    uiLabel: 'Creating file...',
+    uiDescription: 'Creating a new file in the project.',
   },
   edit_file: {
-    uiLabel: 'Editando arquivo...',
-    uiDescription:
-      'O sistema está substituindo um trecho específico do arquivo.',
+    uiLabel: 'Editing file...',
+    uiDescription: 'Replacing a specific part of the file.',
   },
   overwrite_file: {
-    uiLabel: 'Sobrescrevendo arquivo...',
-    uiDescription: 'O sistema está substituindo todo o conteúdo do arquivo.',
+    uiLabel: 'Overwriting file...',
+    uiDescription: 'Replacing the whole file content.',
   },
   delete_file: {
-    uiLabel: 'Removendo arquivo...',
-    uiDescription: 'O sistema está apagando um arquivo existente.',
+    uiLabel: 'Deleting file...',
+    uiDescription: 'Deleting an existing file.',
   },
   rename_file_or_folder: {
-    uiLabel: 'Renomeando item...',
-    uiDescription:
-      'O sistema está alterando o nome de um arquivo ou diretório.',
+    uiLabel: 'Renaming item...',
+    uiDescription: 'Renaming a file or folder.',
   },
   move_file_or_folder: {
-    uiLabel: 'Movendo item...',
-    uiDescription:
-      'O sistema está movendo um arquivo ou diretório para outro local.',
+    uiLabel: 'Moving item...',
+    uiDescription: 'Moving a file or folder to another location.',
   },
   read_file: {
-    uiLabel: 'Lendo conteúdo do arquivo...',
-    uiDescription:
-      'O sistema está abrindo o arquivo para analisar seu conteúdo.',
+    uiLabel: 'Reading file...',
+    uiDescription: 'Opening the file to read its content.',
   },
   get_lint_errors: {
-    uiLabel: 'Verificando erros de lint...',
-    uiDescription:
-      'O sistema está analisando possíveis problemas de qualidade no código.',
+    uiLabel: 'Checking lint errors...',
+    uiDescription: 'Looking for code quality issues.',
   },
   regex_search_files_content: {
-    uiLabel: 'Buscando padrões no projeto...',
-    uiDescription:
-      'O sistema está procurando ocorrências do padrão informado em vários arquivos.',
+    uiLabel: 'Searching the project...',
+    uiDescription: 'Searching for the pattern across files.',
   },
   search_content_in_file: {
-    uiLabel: 'Buscando dentro do arquivo...',
-    uiDescription:
-      'O sistema está localizando trechos específicos dentro de um arquivo.',
+    uiLabel: 'Searching in file...',
+    uiDescription: 'Finding specific parts of a file.',
   },
   created_projects: {
-    uiLabel: 'Listando projetos...',
-    uiDescription:
-      'O sistema está identificando os projetos criados no diretório principal.',
+    uiLabel: 'Listing projects...',
+    uiDescription: 'Finding the projects in the main folder.',
   },
   check_typescript: {
-    uiLabel: 'Validando TypeScript...',
-    uiDescription: 'O sistema está verificando erros de tipagem no projeto.',
+    uiLabel: 'Checking TypeScript...',
+    uiDescription: 'Checking the project for type errors.',
   },
   install_depency: {
-    uiLabel: 'Instalando dependência...',
-    uiDescription:
-      'O sistema está adicionando uma nova dependência ao projeto.',
+    uiLabel: 'Installing dependency...',
+    uiDescription: 'Adding a new dependency to the project.',
   },
   read_project_memory: {
-    uiLabel: 'Lendo memória do projeto...',
-    uiDescription:
-      'O sistema está carregando a memória centralizada do projeto atual.',
+    uiLabel: 'Reading project memory...',
+    uiDescription: 'Loading the memory of the current project.',
   },
   save_project_memory: {
-    uiLabel: 'Salvando memória do projeto...',
-    uiDescription:
-      'O sistema está gravando a memória centralizada por tópicos.',
+    uiLabel: 'Saving project memory...',
+    uiDescription: 'Saving the project memory by topic.',
   },
   get_recent_commits: {
-    uiLabel: 'Lendo commits recentes...',
-    uiDescription: 'O sistema está consultando o histórico recente do Git.',
+    uiLabel: 'Reading recent commits...',
+    uiDescription: 'Reading the recent Git history.',
   },
   create_commit: {
-    uiLabel: 'Criando commit...',
-    uiDescription: 'O sistema está preparando e registrando um novo commit.',
+    uiLabel: 'Creating commit...',
+    uiDescription: 'Staging and recording a new commit.',
   },
   search_commits: {
-    uiLabel: 'Buscando commits...',
-    uiDescription:
-      'O sistema está filtrando commits por autor, data ou quantidade.',
+    uiLabel: 'Searching commits...',
+    uiDescription: 'Filtering commits by author, date or count.',
   },
   get_uncommitted_changes: {
-    uiLabel: 'Analisando alterações pendentes...',
-    uiDescription:
-      'O sistema está verificando arquivos modificados e diferenças no código.',
+    uiLabel: 'Reviewing uncommitted changes...',
+    uiDescription: 'Checking changed files and the code diff.',
   },
   review_commit: {
-    uiLabel: 'Revisando commit...',
-    uiDescription:
-      'O sistema está inspecionando os arquivos e o diff de um commit específico.',
+    uiLabel: 'Reviewing commit...',
+    uiDescription: 'Inspecting the files and diff of a commit.',
   },
 };
 
@@ -120,10 +105,8 @@ export function enrichToolPart(part: Record<string, unknown>) {
 
   return {
     ...part,
-    uiLabel: metadata?.uiLabel ?? 'Executando ferramenta...',
-    uiDescription:
-      metadata?.uiDescription ??
-      'A ferramenta está sendo executada pelo sistema.',
+    uiLabel: metadata?.uiLabel ?? 'Running tool...',
+    uiDescription: metadata?.uiDescription ?? 'The tool is running.',
     uiStatus: output ? 'success' : 'loading',
   };
 }

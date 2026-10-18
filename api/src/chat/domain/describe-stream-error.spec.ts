@@ -30,7 +30,7 @@ describe('describeStreamError', () => {
     });
 
     expect(describeStreamError(error, 'anthropic')).toContain(
-      'anthropic recusou a chamada por limite de uso',
+      'anthropic rejected the call because of a rate limit',
     );
     expect(describeStreamError(error)).toBe(GENERIC_STREAM_ERROR);
   });

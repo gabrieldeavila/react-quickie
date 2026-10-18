@@ -46,7 +46,7 @@ export class ProjectController {
     },
   ) {
     if (!PROJECT_TEMPLATES.has(body.template)) {
-      throw new BadRequestException(`Template '${body.template}' inválido.`);
+      throw new BadRequestException(`Invalid template '${body.template}'.`);
     }
 
     const data = await this.projectService.createProject({

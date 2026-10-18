@@ -120,20 +120,45 @@ Notes:
 
 ### Session B — API (0b + 0c)
 
-- [ ] **Error messages the API sends to the UI**: [validate-attachments.ts](../api/src/chat/domain/validate-attachments.ts), [describe-stream-error.ts](../api/src/chat/domain/describe-stream-error.ts), [validate-message-content.ts](../api/src/chat/domain/validate-message-content.ts), [mcp.controller.ts](../api/src/mcp/delivery/mcp.controller.ts) and any other user-facing errors.
-- [ ] **Text the model reads**: tool descriptions in [api/src/chat/tools/](../api/src/chat/tools/), [build-summary-prompt.ts](../api/src/chat/domain/build-summary-prompt.ts), [memory.md](../api/src/common/agents/skills/memory.md), the agent-builder prompts, and other agent and tool services under `api/src/common/`.
-- [ ] Add "Reply in the user's language" to the system prompt, so people who write in Portuguese still get Portuguese replies.
-- [ ] Specs updated; the search for leftover Portuguese in `api/` comes back clean.
+- [x] **Error messages the API sends to the UI**: [validate-attachments.ts](../api/src/chat/domain/validate-attachments.ts), [describe-stream-error.ts](../api/src/chat/domain/describe-stream-error.ts), [validate-message-content.ts](../api/src/chat/domain/validate-message-content.ts), [mcp.controller.ts](../api/src/mcp/delivery/mcp.controller.ts) and any other user-facing errors.
+- [x] **Text the model reads**: tool descriptions in [api/src/chat/tools/](../api/src/chat/tools/), [build-summary-prompt.ts](../api/src/chat/domain/build-summary-prompt.ts), [memory.md](../api/src/common/agents/skills/memory.md), the agent-builder prompts, and other agent and tool services under `api/src/common/`.
+- [x] Add "Reply in the user's language" to the system prompt, so people who write in Portuguese still get Portuguese replies.
+- [x] Specs updated; the search for leftover Portuguese in `api/` comes back clean.
 
 #### Progress
 
 ```
-Status: not started
-Branch: —
-Last commit: —
-Done: —
+Status: done
+Branch: feat/ui-a-english-ui
+Last commit: f480eea (fix: track storage/ sources) + the following feat(api) commit (code + this block)
+Done:
+  - User-facing errors in English: chat/domain (validate-attachments, validate-message-content,
+    prepare-chat-messages, parse-compaction, describe-stream-error), llm/domain
+    (describe-provider-error, select-request-model, parse-model-ref), mcp (controller,
+    parse-mcp-config, with-timeout, client pool, cap-mcp-tool-result), workspace/*,
+    auth.guard, project.controller, project helpers, memory.service, tschecker.service.
+  - Model-facing text in English: every tool description and input .describe() in
+    chat/tools (incl. storage/*), common/agents/tools/{bash,git,frontend,shared}, the
+    agent_builder createAgent tool; tool result messages; formatToolError/withRoot action
+    phrases ("Could not <action>."); TOOL_UI_MAPPING labels in chat/tools/index.ts.
+    Skills (*.md), memory.md, build-summary-prompt and agent-builder templates were already English.
+  - System prompt: new prompts/domain/build-base-instruction.ts (+ spec). The first system
+    message is now "The user project is <root>" + REPLY_LANGUAGE_RULE ("Reply in the user's
+    language ..."). behavior.md already said this, but that file is optional at runtime.
+  - Specs that asserted Portuguese updated; .env.example comments translated.
 Left: —
-Notes: —
+Notes:
+  - api/.gitignore had a bare `storage` rule (meant for the runtime api/storage folder) that
+    also ignored src/chat/tools/storage/ and src/common/helpers/storage/. Those imported
+    sources were never committed, so a fresh clone would not build. Anchored to `/storage`
+    and committed them in f480eea before translating.
+  - Some files use decomposed Unicode (NFD), so a plain accent grep misses words such as
+    "conteúdo". Normalize to NFC first (perl -MUnicode::Normalize / python unicodedata).
+    The translated files were written back as NFC.
+  - ui/ and vscode/ don't match on any API string, so nothing there needed changing.
+  - The leftover-Portuguese search in api/ is clean (accents after NFC + common pt words).
+    Hits in skills/frontend/specialty/landing_pages.md are box-drawing false positives.
+  - Checks: api typecheck, lint:check and tests (72 suites / 424 tests) green.
 ```
 
 ---

@@ -187,7 +187,7 @@ export class McpClientPoolService implements OnModuleDestroy {
     const clientOnClose = transport.onclose;
     transport.onclose = () => {
       clientOnClose?.();
-      onLost(new Error('O processo do servidor MCP foi encerrado.'));
+      onLost(new Error('The MCP server process exited.'));
     };
   }
 

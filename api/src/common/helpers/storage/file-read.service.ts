@@ -11,7 +11,7 @@ import { assertPathExists } from './assert-path-exists';
 function selectLines(content: string, lineStart: number, lineEnd: number) {
   if (lineStart < 1 || lineEnd < lineStart) {
     throw new BadRequestException(
-      'Os valores de lineStart e lineEnd devem ser válidos e lineStart não pode ser maior que lineEnd.',
+      'lineStart and lineEnd must be valid, and lineStart cannot be greater than lineEnd.',
     );
   }
   return content
@@ -29,15 +29,15 @@ export class FileReadService {
     const targetPath = this.workspaceService.resolve(directoryPath);
 
     try {
-      await assertPathExists(targetPath, directoryPath, 'O diretório');
-      // Só os nomes de arquivos/pastas
+      await assertPathExists(targetPath, directoryPath, 'Folder');
+      // File and folder names only
       return await fs.readdir(targetPath);
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
 
-      // Trata outros erros (ex: falta de permissão de leitura)
+      // Other errors (e.g. no read permission)
       throw new InternalServerErrorException(
-        'Erro ao listar arquivos do repositório.',
+        'Failed to list the repository files.',
       );
     }
   }
@@ -50,13 +50,13 @@ export class FileReadService {
     const fullPath = this.workspaceService.resolve(filePath);
 
     try {
-      await assertPathExists(fullPath, filePath, 'O arquivo');
+      await assertPathExists(fullPath, filePath, 'File');
       const content = await fs.readFile(fullPath, 'utf-8');
 
       if (lineStart === undefined && lineEnd === undefined) return content;
       if (lineStart === undefined || lineEnd === undefined) {
         throw new BadRequestException(
-          'É necessário informar tanto lineStart quanto lineEnd para ler apenas um bloco.',
+          'Give both lineStart and lineEnd to read only a block.',
         );
       }
       return selectLines(content, lineStart, lineEnd);
@@ -68,9 +68,9 @@ export class FileReadService {
         throw error;
       }
 
-      // Trata outros erros (ex: falta de permissão de leitura)
+      // Other errors (e.g. no read permission)
       throw new InternalServerErrorException(
-        'Erro ao ler o conteúdo do arquivo.',
+        'Failed to read the file content.',
       );
     }
   }

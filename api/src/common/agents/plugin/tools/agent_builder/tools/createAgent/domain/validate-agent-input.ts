@@ -27,22 +27,20 @@ export function validateAgentInput(input: AgentInput): AgentInput {
 
   if (!AGENT_NAME.test(name)) {
     throw new InvalidAgentInputError(
-      `Nome de agente inválido: "${input.name}". Use letras minúsculas, números e "_" (ex: "data_analyst").`,
+      `Invalid agent name: "${input.name}". Use lowercase letters, digits and "_" (e.g. "data_analyst").`,
     );
   }
   if (!label || label.length > 80) {
     throw new InvalidAgentInputError(
-      'O label deve ter entre 1 e 80 caracteres.',
+      'The label must be 1 to 80 characters long.',
     );
   }
   if (!ICON_NAME.test(icon)) {
-    throw new InvalidAgentInputError(
-      `Nome de ícone inválido: "${input.icon}".`,
-    );
+    throw new InvalidAgentInputError(`Invalid icon name: "${input.icon}".`);
   }
   if (!ICON_IMPORT.test(iconImport)) {
     throw new InvalidAgentInputError(
-      `Import de ícone inválido: "${input.iconImport}". Use um pacote do react-icons, como "react-icons/fa".`,
+      `Invalid icon import: "${input.iconImport}". Use a react-icons package, such as "react-icons/fa".`,
     );
   }
   return { name, label, icon, iconImport };

@@ -76,7 +76,7 @@ export class AgentDefinitionsRepository {
 
   private warn(location: string, error: unknown) {
     this.logger.warn(
-      `Agente ignorado (${location}): ${error instanceof Error ? error.message : String(error)}`,
+      `Skipped agent (${location}): ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 }

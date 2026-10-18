@@ -113,7 +113,7 @@ describe('McpToolsService (stdio integration)', () => {
     expect(elapsed).toBeLessThan(TIMEOUT_MS * 2);
     const slow = pool.snapshot(ROOT, stdio('slow1', {}, ['hang']));
     expect(slow?.status).toBe('error');
-    expect(slow?.error).toContain('não respondeu');
+    expect(slow?.error).toContain('did not respond');
   });
 
   it('marks a server whose command does not exist as an error', async () => {

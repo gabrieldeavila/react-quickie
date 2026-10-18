@@ -16,7 +16,7 @@ export function assessCommand(
   if (/(^|[;&|])\s*(sudo|shutdown|reboot|mkfs|fdisk|dd)\b/i.test(normalized)) {
     return {
       decision: 'blocked',
-      reason: 'Comando administrativo ou destrutivo global não permitido.',
+      reason: 'System-wide admin or destructive command not allowed.',
     };
   }
 
@@ -25,7 +25,7 @@ export function assessCommand(
   ) {
     return {
       decision: 'blocked',
-      reason: 'Acesso a diretórios globais do computador não permitido.',
+      reason: 'Access to system folders not allowed.',
     };
   }
 
@@ -37,7 +37,7 @@ export function assessCommand(
     return {
       decision: 'approval_required',
       reason:
-        'O comando pode alterar arquivos, instalar dependências ou acessar recursos externos.',
+        'The command may change files, install dependencies or reach external resources.',
     };
   }
 
@@ -51,8 +51,7 @@ export function assessCommand(
   if (/[<>]|\$\(|`/.test(commandWithoutSafeNullRedirects)) {
     return {
       decision: 'approval_required',
-      reason:
-        'O comando contém redirecionamento para arquivo ou execução aninhada.',
+      reason: 'The command redirects to a file or runs a nested command.',
     };
   }
 
@@ -60,7 +59,7 @@ export function assessCommand(
   if (outsideWorkspace) {
     return {
       decision: 'approval_required',
-      reason: 'O comando pode acessar arquivos fora do workspace atual.',
+      reason: 'The command may access files outside the current workspace.',
     };
   }
 

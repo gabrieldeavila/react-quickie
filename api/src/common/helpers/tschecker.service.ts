@@ -21,7 +21,7 @@ export class TsCheckerService {
     private readonly workspaceService: WorkspaceService,
   ) {}
 
-  // Cache de projetos para manter a performance alta
+  // Project cache, to keep checks fast
   private projectsCache = new Map<string, Project>();
 
   private getProject(tsConfigPath: string): Project {
@@ -37,8 +37,8 @@ export class TsCheckerService {
   }
 
   /**
-   * Lê o tsconfig raiz e retorna todos os projetos mapeados
-   * (suporta Solution-Style tsconfig com "references")
+   * Reads the root tsconfig and returns every mapped project
+   * (supports solution-style tsconfigs with "references")
    */
   private getAllProjects(rootDir: string): Project[] {
     const rootConfigPath = path.resolve(rootDir, 'tsconfig.json');
@@ -71,7 +71,7 @@ export class TsCheckerService {
         }
       }
     } else {
-      // Se não tem references, o projeto principal é o próprio raiz
+      // Without references, the root config is the only project
       projects.push(this.getProject(rootConfigPath));
     }
 
@@ -79,7 +79,7 @@ export class TsCheckerService {
   }
 
   /**
-   * Formata um erro do ts-morph para o padrão do VS Code
+   * Formats a ts-morph diagnostic the way VS Code shows problems
    */
   private formatDiagnostic(
     diagnostic: Diagnostic,
@@ -117,14 +117,14 @@ export class TsCheckerService {
   }
 
   /**
-   * Verifica erros de um arquivo, diretório específico ou do repositório inteiro.
-   * @param targetPath Caminho relativo para o arquivo ou pasta (opcional). Se vazio, verifica tudo.
+   * Checks a file, a folder or the whole repository for errors.
+   * @param targetPath Relative path of the file or folder (optional). Empty checks everything.
    */
   public checkErrors(targetPath?: string): VsCodeProblem[] {
     const rootDir = this.contextService.get('root');
     if (!rootDir) {
       throw new BadRequestException(
-        'Diretório raiz não encontrado no contexto.',
+        'Root folder not found in the request context.',
       );
     }
 
@@ -144,20 +144,18 @@ export class TsCheckerService {
     );
 
     if (!fs.existsSync(absoluteTarget)) {
-      throw new BadRequestException(
-        `Caminho não encontrado: ${absoluteTarget}`,
-      );
+      throw new BadRequestException(`Path not found: ${absoluteTarget}`);
     }
 
     const isDirectory = fs.statSync(absoluteTarget).isDirectory();
-    // O ts-morph armazena caminhos internos usando barras (/) padrão POSIX,
-    // mesmo no Windows. Precisamos normalizar para fazer o "startsWith" ou "===" funcionar.
+    // ts-morph stores paths with POSIX slashes (/), even on Windows.
+    // Normalize so "startsWith" and "===" work.
     const normalizedTarget = absoluteTarget.replace(/\\/g, '/');
 
     const projects = this.getAllProjects(effectiveRootDir);
     if (projects.length === 0) {
       throw new BadRequestException(
-        `Nenhum tsconfig.json válido encontrado em: ${effectiveRootDir}`,
+        `No valid tsconfig.json found in: ${effectiveRootDir}`,
       );
     }
 
@@ -165,7 +163,7 @@ export class TsCheckerService {
     let filesChecked = 0;
 
     for (const project of projects) {
-      // Pega todos os arquivos do projeto em cache
+      // All source files of the cached project
       const sourceFiles = project.getSourceFiles();
 
       const targetFiles = sourceFiles.filter((sf) => {
@@ -176,11 +174,11 @@ export class TsCheckerService {
       });
 
       for (const sourceFile of targetFiles) {
-        // Sincroniza as mudanças mais recentes do disco para a memória
+        // Pick up the latest changes from disk
         sourceFile.refreshFromFileSystemSync();
         filesChecked++;
 
-        // Coleta diagnósticos apenas para este arquivo específico
+        // Diagnostics for this file only
         const diagnostics = sourceFile.getPreEmitDiagnostics();
         for (const diagnostic of diagnostics) {
           problems.push(this.formatDiagnostic(diagnostic, sourceFile));
@@ -190,7 +188,7 @@ export class TsCheckerService {
 
     if (filesChecked === 0 && !isDirectory) {
       throw new BadRequestException(
-        `Arquivo não encontrado no cache dos projetos TypeScript: ${targetPath}. Verifique se ele está coberto pelo tsconfig.json.`,
+        `File not found in the TypeScript project cache: ${targetPath}. Check that tsconfig.json includes it.`,
       );
     }
 

@@ -13,7 +13,7 @@ import {
 import { LinterService } from '../linter.service';
 import { assertPathExists } from './assert-path-exists';
 
-const EDIT_ERROR = 'Erro ao editar o arquivo no repositório.';
+const EDIT_ERROR = 'Failed to edit the file in the repository.';
 
 function rethrowKnown(error: unknown): void {
   if (
@@ -31,15 +31,15 @@ function toBadRequest(
   switch (result.reason) {
     case 'empty':
       return new BadRequestException(
-        'oldContent não pode estar vazio para uma substituição segura.',
+        'oldContent cannot be empty, or the replacement would not be safe.',
       );
     case 'not-found':
       return new BadRequestException(
-        `O bloco de código fornecido em oldContent não foi encontrado no arquivo "${filePath}". Verifique a indentação, as quebras de linha ou se você incluiu contexto suficiente, e tente novamente.`,
+        `The code block in oldContent was not found in "${filePath}". Check the indentation and line breaks, or include more context, and try again.`,
       );
     case 'ambiguous':
       return new BadRequestException(
-        `O bloco de código fornecido em oldContent ocorre ${result.occurrences} vezes no arquivo "${filePath}". Inclua mais contexto para tornar a substituição única.`,
+        `The code block in oldContent occurs ${result.occurrences} times in "${filePath}". Include more context so it matches only once.`,
       );
   }
 }
@@ -70,9 +70,9 @@ export class FileWriteService {
       await fs.outputFile(fullPath, content);
       await this.linterService.formatAndLintFile(fullPath);
     } catch {
-      // Trata erros (ex: falta de permissão de escrita)
+      // Errors such as no write permission
       throw new InternalServerErrorException(
-        'Erro ao criar o arquivo no repositório.',
+        'Failed to create the file in the repository.',
       );
     }
   }
@@ -81,12 +81,12 @@ export class FileWriteService {
     const fullPath = this.workspaceService.resolve(filePath);
 
     try {
-      await assertPathExists(fullPath, filePath, 'O arquivo');
+      await assertPathExists(fullPath, filePath, 'File');
       await fs.remove(fullPath);
     } catch (error) {
       rethrowKnown(error);
       throw new InternalServerErrorException(
-        'Erro ao deletar o arquivo do repositório.',
+        'Failed to delete the file from the repository.',
       );
     }
   }
@@ -95,7 +95,7 @@ export class FileWriteService {
     return this.move(
       currentPath,
       newPath,
-      'Erro ao renomear o arquivo ou diretório no repositório.',
+      'Failed to rename the file or folder in the repository.',
     );
   }
 
@@ -103,7 +103,7 @@ export class FileWriteService {
     return this.move(
       sourcePath,
       destinationPath,
-      'Erro ao mover o arquivo ou diretório no repositório.',
+      'Failed to move the file or folder in the repository.',
     );
   }
 
@@ -111,11 +111,11 @@ export class FileWriteService {
     const fullPath = this.workspaceService.resolve(filePath);
 
     try {
-      await assertPathExists(fullPath, filePath, 'O arquivo');
+      await assertPathExists(fullPath, filePath, 'File');
       await fs.writeFile(fullPath, newContent, 'utf-8');
       await this.linterService.formatAndLintFile(fullPath);
     } catch (error) {
-      console.log(error, `Erro ao sobrescrever o arquivo: ${filePath}`);
+      console.log(error, `Failed to overwrite the file: ${filePath}`);
       rethrowKnown(error);
       throw new InternalServerErrorException(EDIT_ERROR);
     }
@@ -131,7 +131,7 @@ export class FileWriteService {
     try {
       if (!oldContent)
         throw toBadRequest({ ok: false, reason: 'empty' }, filePath);
-      await assertPathExists(fullPath, filePath, 'O arquivo');
+      await assertPathExists(fullPath, filePath, 'File');
 
       const current = await fs.readFile(fullPath, 'utf-8');
       const result = replaceUniqueBlock(current, oldContent, newContent);
@@ -150,7 +150,7 @@ export class FileWriteService {
     const fullTo = this.workspaceService.resolve(to);
 
     try {
-      await assertPathExists(fullFrom, from, 'O arquivo ou diretório');
+      await assertPathExists(fullFrom, from, 'File or folder');
       await fs.move(fullFrom, fullTo, { overwrite: false });
     } catch (error) {
       rethrowKnown(error);

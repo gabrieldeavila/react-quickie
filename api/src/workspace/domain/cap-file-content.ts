@@ -34,7 +34,7 @@ export function capFileContent(
   const shownLines = countLines(kept);
   const totalLines = countLines(content);
   return (
-    `${kept}\n\n[truncado: mostrando ${shownLines} de ${totalLines} linhas ` +
-    `(${content.length} caracteres). Leia o restante com lineStart/lineEnd.]`
+    `${kept}\n\n[truncated: showing ${shownLines} of ${totalLines} lines ` +
+    `(${content.length} characters). Read the rest with lineStart/lineEnd.]`
   );
 }

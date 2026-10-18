@@ -69,11 +69,11 @@ export function createComponent(
     }
 
     return {
-      message: `Boilerplate para o componente '${name}' gerado com sucesso.`,
+      message: `Generated the boilerplate for component '${name}'.`,
       componentDir: path.relative(rootPath, fullDir),
       filesCreated: createdFiles,
     };
   } catch (error) {
-    throw new BadRequestException(`Erro ao criar o componente: ${error}`);
+    throw new BadRequestException(`Failed to create the component: ${error}`);
   }
 }

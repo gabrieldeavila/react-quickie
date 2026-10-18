@@ -10,14 +10,14 @@ import {
 } from './format-storage-output';
 
 const REGEX_PATTERN_DESCRIPTION =
-  "O padrão Regex. REGRA DE OURO: Como esse padrão será trafegado em JSON, NUNCA use '\\s', '\\w' ou '\\d', pois o escape falhará. Para buscar espaços em branco, use OBRIGATORIAMENTE '[ \\t]'. Exemplo: em vez de '^\\s*const\\s+', envie '^[ \\t]*const[ \\t]+'.";
+  "The regex pattern. GOLDEN RULE: this pattern travels as JSON, so NEVER use '\\s', '\\w' or '\\d', because the escaping breaks. To match whitespace you MUST use '[ \\t]'. Example: instead of '^\\s*const\\s+', send '^[ \\t]*const[ \\t]+'.";
 
 const getLintErrorsInputSchema = z.object({
   path: z
     .string()
     .optional()
     .describe(
-      'Caminho relativo do arquivo ou diretório para verificar. Deixe vazio para usar ".".',
+      'Relative path of the file or folder to check. Leave empty to use ".".',
     ),
 });
 
@@ -27,14 +27,14 @@ const regexSearchInputSchema = z.object({
     .string()
     .default('.')
     .describe(
-      'Caminho relativo do diretório onde a busca será feita. Deixe vazio para buscar em todo o projeto.',
+      'Relative path of the folder to search in. Leave empty to search the whole project.',
     ),
 });
 
 const searchContentInputSchema = z.object({
   filePath: z
     .string()
-    .describe("Caminho relativo do arquivo alvo (ex: 'src/app.module.ts')."),
+    .describe("Relative path of the target file (e.g. 'src/app.module.ts')."),
   regexPattern: z.string().describe(REGEX_PATTERN_DESCRIPTION),
 });
 
@@ -45,20 +45,20 @@ export function createFileSearchTools(
   return {
     get_lint_errors: tool({
       description:
-        'Retorna os erros de lint para um arquivo ou diretório. Se nenhum caminho for informado, usa ".".',
+        'Returns the lint errors for a file or folder. Uses "." when no path is given.',
       inputSchema: getLintErrorsInputSchema,
       execute: async ({ path }: z.infer<typeof getLintErrorsInputSchema>) => {
         try {
           const errors = await linter.getLintErrors(path || '.');
           return formatLintErrors(errors);
         } catch (error) {
-          return formatToolError('verificar os erros de lint', error);
+          return formatToolError('check the lint errors', error);
         }
       },
     }),
     regex_search_files_content: tool({
       description:
-        'Busca global (estilo "grep"): Procura por um padrão Regex no conteúdo de TODOS os arquivos dentro de um diretório. Útil para descobrir onde uma função é chamada, onde uma variável é usada no projeto todo, ou para mapear dependências cruzadas.',
+        'Global search ("grep" style): looks for a regex pattern in the content of ALL files in a folder. Useful to find where a function is called, where a variable is used across the project, or to map cross-dependencies.',
       inputSchema: regexSearchInputSchema,
       execute: async ({
         regexPattern,
@@ -69,15 +69,15 @@ export function createFileSearchTools(
             regexPattern,
             targetPath,
           );
-          return formatListOutput('Arquivos encontrados', files);
+          return formatListOutput('Files found', files);
         } catch (error) {
-          return formatToolError('buscar os padrões informados', error);
+          return formatToolError('search for the given patterns', error);
         }
       },
     }),
     search_content_in_file: tool({
       description:
-        'Procura por um padrão de texto (Regex) dentro de um ÚNICO arquivo específico. Retorna o conteúdo e o número das linhas onde houve correspondência. Excelente para localizar rapidamente funções, variáveis ou trechos de código antes de usar a ferramenta edit_file.',
+        'Looks for a text pattern (regex) inside ONE specific file. Returns the content and line numbers of each match. Great for quickly finding functions, variables or code blocks before using the edit_file tool.',
       inputSchema: searchContentInputSchema,
       execute: async ({
         filePath,
@@ -90,7 +90,7 @@ export function createFileSearchTools(
           );
           return formatSearchMatches(matches);
         } catch (error) {
-          return formatToolError('buscar o conteúdo no arquivo', error);
+          return formatToolError('search the file content', error);
         }
       },
     }),
