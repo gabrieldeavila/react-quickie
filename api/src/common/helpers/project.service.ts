@@ -5,6 +5,8 @@ import { TsCheckerService, VsCodeProblem } from './tschecker.service';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { getAppPaths } from 'src/config/app-paths';
+import { WorkspaceService } from 'src/workspace/data/workspace.service';
 
 const TEMPLATE_IGNORED_PATHS = new Set([
   'node_modules',
@@ -51,6 +53,7 @@ export class ProjectService {
   constructor(
     private readonly contextService: ContextService,
     private readonly tsCheckerService: TsCheckerService,
+    private readonly workspaceService: WorkspaceService,
   ) {}
 
   async createProject({
@@ -103,8 +106,9 @@ export class ProjectService {
               })()
         : rootPath!;
       const projectPath = path.resolve(targetDir, name);
+      this.workspaceService.assertAllowedRoot(projectPath);
 
-      const templatesRoot = path.resolve(__dirname, '../../../../templates');
+      const templatesRoot = getAppPaths().templatesDir;
       const templatePath = path.resolve(templatesRoot, template);
       const isFullstackTemplate = template === 'nest-vite-base';
 

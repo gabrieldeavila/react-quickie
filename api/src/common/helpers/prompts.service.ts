@@ -5,6 +5,7 @@ import { ContextService } from '../context/context.service';
 import { MemoryService } from './memory.service';
 import * as fs from 'fs-extra';
 import path from 'path';
+import { getAppPaths } from 'src/config/app-paths';
 
 @Injectable()
 export class PromptsService {
@@ -13,7 +14,6 @@ export class PromptsService {
     private readonly contextService: ContextService,
     private readonly memoryService: MemoryService,
   ) {}
-  private readonly contentPath = path.join(process.cwd(), 'src');
 
   async getInstructions(): Promise<Instructions> {
     const behaviorRules = await this.getBehaviorRules();
@@ -65,7 +65,7 @@ export class PromptsService {
   async getModeSkills(): Promise<Instructions | null> {
     const mode = this.contextService.get('mode');
 
-    const pathSkills = `common/agents/skills/${mode}`;
+    const pathSkills = path.join(getAppPaths().skillsDir, `${mode}`);
     const instructions = await this.getSkills(pathSkills);
     return instructions;
   }
@@ -73,14 +73,13 @@ export class PromptsService {
   async getPluginSkills(): Promise<Instructions | null> {
     const mode = this.contextService.get('mode');
 
-    const pathPlugins = `common/agents/plugin/skills/${mode}`;
+    const pathPlugins = path.join(getAppPaths().pluginSkillsDir, `${mode}`);
 
     const instructions = await this.getSkills(pathPlugins);
     return instructions;
   }
 
-  async getSkills(pathSkills: string): Promise<Instructions | null> {
-    const pathSearch = path.join(this.contentPath, pathSkills);
+  async getSkills(pathSearch: string): Promise<Instructions | null> {
     const exists = await fs.pathExists(pathSearch);
 
     const instructions: Instructions = [];
@@ -167,10 +166,7 @@ export class PromptsService {
   }
 
   async getBehaviorRules(): Promise<Instructions | null> {
-    const behaviorPath = path.join(
-      this.contentPath,
-      'common/agents/skills/behavior.md',
-    );
+    const behaviorPath = path.join(getAppPaths().skillsDir, 'behavior.md');
 
     if (!(await fs.pathExists(behaviorPath))) return null;
 
@@ -183,8 +179,7 @@ export class PromptsService {
   }
 
   async getMemorySkills(): Promise<Instructions | null> {
-    const pathMemory = 'common/agents/skills/memory.md';
-    const pathSearch = path.join(this.contentPath, pathMemory);
+    const pathSearch = path.join(getAppPaths().skillsDir, 'memory.md');
 
     const content =
       await this.markdownService.getMarkdownFile(pathSearch)?.html;

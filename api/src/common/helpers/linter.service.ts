@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { ContextService } from '../context/context.service';
+import { WorkspaceService } from 'src/workspace/data/workspace.service';
 
-const execAsync = promisify(exec);
+// execFile (no shell) so paths from tools can't inject shell syntax.
+const execFileAsync = promisify(execFile);
 
 export interface LintErrorMessage {
   ruleId: string | null;
@@ -25,20 +27,27 @@ export interface LintErrorResult {
 
 @Injectable()
 export class LinterService {
-  constructor(private readonly contextService: ContextService) {}
+  constructor(
+    private readonly contextService: ContextService,
+    private readonly workspaceService: WorkspaceService,
+  ) {}
 
   async formatAndLintFile(fullPath: string): Promise<void> {
     try {
       const targetDir = this.contextService.get('root')!;
 
-      await execAsync(`npx prettier --write "${fullPath}"`, { cwd: targetDir });
+      await execFileAsync('npx', ['prettier', '--write', fullPath], {
+        cwd: targetDir,
+      });
 
       if (
         fullPath.endsWith('.ts') ||
         fullPath.endsWith('.js') ||
         fullPath.endsWith('.tsx')
       ) {
-        await execAsync(`npx eslint --fix "${fullPath}"`, { cwd: targetDir });
+        await execFileAsync('npx', ['eslint', '--fix', fullPath], {
+          cwd: targetDir,
+        });
       }
     } catch {
       void 0;
@@ -47,11 +56,12 @@ export class LinterService {
 
   async getLintErrors(pathToLint = '.'): Promise<LintErrorResult[]> {
     const targetDir = this.contextService.get('root')!;
-    const lintPath = pathToLint || '.';
+    const lintPath = this.workspaceService.resolve(pathToLint || '.');
 
     try {
-      const { stdout } = await execAsync(
-        `npx eslint --format json "${lintPath}"`,
+      const { stdout } = await execFileAsync(
+        'npx',
+        ['eslint', '--format', 'json', lintPath],
         {
           cwd: targetDir,
           maxBuffer: 10 * 1024 * 1024,

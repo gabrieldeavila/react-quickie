@@ -3,6 +3,7 @@ import { Project, DiagnosticCategory, Diagnostic, SourceFile } from 'ts-morph';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ContextService } from '../context/context.service';
+import { WorkspaceService } from 'src/workspace/data/workspace.service';
 
 export interface VsCodeProblem {
   file: string;
@@ -15,7 +16,10 @@ export interface VsCodeProblem {
 
 @Injectable()
 export class TsCheckerService {
-  constructor(private readonly contextService: ContextService) {}
+  constructor(
+    private readonly contextService: ContextService,
+    private readonly workspaceService: WorkspaceService,
+  ) {}
 
   // Cache de projetos para manter a performance alta
   private projectsCache = new Map<string, Project>();
@@ -134,9 +138,10 @@ export class TsCheckerService {
         ? expectedApiRoot
         : normalizedRootDir;
 
-    const absoluteTarget = targetPath
-      ? path.resolve(effectiveRootDir, targetPath)
-      : effectiveRootDir;
+    const absoluteTarget = this.workspaceService.resolveIn(
+      effectiveRootDir,
+      targetPath,
+    );
 
     if (!fs.existsSync(absoluteTarget)) {
       throw new BadRequestException(

@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,14 +8,22 @@ import { ContextModule } from './common/context/context.module';
 import { ProjectController } from './project/project.controller';
 import { ProjectService } from './common/helpers/project.service';
 import { TsCheckerService } from './common/helpers/tschecker.service';
+import { WorkspaceModule } from './workspace/workspace.module';
+import { getAppPaths } from './config/app-paths';
 
 @Module({
   imports: [
     ChatModule,
     ContextModule,
+    WorkspaceModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
+      envFilePath: [
+        '.env.local',
+        '.env',
+        path.join(getAppPaths().apiDir, '.env.local'),
+        path.join(getAppPaths().apiDir, '.env'),
+      ],
     }),
   ],
   controllers: [AppController, ProjectController],

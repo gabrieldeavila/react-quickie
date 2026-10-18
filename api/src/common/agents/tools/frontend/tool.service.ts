@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { tool } from 'ai';
-import path from 'path';
 import { ContextService } from 'src/common/context/context.service';
+import { WorkspaceService } from 'src/workspace/data/workspace.service';
 import { z } from 'zod/v4';
 import { formatToolError, toolSuccess } from '../shared/format-tool-error';
 import { createComponent } from './templates/componentBlueprint';
@@ -17,7 +17,10 @@ function normalizeBlueprint(result: ComponentBlueprint): string[] {
 
 @Injectable()
 export class FrontendToolsService {
-  constructor(private readonly contextService: ContextService) {}
+  constructor(
+    private readonly contextService: ContextService,
+    private readonly workspaceService: WorkspaceService,
+  ) {}
 
   createFrontendTools() {
     return {
@@ -27,6 +30,7 @@ export class FrontendToolsService {
         inputSchema: z.object({
           name: z
             .string()
+            .regex(/^[A-Za-z][A-Za-z0-9]*$/, 'Use apenas letras e números.')
             .describe(
               'Nome do componente ou feature em PascalCase (ex: UserProfile, DashboardMatrix). Ele será usado para nomear as funções, tipos e a pasta principal.',
             ),
@@ -52,7 +56,7 @@ export class FrontendToolsService {
               );
             }
 
-            const pathToAdd = path.join(rootPath, targetPath);
+            const pathToAdd = this.workspaceService.resolve(targetPath);
             const result = createComponent(name, pathToAdd, rootPath);
 
             return toolSuccess(

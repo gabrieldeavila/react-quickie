@@ -3,6 +3,7 @@ import * as fs from 'fs-extra';
 import path from 'path';
 import pascalName from 'src/common/utils/pascalCase';
 import { Project, Scope, SyntaxKind } from 'ts-morph';
+import { getAgentBuilderDirs } from '../../agent-builder-dirs';
 import { blueprintAgentToolService, blueprintSkillAgent } from './template';
 
 export function createAgent({
@@ -16,14 +17,7 @@ export function createAgent({
   icon: string;
   iconImport: string;
 }) {
-  const apiPath = path.join(process.cwd());
-  const uiPath = path.resolve(apiPath, '../ui');
-
-  const apiBaseFolder = 'src/common/agents/plugin';
-  const uiBaseFolder = 'types/plugin';
-
-  const apiPluginDir = path.resolve(apiPath, apiBaseFolder);
-  const uiPluginDir = path.resolve(uiPath, uiBaseFolder);
+  const { apiPluginDir, uiPluginDir } = getAgentBuilderDirs();
 
   const agentApiDir = path.join(apiPluginDir, 'tools', name.toLowerCase());
 

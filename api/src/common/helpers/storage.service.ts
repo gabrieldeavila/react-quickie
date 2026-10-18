@@ -7,34 +7,26 @@ import {
 import { glob } from 'fast-glob';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { ContextService } from '../context/context.service';
+import { WorkspaceService } from 'src/workspace/data/workspace.service';
 import { LinterService } from './linter.service';
 import type { LintErrorResult } from './linter.service';
 
 @Injectable()
 export class StorageService {
   constructor(
-    private readonly contextService: ContextService,
+    private readonly workspaceService: WorkspaceService,
     private readonly linterService: LinterService,
   ) {}
 
   async listFilesInDirectory(directoryPath: string): Promise<string[]> {
-    const targetDir = this.contextService.get('root')!;
-
-    if (directoryPath.includes(targetDir)) {
-      directoryPath = directoryPath.replace(targetDir, '');
-    }
-
-    const repoPath = path.join(targetDir, directoryPath);
-
-    const targetPath = path.resolve(repoPath);
+    const targetPath = this.workspaceService.resolve(directoryPath);
 
     try {
       // Verifica se o diretório realmente existe antes de tentar ler
       const exists = await fs.pathExists(targetPath);
       if (!exists) {
         throw new NotFoundException(
-          `O diretório no caminho "${repoPath}" não foi encontrado.`,
+          `O diretório no caminho "${directoryPath}" não foi encontrado.`,
         );
       }
 
@@ -56,8 +48,7 @@ export class StorageService {
     lineStart?: number,
     lineEnd?: number,
   ): Promise<string> {
-    const targetDir = this.contextService.get('root')!;
-    const fullPath = path.join(targetDir, filePath);
+    const fullPath = this.workspaceService.resolve(filePath);
 
     try {
       // Verifica se o arquivo realmente existe antes de tentar ler
@@ -108,8 +99,7 @@ export class StorageService {
   }
 
   async createFile(filePath: string, content: string): Promise<void> {
-    const targetDir = this.contextService.get('root')!;
-    const fullPath = path.join(targetDir, filePath);
+    const fullPath = this.workspaceService.resolve(filePath);
 
     try {
       // Cria o arquivo com o conteúdo fornecido
@@ -129,8 +119,7 @@ export class StorageService {
   }
 
   async deleteFile(filePath: string): Promise<void> {
-    const targetDir = this.contextService.get('root')!;
-    const fullPath = path.join(targetDir, filePath);
+    const fullPath = this.workspaceService.resolve(filePath);
 
     try {
       // Verifica se o arquivo realmente existe antes de tentar deletar
@@ -154,9 +143,8 @@ export class StorageService {
   }
 
   async renamePath(currentPath: string, newPath: string): Promise<void> {
-    const targetDir = this.contextService.get('root')!;
-    const fullCurrentPath = path.join(targetDir, currentPath);
-    const fullNewPath = path.join(targetDir, newPath);
+    const fullCurrentPath = this.workspaceService.resolve(currentPath);
+    const fullNewPath = this.workspaceService.resolve(newPath);
 
     try {
       const exists = await fs.pathExists(fullCurrentPath);
@@ -177,9 +165,8 @@ export class StorageService {
   }
 
   async movePath(sourcePath: string, destinationPath: string): Promise<void> {
-    const targetDir = this.contextService.get('root')!;
-    const fullSourcePath = path.join(targetDir, sourcePath);
-    const fullDestinationPath = path.join(targetDir, destinationPath);
+    const fullSourcePath = this.workspaceService.resolve(sourcePath);
+    const fullDestinationPath = this.workspaceService.resolve(destinationPath);
 
     try {
       const exists = await fs.pathExists(fullSourcePath);
@@ -200,8 +187,7 @@ export class StorageService {
   }
 
   async overwriteFile(filePath: string, newContent: string): Promise<void> {
-    const targetDir = this.contextService.get('root')!;
-    const fullPath = path.join(targetDir, filePath);
+    const fullPath = this.workspaceService.resolve(filePath);
 
     try {
       const exists = await fs.pathExists(fullPath);
@@ -229,8 +215,7 @@ export class StorageService {
     oldContent: string,
     newContent: string,
   ): Promise<{ replacements: number; line: number }> {
-    const targetDir = this.contextService.get('root')!;
-    const fullPath = path.join(targetDir, filePath);
+    const fullPath = this.workspaceService.resolve(filePath);
     let temporaryPath: string | undefined;
 
     try {
@@ -329,9 +314,7 @@ export class StorageService {
     regexPattern: string,
     folderName?: string,
   ): Promise<string[]> {
-    const targetRepo = this.contextService.get('root')!;
-    const repoPath = path.join(targetRepo, folderName || '');
-    const targetPath = path.resolve(repoPath);
+    const targetPath = this.workspaceService.resolve(folderName);
 
     try {
       const files = await glob(`${targetPath}/**/*`, {
@@ -374,8 +357,7 @@ export class StorageService {
     filePath: string,
     regexPattern: string,
   ): Promise<{ line: number; content: string }[]> {
-    const targetDir = this.contextService.get('root')!;
-    const fullPath = path.join(targetDir, filePath);
+    const fullPath = this.workspaceService.resolve(filePath);
 
     try {
       const exists = await fs.pathExists(fullPath);

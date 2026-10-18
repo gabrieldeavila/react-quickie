@@ -43,7 +43,10 @@
    ```dotenv
    OPENAI_KEY=sua-chave-de-api
    OPENAI_MODEL=nome-do-modelo
+   DOTY_WORKSPACE_ROOTS=/caminho/absoluto/para/seus/projetos
    ```
+
+   Veja [Workspace e dados](#workspace-e-dados) para o que `DOTY_WORKSPACE_ROOTS` controla.
 
 3. Confirme a URL da API usada pelo frontend. O arquivo `ui/.env.development` já define `VITE_API_URL=http://localhost:3000` para desenvolvimento local. Se a API estiver em outro endereço, ajuste esse valor antes de iniciar a interface.
 
@@ -85,6 +88,18 @@ Para interromper os serviços:
 docker compose down
 ```
 
+## Workspace e dados
+
+O agente só lê e escreve dentro das pastas permitidas. A raiz do projeto enviada pela interface precisa estar dentro de uma delas, senão a API responde `403`. Caminhos que saem da raiz (`../`, caminhos absolutos fora dela ou links simbólicos) são recusados.
+
+| Variável               | Descrição                                                                                                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DOTY_WORKSPACE_ROOTS` | Pastas permitidas, separadas por vírgula. Sem ela, a API usa `BASE_CODE_PATH`, depois `/workspace` (Docker) e, por último, a pasta-pai deste repositório (com um aviso no log). |
+| `DOTY_DATA_DIR`        | Dados do Doty, como a memória dos projetos. Padrão: `~/.doty`. Essa pasta nunca é acessível pelo agente, mesmo dentro de uma pasta permitida.                                |
+| `DOTY_TEMPLATES_DIR`   | Pasta dos templates de projeto. Padrão: `templates/` na raiz do repositório.                                                                                               |
+
+A memória dos projetos ficava em `api/storage/memory`. Na primeira inicialização ela é copiada para `$DOTY_DATA_DIR/memory`; a pasta antiga não é removida.
+
 ## Estrutura do repositório
 
 ```text
@@ -103,6 +118,7 @@ docker compose down
 | `npm run build`            | Compila a API e o frontend.                                     |
 | `npm start`                | Inicia a interface em modo preview e a API em modo de produção. |
 | `npm test --prefix api`    | Executa os testes unitários da API.                             |
+| `npm test --prefix ui`     | Executa os testes unitários do frontend (funções puras).        |
 | `npm run lint --prefix ui` | Verifica o lint do frontend.                                    |
 
 ## API

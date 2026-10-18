@@ -1,7 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { createHash } from 'crypto';
+import { getAppPaths } from 'src/config/app-paths';
+import { copyLegacyMemory } from './copy-legacy-memory';
 
 export type MemoryTopicValue =
   | string
@@ -17,9 +24,23 @@ export type ProjectMemoryEntry = {
 };
 
 @Injectable()
-export class MemoryService {
+export class MemoryService implements OnModuleInit {
+  private readonly logger = new Logger(MemoryService.name);
+
+  async onModuleInit() {
+    const { legacyMemoryDir, memoryDir } = getAppPaths();
+
+    try {
+      if (await copyLegacyMemory(legacyMemoryDir, memoryDir)) {
+        this.logger.log(`Copied project memory to ${memoryDir}`);
+      }
+    } catch (error) {
+      this.logger.warn(`Could not copy legacy project memory: ${error}`);
+    }
+  }
+
   private getMemoryRoot(): string {
-    return path.resolve(process.cwd(), 'storage', 'memory');
+    return getAppPaths().memoryDir;
   }
 
   private slugify(value: string): string {
