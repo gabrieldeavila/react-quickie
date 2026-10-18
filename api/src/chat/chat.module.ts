@@ -7,9 +7,10 @@ import { AgentsPluginModule } from 'src/common/agents/plugin/tools/agent.plugins
 import { SubagentService } from './subagent.service';
 import { ChatStreamService } from './data/chat-stream.service';
 import { ApprovalSecretService } from './data/approval-secret.service';
+import { LlmModule } from 'src/llm/llm.module';
 
 @Module({
-  imports: [HelperModule, AgentsModule, AgentsPluginModule],
+  imports: [HelperModule, AgentsModule, AgentsPluginModule, LlmModule],
   controllers: [ChatController],
   providers: [
     ChatService,

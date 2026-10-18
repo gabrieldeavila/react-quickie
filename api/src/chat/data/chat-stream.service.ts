@@ -1,6 +1,4 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 import {
   createUIMessageStream,
   isStepCount,
@@ -11,6 +9,8 @@ import {
 } from 'ai';
 import { ContextService } from 'src/common/context/context.service';
 import { PromptsService } from 'src/common/helpers/prompts.service';
+import { ProviderRegistryService } from 'src/llm/data/provider-registry.service';
+import type { SelectedModel } from 'src/llm/domain/find-model';
 import type { ToolApprovalMap } from '../domain/approval-policy';
 import { describeStreamError } from '../domain/describe-stream-error';
 import { ApprovalSecretService } from './approval-secret.service';
@@ -18,6 +18,7 @@ import { ApprovalSecretService } from './approval-secret.service';
 const MAX_STEPS = 50;
 
 type ChatStreamInput = {
+  model: SelectedModel;
   uiMessages: UIMessage[];
   messages: ModelMessage[];
   tools: ToolSet;
@@ -28,7 +29,7 @@ type ChatStreamInput = {
 @Injectable()
 export class ChatStreamService {
   constructor(
-    private readonly configService: ConfigService,
+    private readonly providerRegistry: ProviderRegistryService,
     private readonly promptsService: PromptsService,
     private readonly contextService: ContextService,
     private readonly approvalSecretService: ApprovalSecretService,
@@ -36,13 +37,17 @@ export class ChatStreamService {
 
   /** Runs the agent loop and returns it as a UI message stream. */
   async createStream({
+    model: selected,
     uiMessages,
     messages,
     tools,
     toolApproval,
     abortSignal,
   }: ChatStreamInput) {
-    const model = this.resolveModel();
+    const model = this.providerRegistry.languageModel(selected);
+    // Models without tool support run as plain chat: no tools, no approvals.
+    const agentTools = selected.model.supportsTools ? tools : {};
+    const agentToolApproval = selected.model.supportsTools ? toolApproval : {};
     const instructions = await this.promptsService.getInstructions();
     const approvalSecret = await this.approvalSecretService.get();
     const requestContext = this.contextService.get();
@@ -58,8 +63,8 @@ export class ChatStreamService {
         const result = streamText({
           model,
           messages,
-          tools,
-          toolApproval,
+          tools: agentTools,
+          toolApproval: agentToolApproval,
           experimental_toolApprovalSecret: approvalSecret,
           instructions,
           stopWhen: isStepCount(MAX_STEPS),
@@ -77,16 +82,5 @@ export class ChatStreamService {
       // id, which the UI uses as the IndexedDB key for its upsert.
       originalMessages: uiMessages,
     });
-  }
-
-  private resolveModel() {
-    const modelName = this.configService.get<string>('OPENAI_MODEL');
-    if (!modelName) {
-      throw new InternalServerErrorException(
-        'A variável OPENAI_MODEL não está configurada.',
-      );
-    }
-    const apiKey = this.configService.get<string>('OPENAI_KEY');
-    return createOpenAI({ apiKey })(modelName);
   }
 }

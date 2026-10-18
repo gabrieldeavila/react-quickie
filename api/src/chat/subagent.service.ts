@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { createOpenAI } from '@ai-sdk/openai';
 import { generateText, isStepCount, tool } from 'ai';
 import { z } from 'zod/v4';
 import { ContextService } from 'src/common/context/context.service';
 import { StorageService } from 'src/common/helpers/storage.service';
+import { ProviderRegistryService } from 'src/llm/data/provider-registry.service';
 import { createStorageTools } from './tools/storage.tools';
 
 export type SubagentStatusEvent = {
@@ -17,7 +16,7 @@ export type SubagentStatusEvent = {
 @Injectable()
 export class SubagentService {
   constructor(
-    private readonly configService: ConfigService,
+    private readonly providerRegistry: ProviderRegistryService,
     private readonly contextService: ContextService,
     private readonly storageService: StorageService,
   ) {}
@@ -53,12 +52,12 @@ export class SubagentService {
     this.emit({ id, name, task, status: 'running' });
 
     try {
-      const apiKey = this.configService.get<string>('OPENAI_KEY');
-      const modelName = this.configService.get<string>('OPENAI_MODEL');
-      if (!apiKey || !modelName)
-        throw new Error('Modelo de IA não configurado.');
+      const selected = this.providerRegistry.selectForSubagent(
+        this.contextService.get('modelRef'),
+      );
+      if (!selected) throw new Error('Modelo de IA não configurado.');
 
-      const model = createOpenAI({ apiKey })(modelName);
+      const model = this.providerRegistry.languageModel(selected);
       const storageTools = createStorageTools(this.storageService);
 
       // Subagentes recebem apenas ferramentas de leitura. Assim eles conseguem

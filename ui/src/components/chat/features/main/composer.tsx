@@ -5,6 +5,7 @@ import {
   useChatServicesContext,
 } from "../../context/context";
 import useSendMessage from "../../hooks/events/useSendMessage";
+import { ModelNotices } from "@/features/models/components/ModelNotices";
 
 export function ChatComposer() {
   const {
@@ -17,7 +18,11 @@ export function ChatComposer() {
     addPastedImages,
     removePastedImage,
     attachmentError,
+    rejectAttachments,
+    conversationModel,
   } = useChatBaseContext();
+  const imagesAllowed =
+    conversationModel.resolved?.model.supportsImages ?? true;
   const { isChatPending } = useChatServicesContext();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -65,9 +70,13 @@ export function ChatComposer() {
 
       if (files.length === 0) return;
       event.preventDefault();
+      if (!imagesAllowed) {
+        rejectAttachments("O modelo selecionado não aceita imagens.");
+        return;
+      }
       void addPastedImages(files);
     },
-    [addPastedImages],
+    [addPastedImages, imagesAllowed, rejectAttachments],
   );
 
   return (
@@ -91,6 +100,11 @@ export function ChatComposer() {
             ))}
           </div>
         ) : null}
+        <ModelNotices
+          unavailableModel={conversationModel.unavailableModel}
+          resolved={conversationModel.resolved}
+          hasPastedImages={pastedImages.length > 0}
+        />
         {attachmentError ? (
           <p className="chat-attachment-error" role="alert">
             {attachmentError}
@@ -100,7 +114,11 @@ export function ChatComposer() {
           <textarea
             ref={textareaRef}
             className="chat-input"
-            placeholder="Digite sua mensagem ou cole uma imagem..."
+            placeholder={
+              imagesAllowed
+                ? "Digite sua mensagem ou cole uma imagem..."
+                : "Digite sua mensagem..."
+            }
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={handleKeyDown}

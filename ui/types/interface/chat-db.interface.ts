@@ -8,6 +8,8 @@ export interface ChatConversation {
   createdAt: number;
   updatedAt: number;
   lastMessageAt: number;
+  /** `provider:model` this conversation runs on (Dexie v4). */
+  model?: string;
   metadata?: Record<string, unknown>;
   attachments?: unknown[];
 }

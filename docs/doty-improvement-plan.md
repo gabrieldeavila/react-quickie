@@ -238,6 +238,7 @@ writes: false
 ---
 You are a code explorer. …
 ```
+Model order for a subagent: agent frontmatter `model` (unless `inherit`) → `DOTY_SUBAGENT_MODEL` → conversation model → default. Phase 2 implements the last three (`llm/domain/resolve-subagent-model.ts`); Phase 4 adds the frontmatter step in front. A ref whose provider has no key is skipped, not an error.
 Built-ins: `explorer` (read-only), `reviewer` (read-only + git read tools), `implementer` (file write tools + bash, `writes: true`).
 
 - `subagents/domain/parse-agent-definition.ts` (gray-matter is already a dependency) + `resolve-agent-tools.ts`. The tool allowlist supports globs such as `mcp__github__*`. Subagents never get `run_subagent`, so there is no recursion.

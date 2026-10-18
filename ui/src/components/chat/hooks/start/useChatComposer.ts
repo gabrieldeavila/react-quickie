@@ -73,6 +73,10 @@ export function useChatComposer() {
     setPastedImages((current) => current.filter((image) => image.id !== id));
   }, []);
 
+  const rejectAttachments = useCallback((message: string) => {
+    setAttachmentError(message);
+  }, []);
+
   const clearInput = useCallback(() => {
     setInput("");
     setPastedImages([]);
@@ -94,10 +98,12 @@ export function useChatComposer() {
       addPastedImages,
       removePastedImage,
       attachmentError,
+      rejectAttachments,
       clearAttachmentError: () => setAttachmentError(null),
     }),
     [
       addPastedImages,
+      rejectAttachments,
       attachmentError,
       clearInput,
       hasInput,

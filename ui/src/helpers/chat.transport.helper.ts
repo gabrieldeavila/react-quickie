@@ -5,11 +5,14 @@ import type { CreateChatTransportParams } from "../../types/interface/transport.
 import { CHAT_API_URL } from "~types/consts/project.const";
 import { buildRequestMessages } from "@/features/chat/domain/build-request-messages";
 import { truncateToolOutputs } from "@/features/chat/domain/truncate-tool-outputs";
+import { filterPartsByCapabilities } from "@/features/models/domain/filter-parts-by-capabilities";
 
 export function createChatTransport({
   projectRoot,
   focus,
   specialty,
+  model,
+  modelTarget,
 }: CreateChatTransportParams) {
   return new DefaultChatTransport({
     api: CHAT_API_URL,
@@ -19,12 +22,17 @@ export function createChatTransport({
           root?: string;
           chatMode?: CombinedAgentEnum;
           chatSpecialty?: string;
+          model?: string;
         };
         if (body.messages) {
+          const messages = buildRequestMessages(body.messages);
           body.messages = truncateToolOutputs(
-            buildRequestMessages(body.messages),
+            modelTarget
+              ? filterPartsByCapabilities(messages, modelTarget)
+              : messages,
           );
         }
+        if (model) body.model = model;
         body.root = projectRoot;
         body.chatMode = focus;
         body.chatSpecialty = specialty;

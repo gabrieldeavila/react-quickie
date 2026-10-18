@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  InternalServerErrorException,
   Post,
   Res,
   UseInterceptors,
@@ -10,6 +11,12 @@ import { pipeUIMessageStreamToResponse } from 'ai';
 import { type Response } from 'express';
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { ContextService } from 'src/common/context/context.service';
+import { ProviderRegistryService } from 'src/llm/data/provider-registry.service';
+import type { SelectedModel } from 'src/llm/domain/find-model';
+import {
+  NoModelConfiguredError,
+  UnknownModelError,
+} from 'src/llm/domain/select-request-model';
 import { ChatService } from '../chat.service';
 import { ChatStreamService } from '../data/chat-stream.service';
 import { InvalidChatMessagesError } from '../domain/invalid-chat-messages.error';
@@ -32,10 +39,15 @@ export class ChatController {
     private readonly chatService: ChatService,
     private readonly chatStreamService: ChatStreamService,
     private readonly contextService: ContextService,
+    private readonly providerRegistry: ProviderRegistryService,
   ) {}
 
   @Post()
-  async chat(@Body() body: { messages?: unknown }, @Res() res: Response) {
+  async chat(
+    @Body() body: { messages?: unknown; model?: unknown },
+    @Res() res: Response,
+  ) {
+    const model = this.selectModel(body.model);
     const tools = this.chatService.getTools();
     const { uiMessages, modelMessages } = await this.prepareMessages(
       body.messages,
@@ -44,6 +56,7 @@ export class ChatController {
     const abortSignal = this.abortOnClientClose(res);
 
     const stream = await this.chatStreamService.createStream({
+      model,
       uiMessages,
       messages: modelMessages,
       tools,
@@ -52,6 +65,26 @@ export class ChatController {
     });
 
     pipeUIMessageStreamToResponse({ response: res, stream });
+  }
+
+  /** Validates `body.model` and records it for subagents of this request. */
+  private selectModel(requested: unknown): SelectedModel {
+    let selected: SelectedModel;
+    try {
+      selected = this.providerRegistry.select(requested);
+    } catch (error) {
+      if (error instanceof UnknownModelError) {
+        throw new BadRequestException(error.message);
+      }
+      if (error instanceof NoModelConfiguredError) {
+        throw new InternalServerErrorException(error.message);
+      }
+      throw error;
+    }
+
+    const requestContext = this.contextService.get();
+    if (requestContext) requestContext.modelRef = selected.ref;
+    return selected;
   }
 
   private async prepareMessages(

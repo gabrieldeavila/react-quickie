@@ -5,6 +5,7 @@ import {
 } from "../../context/context";
 import ChatModePopover from "./modePopover";
 import ChatSpecialtyPopover from "./specialtyPopover";
+import { ModelPicker } from "@/features/models/components/ModelPicker";
 import Button from "@/components/primitives/button";
 import { FiFolderPlus, FiMessageCircle, FiSettings } from "react-icons/fi";
 
@@ -15,6 +16,7 @@ const ChatHeader = memo(() => {
     setDraftContext,
     projectContext,
     setIsRootModalOpen,
+    conversationModel,
   } = useChatBaseContext();
   const {
     chatStatusLabel,
@@ -44,6 +46,11 @@ const ChatHeader = memo(() => {
 
         <div className="chat-header__actions flex items-center gap-3">
           <span className="chat-status-pill">{chatStatusLabel}</span>{" "}
+          <ModelPicker
+            modelRef={conversationModel.modelRef}
+            options={conversationModel.options}
+            selectModel={conversationModel.selectModel}
+          />
           <ChatModePopover />
           <ChatSpecialtyPopover />
           {isFrontendMode || isBackendMode || isAgnosticMode ? (

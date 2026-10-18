@@ -17,6 +17,11 @@ class ChatDatabase extends Dexie {
       conversations: "id, updatedAt, lastMessageAt, createdAt",
       messages: "id, conversationId, createdAt, role",
     });
+    // v4: conversations gain an optional, non-indexed `model`. Same indexes.
+    this.version(4).stores({
+      conversations: "id, updatedAt, lastMessageAt, createdAt",
+      messages: "id, conversationId, createdAt, role",
+    });
   }
 }
 

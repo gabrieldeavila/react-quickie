@@ -6,6 +6,7 @@ import {
 } from "ai";
 import { createChatTransport } from "@/helpers/chat.transport.helper";
 import { shouldPersistAssistantMessage } from "@/features/chat/domain/to-assistant-record";
+import { useConversationModel } from "@/features/models/hooks/useConversationModel";
 import {
   readProjectContext,
   readSidebarOpenState,
@@ -36,6 +37,10 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
 
   const history = useChatHistory();
   const chatComposer = useChatComposer();
+  const conversationModel = useConversationModel({
+    conversation: history.activeConversation,
+    reloadConversations: history.reloadConversations,
+  });
 
   const activeConversationId = useMemo(
     () => history.activeConversationId,
@@ -58,8 +63,16 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
         projectRoot: projectContext.reference,
         focus: projectContext.focus,
         specialty: projectContext.specialty,
+        model: conversationModel.modelRef,
+        modelTarget: conversationModel.target,
       }),
-    [projectContext.focus, projectContext.reference, projectContext.specialty],
+    [
+      projectContext.focus,
+      projectContext.reference,
+      projectContext.specialty,
+      conversationModel.modelRef,
+      conversationModel.target,
+    ],
   );
 
   const handleError = useCallback((error: unknown) => {
@@ -108,6 +121,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       initialMessages,
       activeChatKey,
       activeConversationId,
+      conversationModel,
       ...chat,
       ...chatComposer,
     }),
@@ -121,6 +135,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       initialMessages,
       activeChatKey,
       activeConversationId,
+      conversationModel,
       chat,
       chatComposer,
     ],
