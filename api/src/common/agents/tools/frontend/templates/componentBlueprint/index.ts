@@ -58,19 +58,19 @@ export function createComponent(
 
     for (const file of files) {
       if (fs.existsSync(file.filePath)) {
-        createdFiles.push(path.relative(process.cwd(), file.filePath));
+        createdFiles.push(path.relative(rootPath, file.filePath));
         continue;
       }
 
       fs.outputFileSync(file.filePath, file.content.trim());
 
-      const relativePath = path.relative(process.cwd(), file.filePath);
+      const relativePath = path.relative(rootPath, file.filePath);
       createdFiles.push(relativePath);
     }
 
     return {
       message: `Boilerplate para o componente '${name}' gerado com sucesso.`,
-      componentDir: path.relative(process.cwd(), fullDir),
+      componentDir: path.relative(rootPath, fullDir),
       filesCreated: createdFiles,
     };
   } catch (error) {

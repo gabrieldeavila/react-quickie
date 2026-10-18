@@ -14,15 +14,10 @@ export interface UseChatHistoryResult {
     content: string,
     parts?: UIMessage["parts"],
   ) => Promise<void>;
+  /** Upserts by message id; called on every onFinish of the same message. */
   persistAssistantMessage: (
     conversationId: string,
-    content: string,
-    parts?: UIMessage["parts"],
-  ) => Promise<void>;
-  appendAssistantParts: (
-    conversationId: string,
-    parts: UIMessage["parts"],
-    approvalId?: string,
+    message: UIMessage,
   ) => Promise<void>;
   reloadConversations: () => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;

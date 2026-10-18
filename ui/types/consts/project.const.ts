@@ -1,7 +1,11 @@
+import { getApiUrl } from "@/host/runtime-config";
 import type { ProjectTemplate } from "../interface/project.interface";
 
-export const CREATE_PROJECT_URL = `${import.meta.env.VITE_API_URL}/project/create`;
-export const CHAT_API_URL = `${import.meta.env.VITE_API_URL}/chat`;
+// Getters: in VSCode the API URL is injected at runtime, not at build time.
+export const getCreateProjectUrl = () => `${getApiUrl()}/project/create`;
+export const getChatApiUrl = () => `${getApiUrl()}/chat`;
+export const getModelsApiUrl = () => `${getApiUrl()}/models`;
+export const getMcpApiUrl = () => `${getApiUrl()}/mcp`;
 
 export const PROJECT_TEMPLATE_OPTIONS: Array<{
   label: string;

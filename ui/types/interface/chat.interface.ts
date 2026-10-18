@@ -25,16 +25,11 @@ export interface ChatRequestBody {
 export type ChatMessageItemProps = {
   message: UIMessage;
   isTyping?: boolean;
+  /** The last message in the chat; only it can still answer tool approvals. */
+  isLatest?: boolean;
 };
 
 export type ToolStatus = "loading" | "success" | "error";
-
-export type SubagentStatus = {
-  id: string;
-  name: string;
-  task: string;
-  status: "running" | "completed" | "failed";
-};
 
 export type ToolStatusIconProps = {
   status: ToolStatus;
@@ -44,6 +39,8 @@ export type ToolCallCardProps = {
   label: string;
   status: ToolStatus;
   outputText?: string;
+  /** Set when the card's file can be opened in the editor (VSCode). */
+  onOpenFile?: () => void;
 };
 
 export type UserMessageContentProps = {

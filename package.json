@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "postinstall": "pnpm install --prefix api && pnpm install --prefix ui",
-    "build": "npm run build --prefix api && npm run build --prefix ui",
+    "postinstall": "pnpm install --prefix api && pnpm install --prefix ui && pnpm install --prefix vscode",
+    "build": "npm run build --prefix api && npm run build --prefix ui && npm run build --prefix vscode",
     "dev": "concurrently \"npm run dev --prefix ui\" \"npm run start:dev --prefix api\"",
     "start": "concurrently \"npm run preview --prefix ui\" \"npm run start:prod --prefix api\""
   },

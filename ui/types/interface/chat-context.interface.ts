@@ -4,6 +4,7 @@ import type { UIMessage } from "ai";
 import type { useChat } from "@ai-sdk/react";
 import type { useChatComposer } from "@/components/chat/hooks/start/useChatComposer";
 import type { ProjectContext } from "./chat.interface";
+import type { ConversationModel } from "@/features/models/hooks/useConversationModel";
 
 export type ChatBaseContextValue = {
   isRootModalOpen: boolean;
@@ -26,6 +27,7 @@ export type ChatBaseContextValue = {
   initialMessages: UIMessage[];
   activeChatKey: string;
   activeConversationId: string | null;
+  conversationModel: ConversationModel;
 } & ReturnType<typeof useChat> &
   ReturnType<typeof useChatComposer>;
 

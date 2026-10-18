@@ -5,8 +5,9 @@ import { tool } from 'ai';
 import { z } from 'zod/v4';
 import { ContextService } from 'src/common/context/context.service';
 import { formatToolError, toolSuccess } from '../shared/format-tool-error';
-import { BashApprovalService } from './bash-approval.service';
+import type { ToolApprovalPolicy } from 'src/chat/domain/approval-policy';
 import { CommandPolicyService } from './command-policy.service';
+import { createBashApprovalPolicy } from './domain/bash-approval-policy';
 
 const execFileAsync = promisify(execFile);
 const COMMAND_TIMEOUT_MS = 120_000;
@@ -17,14 +18,13 @@ export class BashToolsService {
   constructor(
     private readonly contextService: ContextService,
     private readonly policyService: CommandPolicyService,
-    private readonly approvalService: BashApprovalService,
   ) {}
 
   createBashTools() {
     return {
       run_bash_command: tool({
         description:
-          'Executa um comando Bash no workspace. Comandos de leitura locais são automáticos; comandos que alteram arquivos, acessam fora do workspace ou usam rede pedem aprovação. Comandos globais perigosos são bloqueados.',
+          'Executa um comando Bash no workspace. Comandos de leitura locais são automáticos; comandos que alteram arquivos, acessam fora do workspace ou usam rede pedem aprovação do usuário antes de rodar. Comandos globais perigosos são negados.',
         inputSchema: z.object({
           command: z
             .string()
@@ -33,7 +33,10 @@ export class BashToolsService {
             .max(10_000)
             .describe('Comando Bash a ser executado.'),
         }),
-        execute: async ({ command }: { command: string }) => {
+        execute: async (
+          { command }: { command: string },
+          { abortSignal }: { abortSignal?: AbortSignal },
+        ) => {
           const rootPath = this.contextService.get('root');
           if (!rootPath)
             return formatToolError(
@@ -41,52 +44,38 @@ export class BashToolsService {
               new Error('Raiz do workspace não encontrada.'),
             );
 
+          // Approval is decided by `streamText({ toolApproval })` before this
+          // runs (see createApprovalPolicies). This check is a safety net for
+          // callers that run the tool without that map.
           const assessment = this.policyService.assess(command, rootPath);
           if (assessment.decision === 'blocked') {
             return {
               success: false,
-              approvalRequired: false,
               blocked: true,
               message: assessment.reason,
             };
           }
 
-          if (assessment.decision === 'approval_required') {
-            const approval = this.approvalService.create(
-              command,
-              rootPath,
-              assessment.reason ?? 'Este comando requer aprovação.',
-            );
-
-            // O resultado precisa ser transmitido ao cliente para que o card
-            // seja renderizado. O controller usa esta flag como condição de
-            // parada do stream, evitando que o modelo inicie outro passo sem
-            // abortar a resposta antes do tool-output chegar ao frontend.
-            const requestContext = this.contextService.get();
-            if (requestContext) requestContext.bashApprovalPending = true;
-
-            return {
-              success: false,
-              approvalRequired: true,
-              approvalId: approval.id,
-              command: approval.command,
-              cwd: approval.cwd,
-              reason: approval.reason,
-              message:
-                'Aguardando aprovação do usuário para executar o comando.',
-            };
-          }
-
-          return this.executeCommand(command, rootPath);
+          return this.executeCommand(command, rootPath, abortSignal);
         },
       }),
     };
   }
 
-  async executeCommand(command: string, cwd: string) {
+  /** Approval policies keyed by tool name, for the `toolApproval` map. */
+  createApprovalPolicies(rootPath: string): Record<string, ToolApprovalPolicy> {
+    return {
+      run_bash_command: createBashApprovalPolicy((command) =>
+        this.policyService.assess(command, rootPath),
+      ),
+    };
+  }
+
+  async executeCommand(command: string, cwd: string, signal?: AbortSignal) {
     try {
       const { stdout, stderr } = await execFileAsync('bash', ['-lc', command], {
         cwd,
+        signal,
         timeout: COMMAND_TIMEOUT_MS,
         maxBuffer: MAX_OUTPUT_SIZE,
         windowsHide: true,

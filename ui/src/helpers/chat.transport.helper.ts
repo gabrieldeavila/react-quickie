@@ -1,59 +1,50 @@
 import { DefaultChatTransport } from "ai";
 import type { CombinedAgentEnum } from "../../types/enum/agent.enum";
-import type {
-  ChatRequestBody,
-  ChatRequestMessage,
-} from "../../types/interface/chat.interface";
+import type { ChatRequestBody } from "../../types/interface/chat.interface";
 import type { CreateChatTransportParams } from "../../types/interface/transport.interface";
-import { CHAT_API_URL } from "~types/consts/project.const";
-
-function normalizeMessage(
-  message: NonNullable<ChatRequestBody["messages"]>[number],
-): ChatRequestMessage | undefined {
-  const sourceParts = message.parts?.length
-    ? message.parts
-    : message.content
-      ? [{ type: "text", text: message.content }]
-      : [];
-  const parts = sourceParts.filter(
-    (part) =>
-      part.type === "text" ||
-      (part.type === "file" && part.mediaType?.startsWith("image/")),
-  );
-
-  // useChat can keep empty assistant placeholders after interrupted/failed turns.
-  // They are UI state, not conversation content, and the API rejects empty messages.
-  if (parts.length === 0) return undefined;
-
-  return { role: message.role, parts };
-}
+import { getChatApiUrl } from "~types/consts/project.const";
+import { authFetch } from "@/host/api/auth-fetch";
+import { applyCompaction } from "@/features/chat/domain/apply-compaction";
+import { buildRequestMessages } from "@/features/chat/domain/build-request-messages";
+import { truncateToolOutputs } from "@/features/chat/domain/truncate-tool-outputs";
+import { filterPartsByCapabilities } from "@/features/models/domain/filter-parts-by-capabilities";
 
 export function createChatTransport({
   projectRoot,
   focus,
   specialty,
+  model,
+  modelTarget,
 }: CreateChatTransportParams) {
   return new DefaultChatTransport({
-    api: CHAT_API_URL,
+    api: getChatApiUrl(),
     fetch: (url, options) => {
       if (options?.body) {
         const body = JSON.parse(options.body as string) as ChatRequestBody & {
           root?: string;
           chatMode?: CombinedAgentEnum;
           chatSpecialty?: string;
+          model?: string;
+          compaction?: unknown;
         };
         if (body.messages) {
-          body.messages = body.messages.flatMap((message) => {
-            const normalizedMessage = normalizeMessage(message);
-            return normalizedMessage ? [normalizedMessage] : [];
-          });
+          // Before buildRequestMessages, which drops the data-compaction part.
+          const compacted = applyCompaction(body.messages);
+          if (compacted.compaction) body.compaction = compacted.compaction;
+          const messages = buildRequestMessages(compacted.messages);
+          body.messages = truncateToolOutputs(
+            modelTarget
+              ? filterPartsByCapabilities(messages, modelTarget)
+              : messages,
+          );
         }
+        if (model) body.model = model;
         body.root = projectRoot;
         body.chatMode = focus;
         body.chatSpecialty = specialty;
         options.body = JSON.stringify(body);
       }
-      return fetch(url, options);
+      return authFetch(url, options);
     },
   });
 }

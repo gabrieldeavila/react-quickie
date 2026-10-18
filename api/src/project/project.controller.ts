@@ -1,4 +1,12 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
+import * as path from 'path';
+import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { ProjectService } from 'src/common/helpers/project.service';
 
 const PROJECT_TEMPLATES = new Set([
@@ -8,6 +16,21 @@ const PROJECT_TEMPLATES = new Set([
   'nest-vite-base',
 ]);
 
+// The UI sends no root for project creation, so an absolute target folder
+// doubles as the root that gets checked against the allowed workspaces.
+function projectRootFromBody(body: Record<string, unknown>) {
+  if (typeof body.root === 'string' && body.root) return body.root;
+  if (typeof body.path === 'string' && path.isAbsolute(body.path)) {
+    return body.path;
+  }
+  return undefined;
+}
+
+@UseInterceptors(
+  BuildContextInterceptor((req) => ({
+    root: projectRootFromBody(req.body as Record<string, unknown>),
+  })),
+)
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { FiChevronDown } from "react-icons/fi";
+import { FiChevronDown, FiExternalLink } from "react-icons/fi";
 import type { ToolCallCardProps } from "~types/interface/chat.interface";
 import { ToolStatusIcon } from "./toolStatusIcon";
 
@@ -7,8 +7,24 @@ export const ToolCallCard = memo(function ToolCallCard({
   label,
   status,
   outputText,
+  onOpenFile,
 }: ToolCallCardProps) {
   const isDone = status !== "loading";
+  const openButton = onOpenFile ? (
+    <button
+      type="button"
+      className="tool-call-card__open"
+      title="Abrir no editor"
+      aria-label="Abrir no editor"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onOpenFile();
+      }}
+    >
+      <FiExternalLink aria-hidden="true" />
+    </button>
+  ) : null;
 
   if (!isDone) {
     return (
@@ -16,6 +32,7 @@ export const ToolCallCard = memo(function ToolCallCard({
         <div className="tool-call-card__header">
           <ToolStatusIcon status={status} />
           <span className="tool-call-card__label">{label}</span>
+          {openButton}
         </div>
       </div>
     );
@@ -28,6 +45,7 @@ export const ToolCallCard = memo(function ToolCallCard({
           <div className="tool-call-card__header">
             <ToolStatusIcon status={status} />
             <span className="tool-call-card__label">{label}</span>
+            {openButton}
           </div>
 
           <FiChevronDown

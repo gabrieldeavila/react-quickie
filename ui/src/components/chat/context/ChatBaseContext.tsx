@@ -1,8 +1,14 @@
 import { type ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { createChatTransport } from "@/helpers/chat.transport.helper";
 import {
-  getMessageText,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+  type UIMessage,
+} from "ai";
+import { createChatTransport } from "@/helpers/chat.transport.helper";
+import { shouldPersistAssistantMessage } from "@/features/chat/domain/to-assistant-record";
+import { useConversationModel } from "@/features/models/hooks/useConversationModel";
+import { useHostSelection } from "@/host/hooks/useHostSelection";
+import {
   readProjectContext,
   readSidebarOpenState,
 } from "../../../helpers/chat.helper";
@@ -32,6 +38,11 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
 
   const history = useChatHistory();
   const chatComposer = useChatComposer();
+  useHostSelection(chatComposer.setInput);
+  const conversationModel = useConversationModel({
+    conversation: history.activeConversation,
+    reloadConversations: history.reloadConversations,
+  });
 
   const activeConversationId = useMemo(
     () => history.activeConversationId,
@@ -54,8 +65,16 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
         projectRoot: projectContext.reference,
         focus: projectContext.focus,
         specialty: projectContext.specialty,
+        model: conversationModel.modelRef,
+        modelTarget: conversationModel.target,
       }),
-    [projectContext.focus, projectContext.reference, projectContext.specialty],
+    [
+      projectContext.focus,
+      projectContext.reference,
+      projectContext.specialty,
+      conversationModel.modelRef,
+      conversationModel.target,
+    ],
   );
 
   const handleError = useCallback((error: unknown) => {
@@ -63,18 +82,14 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
     pendingConversationIdRef.current = null;
   }, []);
 
+  // Fires once when a tool approval is requested and again after the
+  // approved/denied turn continues; the upsert keeps one record per message.
   const handleFinish = useCallback(
-    ({ message }: { message: any }) => {
-      const content = getMessageText(message).trim();
-      const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
-
-      if (activeConversationId && (content || hasParts)) {
-        void history.persistAssistantMessage(
-          activeConversationId,
-          content,
-          message.parts,
-        );
+    ({ message }: { message: UIMessage }) => {
+      if (!activeConversationId || !shouldPersistAssistantMessage(message)) {
+        return;
       }
+      void history.persistAssistantMessage(activeConversationId, message);
     },
     [activeConversationId, history],
   );
@@ -85,6 +100,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
     messages: initialMessages,
     onError: handleError,
     onFinish: handleFinish,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
   });
 
   const value = useMemo(
@@ -107,6 +123,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       initialMessages,
       activeChatKey,
       activeConversationId,
+      conversationModel,
       ...chat,
       ...chatComposer,
     }),
@@ -120,6 +137,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       initialMessages,
       activeChatKey,
       activeConversationId,
+      conversationModel,
       chat,
       chatComposer,
     ],

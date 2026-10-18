@@ -13,6 +13,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "PORT=4000 node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -20,7 +22,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "4.0.12",
+    "@ai-sdk/deepseek": "3.0.7",
+    "@ai-sdk/mcp": "2.0.10",
     "@ai-sdk/openai": "^4.0.11",
+    "@ai-sdk/openai-compatible": "3.0.7",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
@@ -73,12 +79,27 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": "ts-jest",
+      "^.+\\.js$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "allowJs": true
+          },
+          "isolatedModules": true
+        }
+      ]
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(\\.pnpm/[^/]+/node_modules/)?(ai|@ai-sdk|@workflow|@standard-schema|eventsource-parser)/)"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   }
 }

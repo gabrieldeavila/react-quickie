@@ -95,7 +95,10 @@ const ChatMessagesList = memo(() => {
                 className="chat-messages__item"
                 style={{ transform: `translateY(${virtualRow.start}px)` }}
               >
-                <ChatMessageItem message={message} />
+                <ChatMessageItem
+                  message={message}
+                  isLatest={message.id === messages.at(-1)?.id}
+                />
               </div>
             );
           })}

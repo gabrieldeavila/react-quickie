@@ -8,7 +8,7 @@
   font-size: 0.82rem;
 }
 .subagent-status__header,
-.subagent-status__item {
+.subagent-card__summary {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -29,9 +29,6 @@
   gap: 8px;
   margin-top: 9px;
 }
-.subagent-status__item {
-  min-width: 0;
-}
 .subagent-status__icon {
   display: grid;
   place-items: center;
@@ -46,7 +43,9 @@
 .subagent-status__icon.is-completed {
   color: var(--chat-text-muted);
 }
-.subagent-status__icon.is-failed {
+.subagent-status__icon.is-failed,
+.subagent-status__icon.is-denied,
+.subagent-status__icon.is-aborted {
   color: var(--chat-text-muted);
 }
 .subagent-status__spinner {
@@ -67,6 +66,80 @@
 .subagent-status__body span {
   color: var(--chat-text-muted);
   font-size: 0.75rem;
+}
+/* One subagent run: a collapsible card. */
+.subagent-card + .subagent-card {
+  margin-top: 8px;
+}
+.subagent-card__summary {
+  min-width: 0;
+  cursor: pointer;
+  list-style: none;
+}
+.subagent-card__summary::-webkit-details-marker {
+  display: none;
+}
+.subagent-card__chevron {
+  flex: 0 0 auto;
+  color: var(--chat-text-muted);
+  transition: transform 0.15s ease;
+}
+.subagent-card[open] .subagent-card__chevron {
+  transform: rotate(180deg);
+}
+.subagent-card__latest {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+}
+.subagent-card__details {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0 28px;
+}
+.subagent-card__error {
+  margin: 0;
+  color: var(--chat-text-muted);
+}
+.subagent-card__held ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+.subagent-card__text {
+  padding-top: 6px;
+  border-top: 1px solid var(--chat-border);
+}
+.subagent-steps {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.74rem;
+}
+.subagent-steps__item {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  color: var(--chat-text-muted);
+}
+.subagent-steps__tool {
+  flex: 0 0 auto;
+  color: var(--chat-text);
+  font-weight: 600;
+}
+.subagent-steps__input {
+  overflow: hidden;
+  flex: 1;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.subagent-steps__state {
+  flex: 0 0 auto;
+}
+.subagent-steps__item.is-error .subagent-steps__state,
+.subagent-steps__item.is-denied .subagent-steps__state {
+  font-style: italic;
 }
 @keyframes subagent-spin {
   to {

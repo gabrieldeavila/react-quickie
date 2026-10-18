@@ -1,10 +1,11 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
-import { FiPause, FiSend, FiX } from "react-icons/fi";
+import { FiSend, FiSquare, FiX } from "react-icons/fi";
 import {
   useChatBaseContext,
   useChatServicesContext,
 } from "../../context/context";
 import useSendMessage from "../../hooks/events/useSendMessage";
+import { ModelNotices } from "@/features/models/components/ModelNotices";
 
 export function ChatComposer() {
   const {
@@ -17,13 +18,17 @@ export function ChatComposer() {
     addPastedImages,
     removePastedImage,
     attachmentError,
+    rejectAttachments,
+    conversationModel,
   } = useChatBaseContext();
+  const imagesAllowed =
+    conversationModel.resolved?.model.supportsImages ?? true;
   const { isChatPending } = useChatServicesContext();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const onSend = useSendMessage();
 
-  const isPaused = isChatPending;
+  const isStoppable = isChatPending;
   const isSendDisabled = useMemo(
     () => !hasInput || (status !== "ready" && status !== "error"),
     [hasInput, status],
@@ -65,9 +70,13 @@ export function ChatComposer() {
 
       if (files.length === 0) return;
       event.preventDefault();
+      if (!imagesAllowed) {
+        rejectAttachments("O modelo selecionado não aceita imagens.");
+        return;
+      }
       void addPastedImages(files);
     },
-    [addPastedImages],
+    [addPastedImages, imagesAllowed, rejectAttachments],
   );
 
   return (
@@ -91,6 +100,11 @@ export function ChatComposer() {
             ))}
           </div>
         ) : null}
+        <ModelNotices
+          unavailableModel={conversationModel.unavailableModel}
+          resolved={conversationModel.resolved}
+          hasPastedImages={pastedImages.length > 0}
+        />
         {attachmentError ? (
           <p className="chat-attachment-error" role="alert">
             {attachmentError}
@@ -100,7 +114,11 @@ export function ChatComposer() {
           <textarea
             ref={textareaRef}
             className="chat-input"
-            placeholder="Digite sua mensagem ou cole uma imagem..."
+            placeholder={
+              imagesAllowed
+                ? "Digite sua mensagem ou cole uma imagem..."
+                : "Digite sua mensagem..."
+            }
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={handleKeyDown}
@@ -109,15 +127,15 @@ export function ChatComposer() {
           />
 
           <button
-            className={`send-button ${isPaused ? "send-button--pause" : ""}`}
-            onClick={isPaused ? stop : onSend}
-            disabled={isPaused ? false : isSendDisabled}
-            title={isPaused ? "Pausar resposta" : "Enviar mensagem"}
-            aria-label={isPaused ? "Pausar resposta" : "Enviar mensagem"}
+            className={`send-button ${isStoppable ? "send-button--pause" : ""}`}
+            onClick={isStoppable ? stop : onSend}
+            disabled={isStoppable ? false : isSendDisabled}
+            title={isStoppable ? "Parar resposta" : "Enviar mensagem"}
+            aria-label={isStoppable ? "Parar resposta" : "Enviar mensagem"}
             type="button"
           >
-            {isPaused ? (
-              <FiPause aria-hidden="true" />
+            {isStoppable ? (
+              <FiSquare aria-hidden="true" />
             ) : (
               <FiSend aria-hidden="true" />
             )}

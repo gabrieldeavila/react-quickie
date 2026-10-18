@@ -5,8 +5,14 @@ import {
 } from "../../context/context";
 import ChatModePopover from "./modePopover";
 import ChatSpecialtyPopover from "./specialtyPopover";
+import { ModelPicker } from "@/features/models/components/ModelPicker";
+import { UsageHeaderBadges } from "@/features/usage/components/UsageHeaderBadges";
 import Button from "@/components/primitives/button";
 import { FiFolderPlus, FiMessageCircle, FiSettings } from "react-icons/fi";
+import { getHostFeatures } from "@/host/domain/host-features";
+import { getRuntimeConfig } from "@/host/runtime-config";
+
+const { canCreateProjects } = getHostFeatures(getRuntimeConfig().host);
 
 const ChatHeader = memo(() => {
   const {
@@ -15,8 +21,10 @@ const ChatHeader = memo(() => {
     setDraftContext,
     projectContext,
     setIsRootModalOpen,
+    conversationModel,
   } = useChatBaseContext();
   const {
+    renderedMessages,
     chatStatusLabel,
     isFrontendMode,
     isBackendMode,
@@ -44,9 +52,19 @@ const ChatHeader = memo(() => {
 
         <div className="chat-header__actions flex items-center gap-3">
           <span className="chat-status-pill">{chatStatusLabel}</span>{" "}
+          <UsageHeaderBadges
+            messages={renderedMessages}
+            contextWindow={conversationModel.resolved?.model.contextWindow}
+          />
+          <ModelPicker
+            modelRef={conversationModel.modelRef}
+            options={conversationModel.options}
+            selectModel={conversationModel.selectModel}
+          />
           <ChatModePopover />
           <ChatSpecialtyPopover />
-          {isFrontendMode || isBackendMode || isAgnosticMode ? (
+          {canCreateProjects &&
+          (isFrontendMode || isBackendMode || isAgnosticMode) ? (
             <Button
               title={
                 isBackendMode

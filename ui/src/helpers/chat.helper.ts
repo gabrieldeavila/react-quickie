@@ -9,6 +9,8 @@ import {
   SIDEBAR_OPEN_STORAGE_KEY,
 } from "../../types/consts/chat.const";
 import type { ProjectContext } from "../../types/interface/chat.interface";
+import { pickHostRoot } from "@/host/domain/pick-host-root";
+import { getRuntimeConfig } from "@/host/runtime-config";
 
 const AGENT_FOCUS_VALUES = new Set(
   CHAT_MODE_OPTIONS.map((option) => option.value),
@@ -44,7 +46,16 @@ export function getMessageText(message: UIMessage): string {
     .join("");
 }
 
+/** Stored context, with the root forced to a host workspace folder (VSCode). */
 export function readProjectContext(): ProjectContext {
+  const stored = readStoredProjectContext();
+  return {
+    ...stored,
+    reference: pickHostRoot(stored.reference, getRuntimeConfig().roots),
+  };
+}
+
+function readStoredProjectContext(): ProjectContext {
   if (typeof window === "undefined") return DEFAULT_PROJECT_CONTEXT;
 
   try {
