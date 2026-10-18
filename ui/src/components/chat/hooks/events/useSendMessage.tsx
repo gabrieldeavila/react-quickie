@@ -29,7 +29,7 @@ const useSendMessage = () => {
       filename: image.filename,
       url: image.url,
     }));
-    const title = trimmedInput || "Imagem";
+    const title = trimmedInput || "Image";
     const conversationId: string =
       activeConversationIdRef.current ??
       (await history.createConversation(title));

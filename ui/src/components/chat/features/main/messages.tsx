@@ -122,7 +122,7 @@ const ChatMessagesList = memo(() => {
 
       {error && !isChatPending ? (
         <div className="chat-request-error" role="alert">
-          <p>{error.message || "Não foi possível gerar uma resposta."}</p>
+          <p>{error.message || "Couldn't generate a response."}</p>
           <button
             type="button"
             className="chat-request-error__retry"
@@ -130,7 +130,7 @@ const ChatMessagesList = memo(() => {
             disabled={isChatPending}
           >
             <FiRefreshCw aria-hidden="true" />
-            Tentar novamente
+            Try again
           </button>
         </div>
       ) : null}

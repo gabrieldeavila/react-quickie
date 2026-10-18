@@ -42,16 +42,16 @@ describe("toAssistantRecord", () => {
   it("replaces parts on the second onFinish instead of duplicating them", () => {
     const first = toAssistantRecord(
       "c1",
-      message({ type: "text", text: "Vou rodar os testes." }, requested),
+      message({ type: "text", text: "I will run the tests." }, requested),
       undefined,
       100,
     );
     const second = toAssistantRecord(
       "c1",
       message(
-        { type: "text", text: "Vou rodar os testes." },
+        { type: "text", text: "I will run the tests." },
         finished,
-        { type: "text", text: " Passaram." },
+        { type: "text", text: " They passed." },
       ),
       first,
       200,
@@ -62,7 +62,7 @@ describe("toAssistantRecord", () => {
       [finished],
     );
     expect(second.createdAt).toBe(100);
-    expect(second.content).toBe("Vou rodar os testes. Passaram.");
+    expect(second.content).toBe("I will run the tests. They passed.");
   });
 
   it("keeps other stored fields of the existing record", () => {

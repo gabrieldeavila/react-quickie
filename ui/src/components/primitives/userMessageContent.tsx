@@ -64,10 +64,10 @@ export const UserMessageContent = memo(function UserMessageContent({
               className="message-expand-toggle"
               onClick={handleToggleExpanded}
               aria-label={
-                isExpanded ? "Recolher mensagem" : "Expandir mensagem"
+                isExpanded ? "Collapse message" : "Expand message"
               }
             >
-              {isExpanded ? "Mostrar menos" : "Mostrar mais"}
+              {isExpanded ? "Show less" : "Show more"}
             </button>
           ) : null}
         </>
@@ -76,9 +76,9 @@ export const UserMessageContent = memo(function UserMessageContent({
         <div className="user-message-images">
           {images.map((image, index) => (
             <img
-              key={`${image.filename ?? "imagem"}-${index}`}
+              key={`${image.filename ?? "image"}-${index}`}
               src={image.url}
-              alt={image.filename ?? `Imagem enviada ${index + 1}`}
+              alt={image.filename ?? `Sent image ${index + 1}`}
               loading="lazy"
             />
           ))}

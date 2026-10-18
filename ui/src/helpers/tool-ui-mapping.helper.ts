@@ -5,118 +5,100 @@ export type ToolUiMeta = {
 
 export const TOOL_UI_MAPPING: Record<string, ToolUiMeta> = {
   "tool-list_folders": {
-    label: "Listando arquivos e pastas...",
-    description:
-      "O sistema está verificando a estrutura de diretórios do projeto.",
+    label: "Listing files and folders...",
+    description: "Checking the project's directory structure.",
   },
   "tool-create_file": {
-    label: "Criando arquivo...",
-    description: "O sistema está criando um novo arquivo no projeto.",
+    label: "Creating file...",
+    description: "Creating a new file in the project.",
   },
   "tool-edit_file": {
-    label: "Editando arquivo...",
-    description:
-      "O sistema está substituindo um bloco específico de conteúdo em um arquivo existente.",
+    label: "Editing file...",
+    description: "Replacing a specific block of content in an existing file.",
   },
   "tool-overwrite_file": {
-    label: "Sobrescrevendo arquivo...",
-    description:
-      "O sistema está substituindo todo o conteúdo de um arquivo existente.",
+    label: "Overwriting file...",
+    description: "Replacing the entire content of an existing file.",
   },
   "tool-delete_file": {
-    label: "Deletando arquivo...",
-    description: "O sistema está removendo um arquivo do projeto.",
+    label: "Deleting file...",
+    description: "Removing a file from the project.",
   },
   "tool-rename_file_or_folder": {
-    label: "Renomeando item...",
-    description:
-      "O sistema está alterando o nome de um arquivo ou diretório existente.",
+    label: "Renaming item...",
+    description: "Changing the name of an existing file or folder.",
   },
   "tool-move_file_or_folder": {
-    label: "Movendo item...",
-    description:
-      "O sistema está deslocando um arquivo ou diretório para outro caminho.",
+    label: "Moving item...",
+    description: "Moving a file or folder to another path.",
   },
   "tool-read_file": {
-    label: "Lendo conteúdo do arquivo...",
-    description:
-      "O sistema está abrindo o arquivo solicitado para analisar seu conteúdo.",
+    label: "Reading file content...",
+    description: "Opening the requested file to analyze its content.",
   },
   "tool-get_lint_errors": {
-    label: "Verificando erros de lint...",
-    description:
-      "O sistema está analisando o código para identificar problemas de estilo e qualidade.",
+    label: "Checking lint errors...",
+    description: "Analyzing the code for style and quality issues.",
   },
   "tool-regex_search_files_content": {
-    label: "Buscando padrão em arquivos...",
-    description:
-      "O sistema está procurando ocorrências de um padrão regex em múltiplos arquivos.",
+    label: "Searching files for a pattern...",
+    description: "Looking for matches of a regex pattern across multiple files.",
   },
   "tool-search_content_in_file": {
-    label: "Buscando conteúdo no arquivo...",
-    description:
-      "O sistema está procurando um padrão regex dentro de um arquivo específico.",
+    label: "Searching file content...",
+    description: "Looking for a regex pattern inside a specific file.",
   },
   "tool-search_web": {
-    label: "Buscando informações na web...",
-    description:
-      "O sistema está consultando fontes externas para encontrar informações relevantes.",
+    label: "Searching the web...",
+    description: "Checking external sources for relevant information.",
   },
   "tool-check_typescript": {
-    label: "Validando TypeScript...",
-    description: "O sistema está checando tipos e consistência do código.",
+    label: "Checking TypeScript...",
+    description: "Checking the code's types and consistency.",
   },
   "tool-create_commit": {
-    label: "Criando commit...",
-    description:
-      "O sistema está registrando as alterações no histórico do Git.",
+    label: "Creating commit...",
+    description: "Recording the changes in the Git history.",
   },
   "tool-get_recent_commits": {
-    label: "Buscando commits recentes...",
-    description:
-      "O sistema está consultando os últimos commits do repositório.",
+    label: "Fetching recent commits...",
+    description: "Reading the repository's latest commits.",
   },
   "tool-search_commits": {
-    label: "Pesquisando commits...",
-    description:
-      "O sistema está procurando commits que correspondam ao critério informado.",
+    label: "Searching commits...",
+    description: "Looking for commits that match the given criteria.",
   },
   "tool-get_uncommitted_changes": {
-    label: "Verificando mudanças não commitadas...",
-    description:
-      "O sistema está analisando os arquivos alterados no repositório.",
+    label: "Checking uncommitted changes...",
+    description: "Analyzing the changed files in the repository.",
   },
   "tool-review_commit": {
-    label: "Revisando commit...",
-    description:
-      "O sistema está inspecionando os detalhes do commit solicitado.",
+    label: "Reviewing commit...",
+    description: "Inspecting the details of the requested commit.",
   },
   "tool-created_projects": {
-    label: "Listando projetos criados...",
-    description:
-      "O sistema está verificando os projetos disponíveis no diretório principal.",
+    label: "Listing created projects...",
+    description: "Checking the projects available in the main directory.",
   },
   "tool-check_typescript_projects": {
-    label: "Validando TypeScript dos projetos...",
-    description:
-      "O sistema está checando a consistência de TypeScript nos projetos encontrados.",
+    label: "Checking TypeScript across projects...",
+    description: "Checking TypeScript consistency in the projects found.",
   },
   "tool-create_component_blueprint": {
-    label: "Gerando blueprint do componente...",
-    description:
-      "O sistema está montando a estrutura base de um novo componente React.",
+    label: "Generating component blueprint...",
+    description: "Building the base structure of a new React component.",
   },
   "tool-install_depency": {
-    label: "Instalando dependência...",
-    description: "O sistema está adicionando uma nova dependência ao projeto.",
+    label: "Installing dependency...",
+    description: "Adding a new dependency to the project.",
   },
 };
 
 export function getToolUiMeta(toolType: string): ToolUiMeta {
   return (
     TOOL_UI_MAPPING[toolType] ?? {
-      label: "Executando ferramenta...",
-      description: "O sistema está processando uma operação solicitada.",
+      label: "Running tool...",
+      description: "Processing a requested operation.",
     }
   );
 }

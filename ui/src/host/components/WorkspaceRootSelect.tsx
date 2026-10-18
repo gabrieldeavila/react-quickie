@@ -12,7 +12,7 @@ export function WorkspaceRootSelect({ value, onChange }: Props) {
 
   return (
     <label className="chat-control chat-control--full">
-      <span className="chat-control__label">Pasta do workspace</span>
+      <span className="chat-control__label">Workspace folder</span>
       <select
         className="chat-input chat-input--modal"
         value={value}

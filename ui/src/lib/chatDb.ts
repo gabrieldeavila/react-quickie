@@ -5,6 +5,11 @@ import type {
   ChatMessageRecord,
   ChatMessageRole,
 } from "../../types/interface/chat-db.interface";
+import {
+  getConversationTitle,
+  getMigratedConversationTitle,
+  isDefaultConversationTitle,
+} from "./conversation-title";
 
 class ChatDatabase extends Dexie {
   conversations!: Table<ChatConversation, string>;
@@ -35,22 +40,6 @@ export const createId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 };
 
-export const DEFAULT_CONVERSATION_TITLE = "Nova conversa";
-
-export const getConversationTitle = (firstUserMessage: string): string => {
-  const normalized: string = firstUserMessage.trim().replace(/\s+/g, " ");
-  if (!normalized) return DEFAULT_CONVERSATION_TITLE;
-
-  const maxLength: number = 42;
-  return normalized.length <= maxLength
-    ? normalized
-    : `${normalized.slice(0, maxLength).trimEnd()}…`;
-};
-
-export const isDefaultConversationTitle = (title: string): boolean => {
-  return title.trim() === "" || title === DEFAULT_CONVERSATION_TITLE;
-};
-
 export const migrateDefaultConversationTitle = async (
   conversation: ChatConversation,
 ): Promise<ChatConversation> => {
@@ -60,11 +49,15 @@ export const migrateDefaultConversationTitle = async (
   const firstUserMessage = records.find(
     (record) => record.role === "user",
   )?.content;
-  if (!firstUserMessage) return conversation;
+  const title = getMigratedConversationTitle(
+    conversation.title,
+    firstUserMessage,
+  );
+  if (title === conversation.title) return conversation;
 
   const renamedConversation: ChatConversation = {
     ...conversation,
-    title: getConversationTitle(firstUserMessage),
+    title,
     updatedAt: Date.now(),
   };
 
@@ -75,10 +68,6 @@ export const migrateDefaultConversationTitle = async (
 export const migrateDefaultConversationTitles = async (): Promise<void> => {
   const conversations = await listConversations();
   await Promise.all(conversations.map(migrateDefaultConversationTitle));
-};
-
-const shouldRenameConversation = (title: string): boolean => {
-  return isDefaultConversationTitle(title);
 };
 
 export const ensureConversation = async (
@@ -92,7 +81,7 @@ export const ensureConversation = async (
       await chatDb.conversations.get(conversationId);
 
     if (existing) {
-      if (firstUserMessage && shouldRenameConversation(existing.title)) {
+      if (firstUserMessage && isDefaultConversationTitle(existing.title)) {
         const renamedConversation: ChatConversation = {
           ...existing,
           title: getConversationTitle(firstUserMessage),
@@ -110,7 +99,7 @@ export const ensureConversation = async (
 
   const conversation: ChatConversation = {
     id: conversationId ?? createId(),
-    title: getConversationTitle(firstUserMessage ?? "Nova conversa"),
+    title: getConversationTitle(firstUserMessage ?? ""),
     createdAt: now,
     updatedAt: now,
     lastMessageAt: now,

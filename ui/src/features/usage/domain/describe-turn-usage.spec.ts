@@ -51,8 +51,8 @@ describe("describeTurnUsage", () => {
   it("lists each call with its share of the cost", () => {
     expect(describeTurnUsage(turn).split("\n")).toEqual([
       "a:b — 1.0k in · 100 out · $0.30",
-      "Subagente (c:d) — 2.0k in · 200 out · $0.20",
-      "Resumo do contexto (e:f) — 500 in · 50 out",
+      "Sub-agent (c:d) — 2.0k in · 200 out · $0.20",
+      "Context summary (e:f) — 500 in · 50 out",
     ]);
   });
 });

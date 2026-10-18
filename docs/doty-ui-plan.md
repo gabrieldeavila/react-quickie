@@ -76,24 +76,27 @@ Many `*.spec.ts` files check the Portuguese strings directly. Update them alongs
 
 ### Session A — Interface and extension (0a + 0d)
 
-- [ ] **Chat screens**: header, sidebar, message box, empty state, and the settings and new-project dialogs under [components/chat/](../ui/src/components/chat/).
-- [ ] **Tool labels**: [tool-ui-mapping.helper.ts](../ui/src/helpers/tool-ui-mapping.helper.ts), which decides what each tool card says.
-- [ ] **Other UI pieces** under `ui/src/features/*`: model notices, tool approval, sub-agent status, MCP trust notice.
-- [ ] **Saved data**: [chatDb.ts](../ui/src/lib/chatDb.ts) and [useChatHistory.ts](../ui/src/components/chat/hooks/start/useChatHistory.ts). The default title "Nova conversa" becomes "New conversation". Conversations already saved under the old title keep it. Optionally, add a small one-time migration that renames that exact default title.
-- [ ] **Mode and specialty names** in `~types/consts/chat.const`.
-- [ ] **Date formatting**: `formatTimestamp` uses the `en` locale.
+- [x] **Chat screens**: header, sidebar, message box, empty state, and the settings and new-project dialogs under [components/chat/](../ui/src/components/chat/).
+- [x] **Tool labels**: [tool-ui-mapping.helper.ts](../ui/src/helpers/tool-ui-mapping.helper.ts), which decides what each tool card says.
+- [x] **Other UI pieces** under `ui/src/features/*`: model notices, tool approval, sub-agent status, MCP trust notice.
+- [x] **Saved data**: [chatDb.ts](../ui/src/lib/chatDb.ts) and [useChatHistory.ts](../ui/src/components/chat/hooks/start/useChatHistory.ts). The default title "Nova conversa" becomes "New conversation". Conversations already saved under the old title keep it. Optionally, add a small one-time migration that renames that exact default title.
+- [x] **Mode and specialty names** in `~types/consts/chat.const`.
+- [x] **Date formatting**: `formatTimestamp` uses the `en` locale.
 - [ ] **VS Code extension**: [extension.ts](../vscode/src/extension.ts), [host-bridge.ts](../vscode/src/host-bridge.ts) and the command titles in `vscode/package.json`.
 - [ ] Specs updated; the search for leftover Portuguese in `ui/` and `vscode/` comes back clean.
 
 #### Progress
 
 ```
-Status: not started
-Branch: —
-Last commit: —
-Done: —
-Left: —
-Notes: —
+Status: in progress
+Branch: feat/ui-a-english-ui
+Last commit: (this commit) feat(ui): switch interface text to English
+Done: ui/ translated: components/chat/*, primitives, host/components,
+  helpers/tool-ui-mapping.helper.ts, features/{chat,mcp,models,subagents,usage},
+  types/consts/{chat,project}.const.ts, time.helper.ts (locale "en").
+  Title rules moved out of lib/chatDb.ts into lib/conversation-title.ts (+ spec).
+Left: vscode/ (extension.ts, host-bridge.ts, package.json, commands), final sweep.
+Notes: ui type-check, lint and tests green.
 ```
 
 ### Session B — API (0b + 0c)

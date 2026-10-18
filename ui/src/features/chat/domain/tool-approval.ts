@@ -68,13 +68,13 @@ export function describeApprovalTitle(
   toolLabel: string,
 ): string {
   if (approval.toolName === BASH_TOOL) {
-    return "O agente precisa de permissão para executar:";
+    return "The agent needs permission to run:";
   }
   const agent = (approval.input as KnownInput | undefined)?.agent;
   if (approval.toolName === SUBAGENT_TOOL && typeof agent === "string") {
-    return `O subagente ${agent} quer fazer alterações:`;
+    return `The ${agent} sub-agent wants to make changes:`;
   }
-  return `O agente precisa de permissão para usar ${toolLabel}:`;
+  return `The agent needs permission to use ${toolLabel}:`;
 }
 
 /** Denial reason that tells the model what the user wants instead. */

@@ -11,6 +11,7 @@ import Button from "@/components/primitives/button";
 import { FiFolderPlus, FiMessageCircle, FiSettings } from "react-icons/fi";
 import { getHostFeatures } from "@/host/domain/host-features";
 import { getRuntimeConfig } from "@/host/runtime-config";
+import { DEFAULT_CONVERSATION_TITLE } from "@/lib/conversation-title";
 
 const { canCreateProjects } = getHostFeatures(getRuntimeConfig().host);
 
@@ -33,7 +34,7 @@ const ChatHeader = memo(() => {
   } = useChatServicesContext();
 
   const activeConversationTitle: string = useMemo(
-    () => history.activeConversation?.title ?? "Nova conversa",
+    () => history.activeConversation?.title ?? DEFAULT_CONVERSATION_TITLE,
     [history.activeConversation],
   );
 
@@ -68,10 +69,10 @@ const ChatHeader = memo(() => {
             <Button
               title={
                 isBackendMode
-                  ? "Novo backend"
+                  ? "New backend"
                   : isAgnosticMode
-                    ? "Novo servidor fullstack"
-                    : "Novo frontend"
+                    ? "New full-stack server"
+                    : "New frontend"
               }
               icon={FiFolderPlus}
               onClick={() => setIsCreateModalOpen(true)}
@@ -81,14 +82,14 @@ const ChatHeader = memo(() => {
             icon={FiMessageCircle}
             highlight
             onClick={handleCreateConversation}
-            title="Nova conversa"
+            title="New conversation"
           />
           <Button
             icon={FiSettings}
             highlight
             onClick={handleOpenRootModal}
-            aria-label="Abrir configurações do projeto"
-            title="Configurações"
+            aria-label="Open project settings"
+            title="Settings"
           />
         </div>
       </div>

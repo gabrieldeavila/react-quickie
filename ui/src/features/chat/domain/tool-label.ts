@@ -21,7 +21,7 @@ export function getToolLabel(
   if (part.type === "tool-read_file") {
     const path = typeof input?.path === "string" ? input.path : undefined;
     return path
-      ? `Lendo conteúdo do arquivo: ${shortenToolPath(path)}`
+      ? `Reading file: ${shortenToolPath(path)}`
       : fallbackLabel;
   }
 
@@ -29,7 +29,7 @@ export function getToolLabel(
     const parentPath =
       typeof input?.parentPath === "string" ? input.parentPath : undefined;
     return parentPath
-      ? `Listando arquivos e pastas: ${shortenToolPath(parentPath)}`
+      ? `Listing files and folders: ${shortenToolPath(parentPath)}`
       : fallbackLabel;
   }
 

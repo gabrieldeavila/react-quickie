@@ -7,7 +7,7 @@ export async function fetchModels(signal?: AbortSignal): Promise<ModelCatalog> {
   const response = await authFetch(getModelsApiUrl(), { signal });
   if (!response.ok) {
     throw new Error(
-      `Não foi possível carregar os modelos (${response.status}).`,
+      `Couldn't load the models (${response.status}).`,
     );
   }
   return (await response.json()) as ModelCatalog;

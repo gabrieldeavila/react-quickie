@@ -25,15 +25,15 @@ export function useChatComposer() {
 
       for (const file of files) {
         if (!SUPPORTED_IMAGE_TYPES.has(file.type)) {
-          setAttachmentError("Cole uma imagem PNG, JPEG, GIF ou WebP.");
+          setAttachmentError("Paste a PNG, JPEG, GIF or WebP image.");
           continue;
         }
         if (file.size === 0 || file.size > MAX_IMAGE_SIZE_BYTES) {
-          setAttachmentError("Cada imagem deve ter até 5 MB.");
+          setAttachmentError("Each image must be 5 MB or smaller.");
           continue;
         }
         if (currentCount + accepted.length >= MAX_IMAGE_COUNT) {
-          setAttachmentError("Você pode colar até 4 imagens por mensagem.");
+          setAttachmentError("You can paste up to 4 images per message.");
           break;
         }
 
@@ -42,14 +42,14 @@ export function useChatComposer() {
           reader.onload = () =>
             typeof reader.result === "string"
               ? resolve(reader.result)
-              : reject(new Error("Não foi possível ler a imagem."));
+              : reject(new Error("Couldn't read the image."));
           reader.onerror = () =>
-            reject(new Error("Não foi possível ler a imagem."));
+            reject(new Error("Couldn't read the image."));
           reader.readAsDataURL(file);
         }).catch(() => null);
 
         if (!url) {
-          setAttachmentError("Não foi possível ler uma das imagens coladas.");
+          setAttachmentError("Couldn't read one of the pasted images.");
           continue;
         }
 
@@ -57,7 +57,7 @@ export function useChatComposer() {
           id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
           type: "file",
           mediaType: file.type,
-          filename: file.name || `imagem-${accepted.length + 1}`,
+          filename: file.name || `image-${accepted.length + 1}`,
           url,
         });
       }

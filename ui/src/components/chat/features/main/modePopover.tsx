@@ -33,8 +33,8 @@ const ChatModePopover = memo(() => {
       value={projectContext.focus}
       onChange={handleChange}
       options={MODE_OPTIONS}
-      ariaLabel="Selecionar foco do agente"
-      title="Modo"
+      ariaLabel="Select agent focus"
+      title="Mode"
       defaultIcon={FiCode}
     />
   );

@@ -14,8 +14,8 @@ export const ToolCallCard = memo(function ToolCallCard({
     <button
       type="button"
       className="tool-call-card__open"
-      title="Abrir no editor"
-      aria-label="Abrir no editor"
+      title="Open in editor"
+      aria-label="Open in editor"
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -57,7 +57,7 @@ export const ToolCallCard = memo(function ToolCallCard({
 
       <div className="tool-call-card__details">
         <pre className="tool-call-card__output">
-          {outputText || "Sem retorno textual."}
+          {outputText || "No text output."}
         </pre>
       </div>
     </details>

@@ -10,10 +10,10 @@ export type ServerStatusDescription = {
 };
 
 function toolCountLabel(count: number | undefined): string {
-  if (count === undefined) return "Conectado";
+  if (count === undefined) return "Connected";
   return count === 1
-    ? "Conectado · 1 ferramenta"
-    : `Conectado · ${count} ferramentas`;
+    ? "Connected · 1 tool"
+    : `Connected · ${count} tools`;
 }
 
 export function describeServerStatus(
@@ -27,21 +27,21 @@ export function describeServerStatus(
         canReconnect: true,
       };
     case "connecting":
-      return { label: "Conectando…", tone: "muted", canReconnect: false };
+      return { label: "Connecting…", tone: "muted", canReconnect: false };
     case "idle":
       return {
-        label: "Conecta na próxima mensagem",
+        label: "Connects on the next message",
         tone: "muted",
         canReconnect: true,
       };
     case "untrusted":
       return {
-        label: "Aguardando confiança",
+        label: "Waiting for trust",
         tone: "warning",
         canReconnect: false,
       };
     case "error":
-      return { label: "Erro", tone: "error", canReconnect: true };
+      return { label: "Error", tone: "error", canReconnect: true };
   }
 }
 

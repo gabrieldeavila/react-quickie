@@ -10,8 +10,8 @@ type Props = {
 
 export function FileLink({ reference, onOpen, className, children }: Props) {
   const title = reference.line
-    ? `Abrir ${reference.path}:${reference.line} no editor`
-    : `Abrir ${reference.path} no editor`;
+    ? `Open ${reference.path}:${reference.line} in editor`
+    : `Open ${reference.path} in editor`;
 
   return (
     <button

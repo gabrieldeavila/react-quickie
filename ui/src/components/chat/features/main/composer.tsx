@@ -71,7 +71,7 @@ export function ChatComposer() {
       if (files.length === 0) return;
       event.preventDefault();
       if (!imagesAllowed) {
-        rejectAttachments("O modelo selecionado não aceita imagens.");
+        rejectAttachments("The selected model doesn't accept images.");
         return;
       }
       void addPastedImages(files);
@@ -83,16 +83,16 @@ export function ChatComposer() {
     <div className="chat-input-section">
       <div className="chat-composer">
         {pastedImages.length > 0 ? (
-          <div className="chat-pasted-images" aria-label="Imagens para enviar">
+          <div className="chat-pasted-images" aria-label="Images to send">
             {pastedImages.map((image) => (
               <div className="chat-pasted-image" key={image.id}>
-                <img src={image.url} alt={image.filename ?? "Imagem colada"} />
+                <img src={image.url} alt={image.filename ?? "Pasted image"} />
                 <button
                   type="button"
                   className="chat-pasted-image__remove"
                   onClick={() => removePastedImage(image.id)}
-                  aria-label={`Remover ${image.filename ?? "imagem"}`}
-                  title="Remover imagem"
+                  aria-label={`Remove ${image.filename ?? "image"}`}
+                  title="Remove image"
                 >
                   <FiX aria-hidden="true" />
                 </button>
@@ -116,8 +116,8 @@ export function ChatComposer() {
             className="chat-input"
             placeholder={
               imagesAllowed
-                ? "Digite sua mensagem ou cole uma imagem..."
-                : "Digite sua mensagem..."
+                ? "Type a message or paste an image..."
+                : "Type a message..."
             }
             value={input}
             onChange={(event) => setInput(event.target.value)}
@@ -130,8 +130,8 @@ export function ChatComposer() {
             className={`send-button ${isStoppable ? "send-button--pause" : ""}`}
             onClick={isStoppable ? stop : onSend}
             disabled={isStoppable ? false : isSendDisabled}
-            title={isStoppable ? "Parar resposta" : "Enviar mensagem"}
-            aria-label={isStoppable ? "Parar resposta" : "Enviar mensagem"}
+            title={isStoppable ? "Stop response" : "Send message"}
+            aria-label={isStoppable ? "Stop response" : "Send message"}
             type="button"
           >
             {isStoppable ? (

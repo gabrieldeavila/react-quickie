@@ -29,8 +29,8 @@ export const ModelPicker = memo(
         value={modelRef}
         onChange={selectModel}
         options={popoverOptions}
-        ariaLabel="Selecionar modelo"
-        title="Modelo"
+        ariaLabel="Select model"
+        title="Model"
         defaultIcon={FiCpu}
       />
     );

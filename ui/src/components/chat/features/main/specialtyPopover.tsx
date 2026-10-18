@@ -29,8 +29,8 @@ const ChatSpecialtyPopover = memo(() => {
       value={projectContext.specialty}
       onChange={handleChange}
       options={specialtyOptions}
-      ariaLabel="Selecionar especialidade do agente"
-      title="Especialidade"
+      ariaLabel="Select agent specialty"
+      title="Specialty"
       defaultIcon={FiMinusCircle}
     />
   );

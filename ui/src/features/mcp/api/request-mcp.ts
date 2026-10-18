@@ -9,7 +9,7 @@ async function readError(response: Response): Promise<string> {
   } catch {
     // Not JSON: fall through to the status code.
   }
-  return `Falha na requisição MCP (${response.status}).`;
+  return `MCP request failed (${response.status}).`;
 }
 
 /** Every MCP endpoint answers with the refreshed server list. */

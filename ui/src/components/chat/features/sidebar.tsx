@@ -17,15 +17,15 @@ const ChatSidebar = memo(() => {
   return (
     <aside
       className={`chat-sidebar ${isSidebarOpen ? "chat-sidebar--open" : "chat-sidebar--closed"}`}
-      aria-label="Chats criados"
+      aria-label="Conversations"
       aria-hidden={!isSidebarOpen}
     >
       <button
         type="button"
         className="chat-sidebar__toggle"
         onClick={onToggleSidebar}
-        aria-label={isSidebarOpen ? "Fechar sidebar" : "Abrir sidebar"}
-        title={isSidebarOpen ? "Fechar sidebar" : "Abrir sidebar"}
+        aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+        title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
       >
         <span className="chat-sidebar__toggle-icon" aria-hidden="true">
           {isSidebarOpen ? "⟨" : "⟩"}
@@ -35,9 +35,9 @@ const ChatSidebar = memo(() => {
       <div className="chat-sidebar__content">
         <div className="chat-sidebar__header">
           <div>
-            <p className="chat-sidebar__title">Conversas</p>
+            <p className="chat-sidebar__title">Conversations</p>
             <span className="chat-sidebar__subtitle">
-              Histórico local sincronizado
+              Local history, synced
             </span>
           </div>
 
@@ -45,8 +45,8 @@ const ChatSidebar = memo(() => {
             className="chat-button chat-button--small chat-sidebar__create-button"
             onClick={handleCreateConversation}
             type="button"
-            aria-label="Nova conversa"
-            title="Nova conversa"
+            aria-label="New conversation"
+            title="New conversation"
           >
             <FiPlus className="chat-sidebar__create-icon" aria-hidden="true" />
           </button>
@@ -54,10 +54,10 @@ const ChatSidebar = memo(() => {
 
         <div className="chat-sidebar__list">
           {!history.isHydrated ? (
-            <div className="chat-sidebar__empty">Carregando conversas…</div>
+            <div className="chat-sidebar__empty">Loading conversations…</div>
           ) : history.conversations.length === 0 ? (
             <div className="chat-sidebar__empty">
-              Nenhuma conversa encontrada. Crie uma nova.
+              No conversations yet. Start a new one.
             </div>
           ) : (
             history.conversations.map((conversation) => {
@@ -74,8 +74,8 @@ const ChatSidebar = memo(() => {
                     className="chat-sidebar__item-button"
                     type="button"
                     onClick={() => history.setActiveConversationId(conversation.id)}
-                    aria-label={`Abrir conversa ${conversation.title}`}
-                    title={`Abrir conversa ${conversation.title}`}
+                    aria-label={`Open conversation ${conversation.title}`}
+                    title={`Open conversation ${conversation.title}`}
                   >
                     <div className="chat-sidebar__item-body">
                       <div className="chat-sidebar__item-title">
@@ -91,8 +91,8 @@ const ChatSidebar = memo(() => {
                     className="chat-sidebar__item-delete chat-button chat-button--ghost chat-button--x-small"
                     type="button"
                     onClick={() => history.deleteConversation(conversation.id)}
-                    aria-label={`Excluir conversa ${conversation.title}`}
-                    title={`Excluir conversa ${conversation.title}`}
+                    aria-label={`Delete conversation ${conversation.title}`}
+                    title={`Delete conversation ${conversation.title}`}
                   >
                     <span className="chat-sidebar__item-delete-icon">x</span>
                   </button>

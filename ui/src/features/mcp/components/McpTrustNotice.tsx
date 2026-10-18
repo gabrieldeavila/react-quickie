@@ -9,9 +9,8 @@ export function McpTrustNotice({ path, isBusy, onTrust }: Props) {
   return (
     <div className="mcp-trust-notice" role="alert">
       <p>
-        Este projeto tem uma configuração MCP própria. Ela pode executar
-        comandos na sua máquina, então fica desativada até você revisar o
-        arquivo e confiar nele:
+        This project has its own MCP configuration. It can run commands on
+        your machine, so it stays off until you review the file and trust it:
       </p>
       <code>{path}</code>
       <button
@@ -20,7 +19,7 @@ export function McpTrustNotice({ path, isBusy, onTrust }: Props) {
         disabled={isBusy}
         onClick={onTrust}
       >
-        {isBusy ? "Confiando…" : "Revisei, confiar nesta configuração"}
+        {isBusy ? "Trusting…" : "I've reviewed it, trust this configuration"}
       </button>
     </div>
   );
