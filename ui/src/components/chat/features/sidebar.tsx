@@ -1,14 +1,9 @@
 import { memo, useCallback } from "react";
-import {
-  useChatBaseContext,
-  useChatServicesContext,
-} from "../context/context";
-import { FiPlus } from "react-icons/fi";
+import { useChatBaseContext } from "../context/context";
 import { formatTimestamp } from "@/helpers/time.helper";
 
 const ChatSidebar = memo(() => {
   const { isSidebarOpen, setIsSidebarOpen, history } = useChatBaseContext();
-  const { handleCreateConversation } = useChatServicesContext();
 
   const onToggleSidebar = useCallback(() => {
     setIsSidebarOpen((current) => !current);
@@ -34,22 +29,7 @@ const ChatSidebar = memo(() => {
 
       <div className="chat-sidebar__content">
         <div className="chat-sidebar__header">
-          <div>
-            <p className="chat-sidebar__title">Conversations</p>
-            <span className="chat-sidebar__subtitle">
-              Local history, synced
-            </span>
-          </div>
-
-          <button
-            className="chat-button chat-button--small chat-sidebar__create-button"
-            onClick={handleCreateConversation}
-            type="button"
-            aria-label="New conversation"
-            title="New conversation"
-          >
-            <FiPlus className="chat-sidebar__create-icon" aria-hidden="true" />
-          </button>
+          <p className="chat-sidebar__title">Conversations</p>
         </div>
 
         <div className="chat-sidebar__list">

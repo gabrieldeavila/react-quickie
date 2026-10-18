@@ -23,6 +23,7 @@ const ChatHeader = memo(() => {
     projectContext,
     setIsRootModalOpen,
     conversationModel,
+    status,
   } = useChatBaseContext();
   const {
     renderedMessages,
@@ -46,17 +47,22 @@ const ChatHeader = memo(() => {
   return (
     <header className="chat-header">
       <div className="chat-header__top">
-        <div>
-          <div className="chat-header__eyebrow">AI Assistant</div>
-          <h1 className="chat-title">{activeConversationTitle}</h1>
+        <div className="chat-header__title-wrap">
+          <h1 className="chat-title" title={activeConversationTitle}>
+            {activeConversationTitle}
+          </h1>
         </div>
 
-        <div className="chat-header__actions flex items-center gap-3">
-          <span className="chat-status-pill">{chatStatusLabel}</span>{" "}
-          <UsageHeaderBadges
-            messages={renderedMessages}
-            contextWindow={conversationModel.resolved?.model.contextWindow}
-          />
+        <div className="chat-header__actions">
+          {status !== "ready" ? (
+            <span className="chat-status-pill">{chatStatusLabel}</span>
+          ) : null}
+          {renderedMessages.length > 0 ? (
+            <UsageHeaderBadges
+              messages={renderedMessages}
+              contextWindow={conversationModel.resolved?.model.contextWindow}
+            />
+          ) : null}
           <ModelPicker
             modelRef={conversationModel.modelRef}
             options={conversationModel.options}
@@ -80,13 +86,11 @@ const ChatHeader = memo(() => {
           ) : null}
           <Button
             icon={FiMessageCircle}
-            highlight
             onClick={handleCreateConversation}
             title="New conversation"
           />
           <Button
             icon={FiSettings}
-            highlight
             onClick={handleOpenRootModal}
             aria-label="Open project settings"
             title="Settings"

@@ -167,22 +167,48 @@ Notes:
 
 CSS changes and removals only. Low risk.
 
-- [ ] Remove the "AI ASSISTANT" label, the sidebar subtitle and the sidebar's duplicate new-chat button.
-- [ ] Show the status pill only when the server is offline or reconnecting.
-- [ ] Remove the outer padding and the container border and background, so the chat fills the panel.
-- [ ] Use a single accent style: only the send button gets the purple fill. Every other button becomes a ghost icon button.
-- [ ] Show the title on one line, ending in an ellipsis if it's too long.
-- [ ] Hide the usage badges until the conversation has at least one message.
+- [x] Remove the "AI ASSISTANT" label, the sidebar subtitle and the sidebar's duplicate new-chat button.
+- [x] Show the status pill only when the server is offline or reconnecting.
+- [x] Remove the outer padding and the container border and background, so the chat fills the panel.
+- [x] Use a single accent style: only the send button gets the purple fill. Every other button becomes a ghost icon button.
+- [x] Show the title on one line, ending in an ellipsis if it's too long.
+- [x] Hide the usage badges until the conversation has at least one message.
 
 #### Progress
 
 ```
-Status: not started
-Branch: —
-Last commit: —
-Done: —
+Status: done
+Branch: feat/ui-a-english-ui
+Last commit: 02685a3 + the following feat(ui) commit (code + this block)
+Done:
+  - header.tsx: removed the "AI Assistant" label; the status pill renders only when
+    status !== "ready" ("Responding" / "Error"); UsageHeaderBadges render only when
+    renderedMessages.length > 0; title has a tooltip and sits in .chat-header__title-wrap
+    (min-width: 0) so it truncates with an ellipsis on one line.
+  - sidebar.tsx: removed the "Local history, synced" subtitle and the duplicate
+    new-chat button (+ their CSS in chat-sidebar.css).
+  - primitives/button.tsx: dropped the `highlight` prop; every header button is a ghost
+    icon button (32px, no border, hover tint) via chat-focus.css. Popover triggers
+    (mode/specialty/model) got the same ghost look in chat-controls.css.
+  - chat-shell.css: no outer padding/gradient on .chat-shell; .chat-container has no
+    border/radius/background/shadow and is height: 100%. Slimmer header (10px 16px),
+    1rem title. chat-responsive.css: removed the overrides that are now the default.
+  - Status pill and usage badges shrunk to 28px (editor.css, chat-usage.css).
 Left: —
-Notes: —
+Notes:
+  - Narrow width: .chat-header__top wraps, so when the panel is too narrow the actions
+    move onto a second row under the title instead of squashing it (title gets
+    flex-basis 120px). Phase 3 removes most header buttons, after which it should fit
+    on one row. There was no browser on this machine to screenshot it, so this was
+    checked by reading the CSS, not by eye. Worth a look in the VS Code panel.
+  - "Responding" still shows the pill: the UI has no separate offline/reconnecting
+    state, so the pill appears for any non-ready status. If Session D/E adds a
+    connection state, narrow it to that.
+  - Dialog buttons (settings, new project, MCP trust notice) keep the purple
+    .chat-button fill: dialog layouts are out of scope. Inside the chat screen, only
+    the send button is purple now.
+  - Sidebar is untouched apart from the removals (Session E replaces it).
+  - Checks: ui typecheck, lint and tests (30 files / 114 tests) green.
 ```
 
 ---

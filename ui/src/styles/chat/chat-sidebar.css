@@ -25,21 +25,6 @@
   padding: 0;
 }
 
-.chat-sidebar__create-button {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-}
-
-.chat-sidebar__create-icon {
-  width: 16px;
-  height: 16px;
-  display: block;
-  line-height: 1;
-  color: #ffffff;
-  flex: 0 0 auto;
-}
-
 .chat-sidebar__toggle {
   position: absolute;
   top: 50%;
@@ -97,11 +82,4 @@
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-}
-
-.chat-sidebar__subtitle {
-  display: block;
-  margin-top: 4px;
-  color: var(--chat-text-muted);
-  font-size: 0.76rem;
 }

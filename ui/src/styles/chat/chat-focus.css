@@ -39,8 +39,18 @@
   flex-shrink: 0;
 }
 
-.chat-header__action-button {
+.chat-button.chat-header__action-button {
+  width: 32px;
+  min-height: 32px;
+  height: 32px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
   color: var(--chat-text-muted);
+}
+
+.chat-button.chat-header__action-button:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .chat-header__action-icon-wrap {
