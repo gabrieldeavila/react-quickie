@@ -7,7 +7,7 @@ import {
   Res,
   UseInterceptors,
 } from '@nestjs/common';
-import { pipeUIMessageStreamToResponse } from 'ai';
+import { pipeUIMessageStreamToResponse, type ToolSet } from 'ai';
 import { type Response } from 'express';
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { ContextService } from 'src/common/context/context.service';
@@ -48,7 +48,7 @@ export class ChatController {
     @Res() res: Response,
   ) {
     const model = this.selectModel(body.model);
-    const tools = this.chatService.getTools();
+    const { tools, toolApproval } = await this.chatService.getToolkit();
     const { uiMessages, modelMessages } = await this.prepareMessages(
       body.messages,
       tools,
@@ -60,7 +60,7 @@ export class ChatController {
       uiMessages,
       messages: modelMessages,
       tools,
-      toolApproval: this.chatService.getToolApproval(),
+      toolApproval,
       abortSignal,
     });
 
@@ -87,10 +87,7 @@ export class ChatController {
     return selected;
   }
 
-  private async prepareMessages(
-    raw: unknown,
-    tools: ReturnType<ChatService['getTools']>,
-  ) {
+  private async prepareMessages(raw: unknown, tools: ToolSet) {
     try {
       return await prepareChatMessages(raw, tools);
     } catch (error) {

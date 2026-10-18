@@ -1,7 +1,8 @@
 import { memo } from "react";
 import { ToolCallCard } from "@/components/primitives/toolCallCard";
 import { getToolUiMeta } from "@/helpers/tool-ui-mapping.helper";
-import { getPendingApproval } from "../domain/tool-approval";
+import { getMcpToolLabel } from "../domain/mcp-tool-label";
+import { getPendingApproval, getToolName } from "../domain/tool-approval";
 import { getToolLabel } from "../domain/tool-label";
 import {
   formatToolOutput,
@@ -28,10 +29,13 @@ export const AssistantToolPart = memo(function AssistantToolPart({
   }
 
   const status = getToolStatus(part);
+  // MCP tools arrive as `dynamic-tool` parts with no TOOL_UI_MAPPING entry.
+  const fallbackLabel =
+    getMcpToolLabel(getToolName(part)) ?? getToolUiMeta(part.type).label;
 
   return (
     <ToolCallCard
-      label={getToolLabel(part, getToolUiMeta(part.type).label)}
+      label={getToolLabel(part, fallbackLabel)}
       status={status}
       outputText={status === "loading" ? "" : formatToolOutput(part)}
     />

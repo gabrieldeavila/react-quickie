@@ -111,6 +111,47 @@ O catálogo ([provider-catalog.ts](api/src/llm/domain/provider-catalog.ts)) list
 - Ao trocar de provedor no meio de uma conversa, o raciocínio assinado pelo provedor anterior não é reenviado; chamadas de ferramenta e resultados são.
 - Se a chave do provedor de uma conversa for removida, ela passa a usar o modelo padrão e o chat avisa.
 
+## Servidores MCP
+
+O Doty usa ferramentas de servidores [MCP](https://modelcontextprotocol.io) (GitHub, bancos de dados, navegadores, documentação…). A configuração segue o formato do Claude/Cursor e vem de dois arquivos:
+
+- global: `$DOTY_DATA_DIR/mcp.json` (padrão `~/.doty/mcp.json`);
+- por projeto: `<raiz do projeto>/.doty/mcp.json`. Um servidor do projeto substitui o global de mesmo nome.
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": { "Authorization": "Bearer ${GITHUB_TOKEN}" },
+      "approval": "ask"
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "${DATABASE_URL}"],
+      "approval": "never",
+      "enabledTools": ["query"]
+    }
+  }
+}
+```
+
+- Transportes: `stdio` (com `command`; roda na raiz do projeto) e `http`/`sse` (com `type` + `url`).
+- `${VAR}` é lido do ambiente da API. Se uma variável não existir, o servidor fica com erro em vez de enviar um valor vazio.
+- `approval`: `ask` (padrão; o chat pede permissão a cada chamada), `never`, ou um objeto por ferramenta (`{ "query": "never" }`; ferramentas fora dele pedem permissão).
+- `enabledTools` / `disabledTools` filtram as ferramentas expostas.
+- As ferramentas aparecem para o modelo como `mcp__<servidor>__<ferramenta>`, valem em todos os modos e cada resultado é limitado a ~50 mil caracteres.
+- **Confiança:** um `mcp.json` de projeto pode executar qualquer comando, então ele fica desativado até você confiar nele em *Configurações → Servidores MCP*. Editar o arquivo revoga a confiança.
+- Os servidores conectam na primeira mensagem do projeto, ficam conectados e fecham depois de ociosos. Um servidor com erro não impede o chat.
+
+| Variável                      | Descrição                                                     |
+| ----------------------------- | ------------------------------------------------------------- |
+| `DOTY_MCP_CONNECT_TIMEOUT_MS` | Tempo máximo para conectar e listar ferramentas. Padrão: `10000`. |
+| `DOTY_MCP_IDLE_TIMEOUT_MS`    | Fecha servidores sem uso após esse tempo. Padrão: `600000`.    |
+
+Recursos, prompts, sampling e OAuth do MCP ainda não são suportados; use tokens em `headers`.
+
 ## Workspace e dados
 
 O agente só lê e escreve dentro das pastas permitidas. A raiz do projeto enviada pela interface precisa estar dentro de uma delas, senão a API responde `403`. Caminhos que saem da raiz (`../`, caminhos absolutos fora dela ou links simbólicos) são recusados.
@@ -149,6 +190,9 @@ A memória dos projetos ficava em `api/storage/memory`. Na primeira inicializaç
 - `GET /` — endpoint simples de disponibilidade.
 - `GET /models` — provedores disponíveis (com chave configurada), seus modelos e o modelo padrão.
 - `POST /chat` — recebe mensagens e transmite a resposta do agente. O campo opcional `model` (`provedor:modelo`) escolhe o modelo; um modelo indisponível responde `400`.
+- `GET /mcp/servers?root=` — servidores MCP do projeto: estado, número de ferramentas e confiança.
+- `POST /mcp/trust` — confia no `.doty/mcp.json` do projeto (`{ root, hash }`; responde `409` se o arquivo mudou).
+- `POST /mcp/:name/reconnect` — reconecta um servidor MCP (`{ root }`).
 - `POST /project/create` — cria um projeto a partir de um template permitido.
 - `POST /agent/bash-approvals/:id/approve` — aprova e executa um comando pendente.
 - `POST /agent/bash-approvals/:id/reject` — rejeita um comando pendente.

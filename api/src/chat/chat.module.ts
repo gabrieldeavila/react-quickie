@@ -8,9 +8,16 @@ import { SubagentService } from './subagent.service';
 import { ChatStreamService } from './data/chat-stream.service';
 import { ApprovalSecretService } from './data/approval-secret.service';
 import { LlmModule } from 'src/llm/llm.module';
+import { McpModule } from 'src/mcp/mcp.module';
 
 @Module({
-  imports: [HelperModule, AgentsModule, AgentsPluginModule, LlmModule],
+  imports: [
+    HelperModule,
+    AgentsModule,
+    AgentsPluginModule,
+    LlmModule,
+    McpModule,
+  ],
   controllers: [ChatController],
   providers: [
     ChatService,

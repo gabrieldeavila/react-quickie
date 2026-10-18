@@ -1,0 +1,57 @@
+import { describe, expect, it } from "vitest";
+import {
+  describeServerStatus,
+  needsProjectTrust,
+} from "./describe-server-status";
+import type { McpServerView } from "./mcp-server.types";
+
+const server = (overrides: Partial<McpServerView>): McpServerView => ({
+  name: "gh",
+  source: "global",
+  transport: "http",
+  status: "idle",
+  ...overrides,
+});
+
+describe("describeServerStatus", () => {
+  it("shows the tool count when connected", () => {
+    expect(
+      describeServerStatus(server({ status: "connected", toolCount: 3 })),
+    ).toEqual({
+      label: "Conectado · 3 ferramentas",
+      tone: "ok",
+      canReconnect: true,
+    });
+    expect(
+      describeServerStatus(server({ status: "connected", toolCount: 1 })).label,
+    ).toBe("Conectado · 1 ferramenta");
+  });
+
+  it("does not offer reconnect for untrusted or connecting servers", () => {
+    expect(
+      describeServerStatus(server({ status: "untrusted" })).canReconnect,
+    ).toBe(false);
+    expect(
+      describeServerStatus(server({ status: "connecting" })).canReconnect,
+    ).toBe(false);
+  });
+
+  it("marks errors and lets the user retry", () => {
+    expect(describeServerStatus(server({ status: "error" }))).toMatchObject({
+      tone: "error",
+      canReconnect: true,
+    });
+  });
+});
+
+describe("needsProjectTrust", () => {
+  it("is true only for an existing, untrusted project config", () => {
+    expect(needsProjectTrust({ exists: true, trusted: false, hash: "h" })).toBe(
+      true,
+    );
+    expect(needsProjectTrust({ exists: true, trusted: true, hash: "h" })).toBe(
+      false,
+    );
+    expect(needsProjectTrust({ exists: false, trusted: false })).toBe(false);
+  });
+});

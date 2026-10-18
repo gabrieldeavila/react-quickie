@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { ToolSet } from 'ai';
 import { ProjectService } from 'src/common/helpers/project.service';
 import { StorageService } from 'src/common/helpers/storage.service';
 import {
@@ -13,6 +14,7 @@ import { GitToolsService } from 'src/common/agents/tools/git/git.service';
 import { PluginToolsService } from 'src/common/agents/plugin/tools/tools.plugins.service';
 import { MemoryService } from 'src/common/helpers/memory.service';
 import { SubagentService } from './subagent.service';
+import { McpToolsService } from 'src/mcp/data/mcp-tools.service';
 import {
   buildToolApprovalMap,
   type ToolApprovalMap,
@@ -30,6 +32,7 @@ export class ChatService {
     private readonly gitToolsService: GitToolsService,
     private readonly pluginToolsService: PluginToolsService,
     private readonly subagentService: SubagentService,
+    private readonly mcpToolsService: McpToolsService,
   ) {}
 
   getCustomTools() {
@@ -45,26 +48,38 @@ export class ChatService {
     return this.pluginToolsService.getTools();
   }
 
-  getTools() {
-    const customTools = this.getCustomTools();
+  /**
+   * Tools and their `streamText({ toolApproval })` map for this request.
+   * Built together because MCP tool names and policies come from one load.
+   */
+  async getToolkit(): Promise<{
+    tools: ToolSet;
+    toolApproval: ToolApprovalMap;
+  }> {
+    const root = this.contextService.get('root');
+    const mcp = root
+      ? await this.mcpToolsService.getToolkit(root)
+      : { tools: {}, approvalPolicies: {} };
 
+    return {
+      tools: { ...mcp.tools, ...this.getBuiltInTools() },
+      toolApproval: root
+        ? buildToolApprovalMap({
+            ...mcp.approvalPolicies,
+            ...this.bashToolsService.createApprovalPolicies(root),
+          })
+        : {},
+    };
+  }
+
+  private getBuiltInTools(): ToolSet {
     return {
       ...createStorageTools(this.storageService),
       ...createProjectTools(this.projectService),
       ...createMemoryTools(this.memoryService),
       ...this.bashToolsService.createBashTools(),
       ...this.subagentService.createTools(),
-      ...customTools,
+      ...this.getCustomTools(),
     };
-  }
-
-  /** The `streamText({ toolApproval })` map for the current request's root. */
-  getToolApproval(): ToolApprovalMap {
-    const root = this.contextService.get('root');
-    if (!root) return {};
-
-    return buildToolApprovalMap({
-      ...this.bashToolsService.createApprovalPolicies(root),
-    });
   }
 }

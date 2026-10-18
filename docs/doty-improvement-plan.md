@@ -166,7 +166,7 @@ A per-conversation provider/model picker in the UI. The API exposes only the pro
 ## Phase 3 — MCP client
 
 ### Decision **(decided)**
-Config files in a Claude/Cursor-compatible format: global `~/.doty/mcp.json` merged with per-project `<root>/.doty/mcp.json`. Stdio + HTTP transports. Tools are named `mcp__<server>__<tool>`. Approval policy per server.
+Config files in a Claude/Cursor-compatible format: global `<storageDir>/mcp.json` (`DOTY_DATA_DIR`, default `~/.doty/mcp.json`) merged with per-project `<root>/.doty/mcp.json`. Stdio + HTTP transports. Tools are named `mcp__<server>__<tool>` (sanitized, see below). Approval policy per server.
 
 ### Config format
 ```json
@@ -188,32 +188,35 @@ Config files in a Claude/Cursor-compatible format: global `~/.doty/mcp.json` mer
   }
 }
 ```
-`approval`: `ask` (default) | `never` | an object mapping tool name → `ask|never`. `enabledTools` / `disabledTools` are optional filters.
+`approval`: `ask` (default) | `never` | an object mapping tool name → `ask|never` (unlisted tools ask). `enabledTools` / `disabledTools` are optional filters. `type` is `stdio` (implied by `command`), `http` or `sse`. There is no per-mode field: MCP tools are available in every mode.
 
 ### How — API (`api/src/mcp/`)
-- Dependency: `@ai-sdk/mcp` (`createMCPClient`; stdio transport from `@ai-sdk/mcp/mcp-stdio`).
-- `domain/parse-mcp-config.ts`: zod schema + `${VAR}` interpolation from `process.env`.
-- `domain/merge-mcp-configs.ts`: project config overrides global config by server name.
-- `domain/namespace-mcp-tools.ts`: rename tools and apply enable/disable filters.
+- Dependency: `@ai-sdk/mcp@2.0.10`, pinned: it is the release that shares `@ai-sdk/provider-utils@5.0.7` with `ai@7.0.22` (newer 2.0.x pull a second copy). `createMCPClient`; stdio transport is `Experimental_StdioMCPTransport` from `@ai-sdk/mcp/mcp-stdio`. MCP tools come back as `dynamicTool`s and the SDK resolves `toolApproval` by tool name, so the Phase 1 map applies unchanged.
+- `domain/parse-mcp-config.ts`: zod schema (`mcp-config.schema.ts`) + `${VAR}` interpolation (`interpolate-env.ts`). A missing variable marks that server as `error` ("missing env X") instead of becoming an empty string (a blank token would still be sent). An invalid server only errors that server; the rest of the file loads.
+- `domain/merge-mcp-configs.ts`: project config overrides global config by server name. An **untrusted project config is ignored as a whole**: only global servers apply, so a project file can't replace a global server's command by reusing its name.
+- `domain/namespace-mcp-tools.ts`: rename tools and apply enable/disable filters. Names (`domain/mcp-tool-name.ts`) are sanitized to `[A-Za-z0-9_-]` and cut to 64 chars (OpenAI/Anthropic reject anything else, and one bad name fails the whole request). If two names collide after that, each gets a 6-char hash of its original server + tool, so the suffix is stable across requests.
 - `domain/mcp-approval-policies.ts`: server config → `Record<toolName, ToolApprovalPolicy>` (`ask` → `ask`, `never` → `never`). `ChatService.getToolApproval()` spreads it into the Phase 1 `toolApproval` map; MCP tools never set per-tool `needsApproval`.
+- `domain/cap-mcp-tool-result.ts`: each MCP tool result is capped at 50k chars (like bash `MAX_OUTPUT_SIZE`), because the Phase 1 truncation only covers older turns. It keeps the `CallToolResult` shape (the SDK's MCP `toModelOutput` reads `content`), truncates text parts, drops `structuredContent` (the model never sees it), and adds `truncated: true, originalSize`.
 - `data/mcp-config.repository.ts`: reads both files and caches by mtime.
-- `data/mcp-client-pool.service.ts`: keeps one connected client per `(configHash, serverName)`. It connects lazily on first use, so stdio processes are not spawned on every request. It reconnects when the config changes, closes idle clients after a timeout and closes all of them on `OnModuleDestroy`. A failing server is marked `error`, and the chat keeps working without its tools.
-- `data/mcp-trust.repository.ts`: **security**. A project-level `mcp.json` can spawn arbitrary commands, so its servers stay disabled until the user trusts that file. Trust is stored as a hash in `~/.doty/trusted-mcp.json` and is invalidated when the file changes.
+- `data/mcp-client-pool.service.ts`: keeps one connected client per `(root, serverName)`, tagged with **the hash of that server's resolved config**, so editing one server reconnects only that server. `root` is part of the key because stdio servers run with `cwd = root`. It connects lazily on the first chat request for that root, so stdio processes are not spawned on every request. Servers connect **in parallel** with a timeout (`DOTY_MCP_CONNECT_TIMEOUT_MS`, default 10s), so the first request waits at most one timeout; a timed-out stdio process is killed. It reconnects when that server's config changes, retries a failed server after 60s, notices a stdio process that exits, closes idle clients (`DOTY_MCP_IDLE_TIMEOUT_MS`, default 10 min) and closes all of them on `OnModuleDestroy`. A failing server is marked `error`, and the chat keeps working without its tools.
+- `data/mcp-tools.service.ts`: what the chat consumes, `getToolkit(root) → { tools, approvalPolicies }`. It never throws.
+- `data/mcp-trust.repository.ts`: **security**. A project-level `mcp.json` can spawn arbitrary commands, so its servers stay disabled until the user trusts that file. Trust is stored as a content hash in `<storageDir>/trusted-mcp.json` (mode 600) and is invalidated when the file changes.
 - `delivery/mcp.controller.ts`:
-  - `GET /mcp/servers?root=` → status, tool count, trust state
-  - `POST /mcp/trust` → trust the project config
+  - `GET /mcp/servers?root=` → status, tool count, trust state, and the project config's content hash
+  - `POST /mcp/trust` `{ root, hash }` → trust the project config; `409` if the file no longer matches the hash the user reviewed
   - `POST /mcp/:name/reconnect`
-- `ChatService.getTools()` merges the MCP tools. Mode filtering stays the same; MCP tools are available in all modes unless the config says otherwise.
+- `ChatService.getToolkit()` (async; replaces the synchronous `getTools()` + `getToolApproval()`) merges the MCP tools and their policies in one load, so tool names and the approval map always match. Mode filtering stays the same for built-in tools; MCP tools are available in all modes.
 
 ### How — UI
 - MCP tools arrive as `dynamic-tool` parts. `ToolCallCard` falls back to the label "`<server>` › `<tool>`" when `TOOL_UI_MAPPING` has no entry.
-- Settings modal gets an "MCP servers" section: status list, a trust button for project configs, reconnect, and an "edit config" hint (the file path).
+- `ToolApprovalCard` uses the same label.
+- Settings modal gets an "MCP servers" section (`features/mcp/{domain,api,hooks,components}`): status list, a trust button for project configs, reconnect, and an "edit config" hint (the file paths).
 
 ### Out of scope (v1)
 MCP resources, prompts, sampling, OAuth flows (use header tokens for now).
 
 ### Tests
-`parse-mcp-config` (interpolation, invalid shapes), `merge-mcp-configs`, `namespace-mcp-tools` (filters), `mcp-approval-policies` (approval mapping).
+`parse-mcp-config` (interpolation, invalid shapes), `interpolate-env`, `merge-mcp-configs`, `mcp-tool-name` (sanitizing, truncation, collision suffix), `namespace-mcp-tools` (filters), `mcp-approval-policies` (approval mapping), `cap-mcp-tool-result`, `build-server-views`. Integration specs run the real `@ai-sdk/mcp` client against a stdio fixture server (`data/__fixtures__/fake-mcp-server.mjs`): tool calls, capping, parallel connect timeout, and `toolApproval` inside `streamText`. UI: `mcp-tool-label`, `describe-server-status`.
 
 ---
 

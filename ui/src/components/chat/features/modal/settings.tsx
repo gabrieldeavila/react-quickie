@@ -2,10 +2,12 @@ import { useChatBaseContext } from "../../context/context";
 import { useCallback } from "react";
 import type { ProjectContext } from "~types/interface/chat.interface";
 import { DEFAULT_PROJECT_CONTEXT } from "~types/consts/chat.const";
+import { McpServersSection } from "@/features/mcp/components/McpServersSection";
 
 export function ChatModalSettings() {
   const {
     isRootModalOpen,
+    projectContext,
     draftContext,
     setDraftContext,
     setProjectContext,
@@ -88,6 +90,10 @@ export function ChatModalSettings() {
             />
           </label>
         </div>
+
+        {projectContext.reference ? (
+          <McpServersSection root={projectContext.reference} />
+        ) : null}
 
         <div className="chat-modal__actions">
           <button

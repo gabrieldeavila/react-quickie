@@ -4,6 +4,7 @@ import {
   type PendingApproval,
 } from "../domain/tool-approval";
 import { useToolApproval } from "../hooks/useToolApproval";
+import { getMcpToolLabel } from "../domain/mcp-tool-label";
 
 type Props = {
   approval: PendingApproval;
@@ -26,7 +27,7 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
       <strong>
         {isBash
           ? "O agente precisa de permissão para executar:"
-          : `O agente precisa de permissão para usar ${approval.toolName}:`}
+          : `O agente precisa de permissão para usar ${getMcpToolLabel(approval.toolName) ?? approval.toolName}:`}
       </strong>
       <pre>{describeApprovalInput(approval)}</pre>
       {!isAnswerable ? (
