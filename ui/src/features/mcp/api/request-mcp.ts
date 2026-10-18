@@ -1,4 +1,5 @@
-import { MCP_API_URL } from "~types/consts/project.const";
+import { getMcpApiUrl } from "~types/consts/project.const";
+import { authFetch } from "@/host/api/auth-fetch";
 import type { McpServersResponse } from "../domain/mcp-server.types";
 
 async function readError(response: Response): Promise<string> {
@@ -16,7 +17,7 @@ export async function requestMcp(
   path: string,
   init?: RequestInit,
 ): Promise<McpServersResponse> {
-  const response = await fetch(`${MCP_API_URL}${path}`, init);
+  const response = await authFetch(`${getMcpApiUrl()}${path}`, init);
   if (!response.ok) throw new Error(await readError(response));
   return (await response.json()) as McpServersResponse;
 }

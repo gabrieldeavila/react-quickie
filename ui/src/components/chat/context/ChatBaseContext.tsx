@@ -7,6 +7,7 @@ import {
 import { createChatTransport } from "@/helpers/chat.transport.helper";
 import { shouldPersistAssistantMessage } from "@/features/chat/domain/to-assistant-record";
 import { useConversationModel } from "@/features/models/hooks/useConversationModel";
+import { useHostSelection } from "@/host/hooks/useHostSelection";
 import {
   readProjectContext,
   readSidebarOpenState,
@@ -37,6 +38,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
 
   const history = useChatHistory();
   const chatComposer = useChatComposer();
+  useHostSelection(chatComposer.setInput);
   const conversationModel = useConversationModel({
     conversation: history.activeConversation,
     reloadConversations: history.reloadConversations,

@@ -192,12 +192,32 @@ O agente só lê e escreve dentro das pastas permitidas. A raiz do projeto envia
 
 A memória dos projetos ficava em `api/storage/memory`. Na primeira inicialização ela é copiada para `$DOTY_DATA_DIR/memory`; a pasta antiga não é removida.
 
+## Acesso à API
+
+| Variável               | Descrição |
+| ---------------------- | --------- |
+| `DOTY_AUTH_TOKEN`      | Quando definida, toda requisição precisa de `Authorization: Bearer <token>` (senão `401`). A extensão VSCode gera um token aleatório a cada sessão. |
+| `DOTY_ALLOWED_ORIGINS` | Origens CORS permitidas, separadas por vírgula. Padrão: `http://localhost:5173,http://localhost:4173`. `UI_URL` é sempre adicionada; `vscode-webview://` só é aceita com `DOTY_AUTH_TOKEN`. |
+| `DOTY_HOST`            | Interface onde a API escuta (ex.: `127.0.0.1`). Padrão: todas. |
+| `DOTY_API_BASE_DIR`    | Pasta das skills e definições de subagentes quando a API roda empacotada (usada pela extensão VSCode). |
+
+## Extensão VSCode
+
+O pacote `vscode/` roda a API e a mesma interface dentro do editor (barra lateral). Instalação, comandos e configurações: [vscode/README.md](vscode/README.md).
+
+```bash
+npm run build
+npm run package --prefix vscode
+code --install-extension vscode/doty.vsix
+```
+
 ## Estrutura do repositório
 
 ```text
 .
 ├── api/        # API NestJS, chat, ferramentas do agente e operações de projeto
 ├── ui/         # Interface React/Vite
+├── vscode/     # Extensão VSCode (inicia a API e mostra a interface num webview)
 ├── templates/  # Templates usados na criação de projetos
 └── docker-compose.yml
 ```
@@ -207,11 +227,13 @@ A memória dos projetos ficava em `api/storage/memory`. Na primeira inicializaç
 | Comando                    | Descrição                                                       |
 | -------------------------- | --------------------------------------------------------------- |
 | `npm run dev`              | Inicia frontend e backend em modo de desenvolvimento.           |
-| `npm run build`            | Compila a API e o frontend.                                     |
+| `npm run build`            | Compila a API, o frontend e a extensão VSCode.                  |
 | `npm start`                | Inicia a interface em modo preview e a API em modo de produção. |
 | `npm test --prefix api`    | Executa os testes unitários da API.                             |
 | `npm test --prefix ui`     | Executa os testes unitários do frontend (funções puras).        |
 | `npm run lint --prefix ui` | Verifica o lint do frontend.                                    |
+| `npm test --prefix vscode` | Executa os testes unitários da extensão.                        |
+| `npm run package --prefix vscode` | Gera `vscode/doty.vsix` (rode `npm run build` antes).    |
 
 ## API
 

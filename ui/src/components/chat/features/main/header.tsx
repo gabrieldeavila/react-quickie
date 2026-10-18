@@ -8,6 +8,10 @@ import ChatSpecialtyPopover from "./specialtyPopover";
 import { ModelPicker } from "@/features/models/components/ModelPicker";
 import Button from "@/components/primitives/button";
 import { FiFolderPlus, FiMessageCircle, FiSettings } from "react-icons/fi";
+import { getHostFeatures } from "@/host/domain/host-features";
+import { getRuntimeConfig } from "@/host/runtime-config";
+
+const { canCreateProjects } = getHostFeatures(getRuntimeConfig().host);
 
 const ChatHeader = memo(() => {
   const {
@@ -53,7 +57,8 @@ const ChatHeader = memo(() => {
           />
           <ChatModePopover />
           <ChatSpecialtyPopover />
-          {isFrontendMode || isBackendMode || isAgnosticMode ? (
+          {canCreateProjects &&
+          (isFrontendMode || isBackendMode || isAgnosticMode) ? (
             <Button
               title={
                 isBackendMode

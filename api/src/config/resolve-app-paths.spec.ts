@@ -38,4 +38,17 @@ describe('resolveAppPaths', () => {
     expect(paths.memoryDir).toBe('/data/doty/memory');
     expect(paths.templatesDir).toBe('/tpl');
   });
+
+  it('uses DOTY_API_BASE_DIR as the code folder when set', () => {
+    const paths = resolveAppPaths({
+      ...base,
+      env: { DOTY_API_BASE_DIR: '/ext/dist/api' },
+    });
+
+    expect(paths.baseDir).toBe('/ext/dist/api');
+    expect(paths.skillsDir).toBe('/ext/dist/api/common/agents/skills');
+    expect(paths.agentDefinitionsDir).toBe(
+      '/ext/dist/api/subagents/definitions',
+    );
+  });
 });

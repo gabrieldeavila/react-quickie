@@ -24,11 +24,16 @@ type AppPathsInput = {
   homeDir: string;
 };
 
+/**
+ * `DOTY_API_BASE_DIR` overrides the code folder when `__dirname` is not
+ * meaningful (the VSCode extension bundles the API into one file).
+ */
 export function resolveAppPaths({
   env,
-  baseDir,
+  baseDir: codeDir,
   homeDir,
 }: AppPathsInput): AppPaths {
+  const baseDir = path.resolve(env.DOTY_API_BASE_DIR || codeDir);
   const apiDir = path.resolve(baseDir, '..');
   const repoDir = path.resolve(apiDir, '..');
   const storageDir = path.resolve(

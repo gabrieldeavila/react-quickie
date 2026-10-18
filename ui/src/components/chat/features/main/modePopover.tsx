@@ -4,6 +4,16 @@ import { memo, useCallback } from "react";
 import { FiCode } from "react-icons/fi";
 import { useChatBaseContext } from "../../context/context";
 import type { CombinedAgentEnum } from "~types/enum/agent.enum";
+import {
+  filterModeOptions,
+  getHostFeatures,
+} from "@/host/domain/host-features";
+import { getRuntimeConfig } from "@/host/runtime-config";
+
+const MODE_OPTIONS = filterModeOptions(
+  CHAT_MODE_OPTIONS,
+  getHostFeatures(getRuntimeConfig().host),
+);
 
 const ChatModePopover = memo(() => {
   const { projectContext, setProjectContext } = useChatBaseContext();
@@ -22,7 +32,7 @@ const ChatModePopover = memo(() => {
     <Popover
       value={projectContext.focus}
       onChange={handleChange}
-      options={CHAT_MODE_OPTIONS}
+      options={MODE_OPTIONS}
       ariaLabel="Selecionar foco do agente"
       title="Modo"
       defaultIcon={FiCode}

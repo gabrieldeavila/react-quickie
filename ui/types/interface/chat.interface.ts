@@ -39,6 +39,8 @@ export type ToolCallCardProps = {
   label: string;
   status: ToolStatus;
   outputText?: string;
+  /** Set when the card's file can be opened in the editor (VSCode). */
+  onOpenFile?: () => void;
 };
 
 export type UserMessageContentProps = {

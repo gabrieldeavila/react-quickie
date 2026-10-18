@@ -1,6 +1,8 @@
 import { memo } from "react";
 import { ToolCallCard } from "@/components/primitives/toolCallCard";
 import { getToolUiMeta } from "@/helpers/tool-ui-mapping.helper";
+import { useOpenFile } from "@/host/hooks/useOpenFile";
+import { getToolFilePath } from "../domain/get-tool-file-path";
 import { getMcpToolLabel } from "../domain/mcp-tool-label";
 import { getPendingApproval, getToolName } from "../domain/tool-approval";
 import { getToolLabel } from "../domain/tool-label";
@@ -21,6 +23,7 @@ export const AssistantToolPart = memo(function AssistantToolPart({
   part,
   isLatestMessage,
 }: Props) {
+  const openFile = useOpenFile();
   const approval = getPendingApproval(part);
   if (approval) {
     return (
@@ -29,6 +32,7 @@ export const AssistantToolPart = memo(function AssistantToolPart({
   }
 
   const status = getToolStatus(part);
+  const filePath = getToolFilePath(part);
   // MCP tools arrive as `dynamic-tool` parts with no TOOL_UI_MAPPING entry.
   const fallbackLabel =
     getMcpToolLabel(getToolName(part)) ?? getToolUiMeta(part.type).label;
@@ -38,6 +42,9 @@ export const AssistantToolPart = memo(function AssistantToolPart({
       label={getToolLabel(part, fallbackLabel)}
       status={status}
       outputText={status === "loading" ? "" : formatToolOutput(part)}
+      onOpenFile={
+        openFile && filePath ? () => openFile({ path: filePath }) : undefined
+      }
     />
   );
 });

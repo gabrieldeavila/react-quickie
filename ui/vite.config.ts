@@ -5,6 +5,8 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Relative asset URLs so the VSCode webview can rewrite them.
+  base: "./",
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),

@@ -1,0 +1,51 @@
+/* Maps the editor theme onto the chat tokens when hosted in a VSCode webview
+   (`data-host` is set in main.tsx). VSCode injects the --vscode-* variables. */
+:root[data-host="vscode"] {
+  --chat-bg: var(--vscode-sideBar-background, var(--vscode-editor-background));
+  --chat-surface: var(--vscode-editorWidget-background);
+  --chat-surface-strong: var(--vscode-input-background);
+  --chat-border: var(--vscode-widget-border, var(--vscode-panel-border));
+  --chat-border-strong: var(--vscode-focusBorder);
+  --chat-text: var(--vscode-foreground);
+  --chat-text-muted: var(--vscode-descriptionForeground);
+  --chat-accent: var(--vscode-button-background);
+  --chat-accent-2: var(--vscode-button-hoverBackground);
+  --chat-user: var(--vscode-button-background);
+  --chat-shadow: none;
+
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-foreground);
+  background: var(--chat-bg);
+}
+
+:root[data-host="vscode"] body {
+  background: var(--chat-bg);
+}
+
+.file-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+
+.file-link:hover {
+  color: var(--vscode-textLink-activeForeground, var(--chat-accent));
+}
+
+.tool-call-card__open {
+  display: inline-flex;
+  padding: 0.1rem;
+  border: 0;
+  background: none;
+  color: var(--chat-text-muted);
+  cursor: pointer;
+}
+
+.tool-call-card__open:hover {
+  color: var(--chat-text);
+}

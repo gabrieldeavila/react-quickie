@@ -2,9 +2,10 @@ import axios from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Toggle from "../../../primitives/toggle";
 import {
-  CREATE_PROJECT_URL,
+  getCreateProjectUrl,
   PROJECT_TEMPLATE_OPTIONS,
 } from "~types/consts/project.const";
+import { authHeaders } from "@/host/api/auth-fetch";
 import type {
   CreateProjectPayload,
   ProjectTemplate,
@@ -83,7 +84,9 @@ export function ChatModalNewProject() {
         initializeGit,
       };
 
-      const response = await axios.post(CREATE_PROJECT_URL, payload);
+      const response = await axios.post(getCreateProjectUrl(), payload, {
+        headers: authHeaders(),
+      });
 
       if (response.data.success) {
         onCreated();

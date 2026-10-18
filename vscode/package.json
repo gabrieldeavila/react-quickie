@@ -1,0 +1,118 @@
+{
+  "name": "doty",
+  "displayName": "Doty",
+  "description": "Doty AI assistant in the editor: chat, tools and approvals on the open workspace.",
+  "version": "0.0.1",
+  "publisher": "geavila",
+  "private": true,
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabrieldeavila/react-quickie.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "doty",
+          "title": "Doty",
+          "icon": "media/doty.svg"
+        }
+      ]
+    },
+    "views": {
+      "doty": [
+        {
+          "type": "webview",
+          "id": "doty.chatView",
+          "name": "Chat"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "doty.setApiKey",
+        "title": "Set API key",
+        "category": "Doty"
+      },
+      {
+        "command": "doty.askAboutSelection",
+        "title": "Ask about selection",
+        "category": "Doty"
+      },
+      {
+        "command": "doty.restartApi",
+        "title": "Restart API",
+        "category": "Doty"
+      },
+      {
+        "command": "doty.showLogs",
+        "title": "Show logs",
+        "category": "Doty"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "doty.askAboutSelection",
+          "when": "editorHasSelection",
+          "group": "doty"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "doty.askAboutSelection",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Doty",
+      "properties": {
+        "doty.defaultModel": {
+          "type": "string",
+          "default": "",
+          "description": "Default model as provider:model (DOTY_DEFAULT_MODEL), e.g. anthropic:claude-sonnet-5-5."
+        },
+        "doty.openaiCompatible.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Base URL of an OpenAI-compatible server (OPENAI_COMPATIBLE_BASE_URL)."
+        },
+        "doty.openaiCompatible.models": {
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated models of the OpenAI-compatible server (OPENAI_COMPATIBLE_MODELS)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "package": "vsce package --no-dependencies --skip-license --out doty.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "~1.95.0",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

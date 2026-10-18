@@ -3,6 +3,11 @@ import { useCallback } from "react";
 import type { ProjectContext } from "~types/interface/chat.interface";
 import { DEFAULT_PROJECT_CONTEXT } from "~types/consts/chat.const";
 import { McpServersSection } from "@/features/mcp/components/McpServersSection";
+import { getHostFeatures } from "@/host/domain/host-features";
+import { getRuntimeConfig } from "@/host/runtime-config";
+import { WorkspaceRootSelect } from "@/host/components/WorkspaceRootSelect";
+
+const { canTypeRoot } = getHostFeatures(getRuntimeConfig().host);
 
 export function ChatModalSettings() {
   const {
@@ -76,19 +81,26 @@ export function ChatModalSettings() {
           </button>
         </div>
         <div className="chat-modal__fields">
-          <label className="chat-control chat-control--full">
-            <span className="chat-control__label">
-              Caminho ou referência principal
-            </span>
-            <input
-              className="chat-input chat-input--modal"
+          {canTypeRoot ? (
+            <label className="chat-control chat-control--full">
+              <span className="chat-control__label">
+                Caminho ou referência principal
+              </span>
+              <input
+                className="chat-input chat-input--modal"
+                value={draftContext.reference}
+                onChange={(event) =>
+                  handleChangeDraft("reference", event.target.value)
+                }
+                placeholder="Ex: /src, app/frontend, nome do projeto"
+              />
+            </label>
+          ) : (
+            <WorkspaceRootSelect
               value={draftContext.reference}
-              onChange={(event) =>
-                handleChangeDraft("reference", event.target.value)
-              }
-              placeholder="Ex: /src, app/frontend, nome do projeto"
+              onChange={(root) => handleChangeDraft("reference", root)}
             />
-          </label>
+          )}
         </div>
 
         {projectContext.reference ? (
