@@ -8,6 +8,14 @@ function messageText(message: UIMessage): string {
     .trim();
 }
 
+function mergeMetadata(
+  stored: ChatMessageRecord["metadata"],
+  incoming: unknown,
+): ChatMessageRecord["metadata"] {
+  if (!incoming || typeof incoming !== "object") return stored;
+  return { ...stored, ...(incoming as Record<string, unknown>) };
+}
+
 /**
  * The record stored for an assistant message, keyed by the useChat message id.
  * `onFinish` fires more than once for the same message (when an approval is
@@ -28,6 +36,8 @@ export function toAssistantRecord(
     role: "assistant",
     content: messageText(message),
     parts: message.parts,
+    // Turn usage arrives as message metadata; earlier stored fields are kept.
+    metadata: mergeMetadata(existing?.metadata, message.metadata),
     createdAt: existing?.createdAt ?? now,
   };
 }

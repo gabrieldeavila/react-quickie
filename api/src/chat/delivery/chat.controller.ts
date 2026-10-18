@@ -20,7 +20,15 @@ import {
 import { ChatService } from '../chat.service';
 import { ChatStreamService } from '../data/chat-stream.service';
 import { InvalidChatMessagesError } from '../domain/invalid-chat-messages.error';
+import { parseCompaction } from '../domain/parse-compaction';
 import { prepareChatMessages } from '../domain/prepare-chat-messages';
+
+/** Doty's request validation errors become 400; anything else is rethrown. */
+function toBadRequest(error: unknown): unknown {
+  return error instanceof InvalidChatMessagesError
+    ? new BadRequestException(error.message)
+    : error;
+}
 
 @UseInterceptors(
   BuildContextInterceptor((req) => {
@@ -44,10 +52,11 @@ export class ChatController {
 
   @Post()
   async chat(
-    @Body() body: { messages?: unknown; model?: unknown },
+    @Body() body: { messages?: unknown; model?: unknown; compaction?: unknown },
     @Res() res: Response,
   ) {
     const model = this.selectModel(body.model);
+    const compaction = this.parseCompaction(body.compaction);
     const { tools, toolApproval } = await this.chatService.getToolkit();
     const { uiMessages, modelMessages } = await this.prepareMessages(
       body.messages,
@@ -61,6 +70,7 @@ export class ChatController {
       messages: modelMessages,
       tools,
       toolApproval,
+      summary: compaction?.summary,
       abortSignal,
     });
 
@@ -91,10 +101,15 @@ export class ChatController {
     try {
       return await prepareChatMessages(raw, tools);
     } catch (error) {
-      if (error instanceof InvalidChatMessagesError) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
+      throw toBadRequest(error);
+    }
+  }
+
+  private parseCompaction(raw: unknown) {
+    try {
+      return parseCompaction(raw);
+    } catch (error) {
+      throw toBadRequest(error);
     }
   }
 

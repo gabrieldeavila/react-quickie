@@ -149,4 +149,20 @@ describe("buildRequestMessages", () => {
       ],
     ]);
   });
+
+  it("keeps message metadata (turn usage) and leaves it out when absent", () => {
+    const metadata = { model: "a:b", contextTokens: 10 };
+    const [user, assistant] = buildRequestMessages([
+      { id: "u1", role: "user", parts: [{ type: "text", text: "hi" }] },
+      {
+        id: "a1",
+        role: "assistant",
+        parts: [{ type: "text", text: "ok" }],
+        metadata,
+      },
+    ]);
+
+    expect("metadata" in user).toBe(false);
+    expect(assistant.metadata).toEqual(metadata);
+  });
 });

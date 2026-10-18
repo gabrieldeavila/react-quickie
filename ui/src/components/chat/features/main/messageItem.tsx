@@ -2,10 +2,13 @@ import { getMessageText } from "@/helpers/chat.helper";
 import { isToolPartType } from "@/helpers/tool-ui-mapping.helper";
 import { AssistantMarkdown } from "@/components/primitives/assistantMarkdown";
 import { AssistantToolPart } from "@/features/chat/components/AssistantToolPart";
+import { CompactionNotice } from "@/features/chat/components/CompactionNotice";
+import { COMPACTION_PART_TYPE } from "@/features/chat/domain/find-latest-compaction";
 import { isLegacyApprovalControlMessage } from "@/features/chat/domain/legacy-approval";
 import { UserMessageContent } from "@/components/primitives/userMessageContent";
 import { SubagentGroup } from "@/features/subagents/components/SubagentGroup";
 import { groupSubagentParts } from "@/features/subagents/domain/group-subagent-parts";
+import { TurnUsageFooter } from "@/features/usage/components/TurnUsageFooter";
 import type { ChatMessageItemProps } from "~types/interface/chat.interface";
 import { memo, useCallback, useMemo, type ComponentProps } from "react";
 import "@/styles/chat-tools.css";
@@ -36,6 +39,10 @@ export const ChatMessageItem = memo(function ChatMessageItem({
         );
       }
 
+      if (part.type === COMPACTION_PART_TYPE) {
+        return <CompactionNotice key={`${message.id}-compaction-${index}`} />;
+      }
+
       if (!isToolPartType(part.type) && part.type !== "dynamic-tool") {
         return null;
       }
@@ -63,20 +70,23 @@ export const ChatMessageItem = memo(function ChatMessageItem({
             <span />
           </div>
         ) : message.role === "assistant" ? (
-          partGroups.map((group) =>
-            group.kind === "subagents" ? (
-              <SubagentGroup
-                key={`${message.id}-subagents-${group.items[0].index}`}
-                messageId={message.id}
-                items={
-                  group.items as ComponentProps<typeof SubagentGroup>["items"]
-                }
-                isLatestMessage={isLatest}
-              />
-            ) : (
-              renderAssistantPart(group.part, group.index)
-            ),
-          )
+          <>
+            {partGroups.map((group) =>
+              group.kind === "subagents" ? (
+                <SubagentGroup
+                  key={`${message.id}-subagents-${group.items[0].index}`}
+                  messageId={message.id}
+                  items={
+                    group.items as ComponentProps<typeof SubagentGroup>["items"]
+                  }
+                  isLatestMessage={isLatest}
+                />
+              ) : (
+                renderAssistantPart(group.part, group.index)
+              ),
+            )}
+            <TurnUsageFooter message={message} />
+          </>
         ) : message.role === "user" ? (
           <UserMessageContent
             text={messageText}

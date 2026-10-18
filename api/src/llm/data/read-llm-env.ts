@@ -12,6 +12,7 @@ const LLM_ENV_KEYS = [
   'OPENAI_COMPATIBLE_MODELS',
   'DOTY_DEFAULT_MODEL',
   'DOTY_SUBAGENT_MODEL',
+  'DOTY_SUMMARY_MODEL',
 ] as const;
 
 /** Snapshot of the env vars the LLM rules read (from `.env` files and the process). */

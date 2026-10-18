@@ -4,6 +4,7 @@ import type { ChatRequestBody } from "../../types/interface/chat.interface";
 import type { CreateChatTransportParams } from "../../types/interface/transport.interface";
 import { getChatApiUrl } from "~types/consts/project.const";
 import { authFetch } from "@/host/api/auth-fetch";
+import { applyCompaction } from "@/features/chat/domain/apply-compaction";
 import { buildRequestMessages } from "@/features/chat/domain/build-request-messages";
 import { truncateToolOutputs } from "@/features/chat/domain/truncate-tool-outputs";
 import { filterPartsByCapabilities } from "@/features/models/domain/filter-parts-by-capabilities";
@@ -24,9 +25,13 @@ export function createChatTransport({
           chatMode?: CombinedAgentEnum;
           chatSpecialty?: string;
           model?: string;
+          compaction?: unknown;
         };
         if (body.messages) {
-          const messages = buildRequestMessages(body.messages);
+          // Before buildRequestMessages, which drops the data-compaction part.
+          const compacted = applyCompaction(body.messages);
+          if (compacted.compaction) body.compaction = compacted.compaction;
+          const messages = buildRequestMessages(compacted.messages);
           body.messages = truncateToolOutputs(
             modelTarget
               ? filterPartsByCapabilities(messages, modelTarget)

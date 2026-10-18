@@ -56,15 +56,18 @@ export const PROVIDER_CATALOG: ProviderInfo[] = [
         inputPerMTok: 4,
         outputPerMTok: 20,
         cacheReadPerMTok: 0.2,
+        cacheWritePerMTok: 5,
       }),
       claude('claude-sonnet-5-5', 'Claude Sonnet 5.5', {
         inputPerMTok: 2,
         outputPerMTok: 10,
         cacheReadPerMTok: 0.2,
+        cacheWritePerMTok: 2.5,
       }),
       claude('claude-haiku-5-5', 'Claude Haiku 5.5', {
         inputPerMTok: 0.1,
         outputPerMTok: 0.5,
+        cacheWritePerMTok: 0.125,
       }),
     ],
   },

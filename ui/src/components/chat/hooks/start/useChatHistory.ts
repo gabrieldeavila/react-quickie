@@ -77,6 +77,7 @@ export const useChatHistory = (): UseChatHistoryResult => {
             role: record.role,
             parts,
             content: record.content,
+            metadata: record.metadata,
           };
         }),
       );

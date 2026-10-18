@@ -11,6 +11,8 @@ export type ModelPricing = {
   inputPerMTok: number;
   outputPerMTok: number;
   cacheReadPerMTok?: number;
+  /** Anthropic bills cache writes above the input price; unset = input price. */
+  cacheWritePerMTok?: number;
 };
 
 export type ModelInfo = {
@@ -20,7 +22,7 @@ export type ModelInfo = {
   supportsTools: boolean;
   supportsImages: boolean;
   supportsReasoning: boolean;
-  /** Left out when the price isn't fixed or isn't known; cost is Phase 6. */
+  /** Left out when the price isn't fixed or isn't known (no cost is shown). */
   pricing?: ModelPricing;
 };
 

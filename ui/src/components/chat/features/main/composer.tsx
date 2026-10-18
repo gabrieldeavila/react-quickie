@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
-import { FiPause, FiSend, FiX } from "react-icons/fi";
+import { FiSend, FiSquare, FiX } from "react-icons/fi";
 import {
   useChatBaseContext,
   useChatServicesContext,
@@ -28,7 +28,7 @@ export function ChatComposer() {
 
   const onSend = useSendMessage();
 
-  const isPaused = isChatPending;
+  const isStoppable = isChatPending;
   const isSendDisabled = useMemo(
     () => !hasInput || (status !== "ready" && status !== "error"),
     [hasInput, status],
@@ -127,15 +127,15 @@ export function ChatComposer() {
           />
 
           <button
-            className={`send-button ${isPaused ? "send-button--pause" : ""}`}
-            onClick={isPaused ? stop : onSend}
-            disabled={isPaused ? false : isSendDisabled}
-            title={isPaused ? "Pausar resposta" : "Enviar mensagem"}
-            aria-label={isPaused ? "Pausar resposta" : "Enviar mensagem"}
+            className={`send-button ${isStoppable ? "send-button--pause" : ""}`}
+            onClick={isStoppable ? stop : onSend}
+            disabled={isStoppable ? false : isSendDisabled}
+            title={isStoppable ? "Parar resposta" : "Enviar mensagem"}
+            aria-label={isStoppable ? "Parar resposta" : "Enviar mensagem"}
             type="button"
           >
-            {isPaused ? (
-              <FiPause aria-hidden="true" />
+            {isStoppable ? (
+              <FiSquare aria-hidden="true" />
             ) : (
               <FiSend aria-hidden="true" />
             )}

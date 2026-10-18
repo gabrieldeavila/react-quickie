@@ -11,6 +11,8 @@ export type RequestMessage = {
   id: string;
   role: string;
   parts: RequestPart[];
+  /** Usage of earlier turns: the API sizes the context from it. */
+  metadata?: unknown;
 };
 
 export type SourceMessage = {
@@ -18,6 +20,7 @@ export type SourceMessage = {
   role: string;
   content?: string;
   parts?: RequestPart[];
+  metadata?: unknown;
 };
 
 function isImageFile(part: RequestPart): boolean {
@@ -66,8 +69,12 @@ export function buildRequestMessages(
     // turns. They are UI state, not conversation content.
     if (parts.length === 0) return [];
 
-    return [
-      { id: message.id ?? `request-${index}`, role: message.role, parts },
-    ];
+    const request: RequestMessage = {
+      id: message.id ?? `request-${index}`,
+      role: message.role,
+      parts,
+    };
+    if (message.metadata !== undefined) request.metadata = message.metadata;
+    return [request];
   });
 }

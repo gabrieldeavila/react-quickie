@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createProviderRegistry, type LanguageModel } from 'ai';
 import { availableProviders } from '../domain/available-providers';
-import type { SelectedModel } from '../domain/find-model';
+import { firstAvailableModel, type SelectedModel } from '../domain/find-model';
 import type { LlmEnv, ProviderInfo } from '../domain/model-catalog.types';
 import { PROVIDER_CATALOG } from '../domain/provider-catalog';
 import { resolveDefaultModel } from '../domain/resolve-default-model';
@@ -54,6 +54,14 @@ export class ProviderRegistryService {
       conversationModel,
       defaultModel: this.defaultModel,
     });
+  }
+
+  /** `DOTY_SUMMARY_MODEL` (when its provider has a key) → conversation model. */
+  selectForSummary(conversation: SelectedModel): SelectedModel {
+    return (
+      firstAvailableModel(this.providers, [this.env.DOTY_SUMMARY_MODEL]) ??
+      conversation
+    );
   }
 
   languageModel(selected: SelectedModel): LanguageModel {

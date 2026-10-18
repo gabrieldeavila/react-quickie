@@ -77,6 +77,23 @@ describe("toAssistantRecord", () => {
   });
 });
 
+describe("toAssistantRecord metadata", () => {
+  it("stores the turn usage metadata over existing fields", () => {
+    const existing = {
+      ...toAssistantRecord("c1", message(requested), undefined, 100),
+      metadata: { pinned: true, model: "old" },
+    };
+    const withUsage = {
+      ...message(finished),
+      metadata: { model: "a:b", costUsd: 0.01 },
+    };
+
+    expect(
+      toAssistantRecord("c1", withUsage, existing, 200).metadata,
+    ).toEqual({ pinned: true, model: "a:b", costUsd: 0.01 });
+  });
+});
+
 describe("shouldPersistAssistantMessage", () => {
   it("skips empty placeholders and non-assistant messages", () => {
     expect(shouldPersistAssistantMessage(message())).toBe(false);

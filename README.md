@@ -104,12 +104,20 @@ A API só oferece os provedores que têm chave configurada em `api/.env`. Cada c
 | `OPENAI_MODEL`               | Modelo extra da OpenAI que não está no catálogo.                                             |
 | `DOTY_DEFAULT_MODEL`         | Modelo padrão no formato `provedor:modelo`. Sem ele: `openai:$OPENAI_MODEL`, depois o primeiro disponível. |
 | `DOTY_SUBAGENT_MODEL`        | Modelo dos subagentes que não definem `model`. Sem ele, os subagentes usam o modelo da conversa. |
+| `DOTY_SUMMARY_MODEL`         | Modelo (de preferência barato) que resume mensagens antigas quando a conversa enche o contexto. Sem ele, usa o modelo da conversa. |
 
 O catálogo ([provider-catalog.ts](api/src/llm/domain/provider-catalog.ts)) lista os modelos atuais de cada provedor com suas capacidades. Modelos que vêm só de variáveis de ambiente entram com capacidades conservadoras: ferramentas sim, imagens e raciocínio não.
 
 - Se o modelo não aceita imagens, o chat não deixa colar imagens, e as imagens do histórico não são enviadas a ele.
 - Ao trocar de provedor no meio de uma conversa, o raciocínio assinado pelo provedor anterior não é reenviado; chamadas de ferramenta e resultados são.
 - Se a chave do provedor de uma conversa for removida, ela passa a usar o modelo padrão e o chat avisa.
+
+### Uso, custo e contexto
+
+- Cada resposta mostra os tokens e o custo estimado (`12.3k in · 1.1k out · $0.04`), calculado com os preços do catálogo. Modelos sem preço fixo (DeepSeek, servidores compatíveis) mostram só os tokens. O cabeçalho mostra o total da conversa e quanto da janela de contexto do modelo ela ocupa.
+- Acima de 75% da janela, a API primeiro remove o raciocínio e as chamadas de ferramenta antigas do que envia ao modelo. Se ainda não couber, resume as mensagens antigas (mantendo as duas últimas trocas) com `DOTY_SUMMARY_MODEL`. O histórico completo continua salvo no navegador; a conversa marca o ponto em que o resumo foi feito.
+- Nos modelos da Anthropic, as instruções e a conversa usam cache de prompt, o que reduz o custo das chamadas seguidas de ferramentas.
+- O botão de parar interrompe a resposta, os comandos de terminal, os subagentes e as chamadas MCP em andamento. Uma resposta interrompida não registra uso.
 
 ## Servidores MCP
 
