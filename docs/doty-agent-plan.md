@@ -1,0 +1,344 @@
+# Doty — instructions, coding-agent prompt and MCP setup
+
+Status: proposed · Date: 2026-10-18 · Base: `feat/ui-a-english-ui` @ `d04be85` · Branch: `feat/instructions-and-mcp`
+
+Doty picks its behaviour from a fixed list of **modes** (Frontend, Backend, Agnostic, Git, Agent Builder) and **specialties** (Landing Pages, Forms, Refactoring). The list is hard-coded in the UI and the API, a new entry means editing Doty's source (that is what Agent Builder does), and the mode also decides which tools the model gets. This plan:
+
+1. Replaces modes and specialties with **instructions**: Markdown files the user writes ("landing pages", "forms", "our API conventions"…) and attaches to a conversation.
+2. Gives the model a real **coding-agent system prompt**, so it knows it is an agent working on real files with real tools, in which environment, and how to behave.
+3. Lets the user **configure MCP servers from the Doty interface**, opened with `/mcp` in the message box.
+
+## Summary
+
+| Session | Phase | Why | Size | Depends on |
+|---------|-------|-----|------|------------|
+| A | 1 — Coding-agent prompt (API) | The model is only told "The user project is <root>" | M | — |
+| B | 2 — Instructions (API) | User-defined guidance instead of hard-coded specialties | M | A |
+| C | 3 — MCP config writes (API) | The UI can only read `mcp.json` today | M | — (may run alongside A or B) |
+| D | 4 — Instructions replace modes (UI) | One concept the user controls, not two fixed pickers | L | B |
+| E | 5 — Remove modes (API cleanup) | Dead code, mode-gated tools, Agent Builder | M | D |
+| F | 6 — Slash commands in the message box | `/mcp`, `/instructions`, `/new`, `/<instruction>` | M | D |
+| G | 7 — MCP dialog (UI) + `/mcp` | Add, edit, enable and trust servers without editing JSON | L | C, F |
+| H | 8 — Wrap-up: VSIX, docs, end-to-end check | Ship it and check it in VS Code | S | all |
+
+Recommended order: A → B → D → E, with C at any point before G; then F → G → H. One session at a time, except C, which only touches `api/src/mcp/` and may run in parallel with A or B.
+
+All new code follows the repo conventions: small single-purpose files, pure rules in `domain/` with `*.spec.ts`, IO in `data/`, HTTP in `delivery/` (API); `domain/ api/ hooks/ components/` per feature (UI). Components only render.
+
+## Working across sessions (read this first)
+
+Each phase is done in its own agent session, and no session remembers the previous ones. **This file is the only record of what was done.** Every session must:
+
+1. **Start** by reading this whole file, especially the **Progress** blocks of the phases this one depends on. They must say `Status: done`. Also run `git log --oneline -15` to check that their commits are there. If a dependency isn't done, stop and say so.
+2. **Don't create a branch.** All sessions work on `feat/instructions-and-mcp`, one after another. Check with `git branch --show-current`; if you're elsewhere, `git switch feat/instructions-and-mcp` (only with a clean working tree).
+3. **Tick checkboxes** (`- [x]`) in your phase as each item is finished and verified. Never tick something that isn't done.
+4. **Record pin points.** After each meaningful step, and always before the session ends, update your phase's **Progress** block: `Status` (`not started` / `in progress` / `done` / `blocked`), `Last commit`, `Done` (what changed, main files), `Left`, `Notes` (decisions, deviations, pitfalls, what the next session must know).
+5. **Commit** small, focused commits with the plan update included. Stage only your files (`git add <paths>`; never `git add -A` or `git commit -a`).
+6. **Edit only your own phase's section and Progress block.** If another phase must change, say so in your `Notes`.
+7. **Finish** with type-check, lint and tests passing in every package touched (`pnpm --dir <pkg> typecheck|lint|test`; the API uses `lint:check`, `vscode` has no lint), and say so in `Notes`. If something fails and you can't fix it, set `Status: blocked` and explain.
+
+## How things work today (verified on `d04be85`)
+
+- **Prompt** ([prompts.service.ts](../api/src/common/helpers/prompts.service.ts)): system messages in this order: `buildBaseInstruction(root)` ("The user project is <root>" + reply-language rule), [behavior.md](../api/src/common/agents/skills/behavior.md), the project's `.agents/*.md`, `skills/<mode>/` (`index.md`, `default/*`, `specialty/<specialty>.md`), `plugin/skills/<mode>/`, [memory.md](../api/src/common/agents/skills/memory.md), project memory. Nothing tells the model it is a coding agent, what tools it has, where it runs (VS Code or web, OS, shell), or what to do when the model has no tool support.
+- **Mode skills** are 200–250-line "pipelines" with quality gates ([agnostic/index.md](../api/src/common/agents/skills/agnostic/index.md), `frontend/index.md`, `backend/index.md`). They push plans and checklists on every request, which contradicts `behavior.md` ("don't impose plans…"). Frontend mode always adds `default/design.system.md`.
+- **Mode decides tools** ([chat.service.ts](../api/src/chat/chat.service.ts) `getCustomTools`): git tools only in `git`, `create_component_blueprint` only in `frontend`, Agent Builder tools only in `agent_builder` ([tools.plugins.service.ts](../api/src/common/agents/plugin/tools/tools.plugins.service.ts)). `create_commit` has **no approval** today.
+- **Request**: the UI sends `chatMode` / `chatSpecialty` ([chat.transport.helper.ts](../ui/src/helpers/chat.transport.helper.ts)); [chat.controller.ts](../api/src/chat/delivery/chat.controller.ts) stores them as `mode` / `specialty` in the request context.
+- **UI**: `AgentFocusEnum` / `AgentSpecialtyEnum` ([agent.enum.ts](../ui/types/enum/agent.enum.ts)), `CHAT_MODE_OPTIONS` / `CHAT_SPECIALTY_OPTIONS` ([chat.const.ts](../ui/types/consts/chat.const.ts)), plugin entries in [specialty.plugin.ts](../ui/types/plugin/specialty.plugin.ts) (written by Agent Builder), the picker in `features/agent-picker/`, starter prompts and empty-state heading per mode, and the new-project label/template per mode.
+- **Subagents** already use the pattern instructions need: Markdown + frontmatter, built-ins merged with `<root>/.doty/agents/*.md` ([agent-definitions.repository.ts](../api/src/subagents/data/agent-definitions.repository.ts), `merge-agent-definitions.ts`).
+- **MCP**: config in `~/.doty/mcp.json` (global) and `<root>/.doty/mcp.json` (project, off until trusted by content hash), parsed by [parse-mcp-config.ts](../api/src/mcp/domain/parse-mcp-config.ts) against [mcp-config.schema.ts](../api/src/mcp/domain/mcp-config.schema.ts). The API only exposes `GET /mcp/servers`, `POST /mcp/trust` and `POST /mcp/:name/reconnect`; the settings dialog lists servers and shows the file paths. Adding a server means editing JSON by hand.
+- **Message box**: no slash commands. Enter sends; Esc stops the response (Phase 6 of the UI plan).
+
+---
+
+## Phase 1 — Coding-agent prompt (Session A)
+
+**Goal:** whatever model runs (Claude, GPT, DeepSeek, a small local model through the OpenAI-compatible provider), it must know from the first system message that it is **Doty, a coding agent acting on the user's real workspace through tools**, and how to work.
+
+### Prompt layout
+
+Static parts first and dynamic parts last, so provider prompt caching keeps working:
+
+1. **Identity** (static, in code): `prompts/domain/build-agent-identity.ts`.
+2. **Behaviour** (static, editable): `behavior.md` (keep; remove the bullets the identity now covers).
+3. **Tool guide** (static per toolset): `prompts/domain/build-tool-guide.ts(toolNames)`. It only mentions tools that are actually in this request's toolset, so the prompt never promises a tool that isn't there.
+4. **Project instructions**: `AGENTS.md` at the root (the cross-tool convention), then the legacy `.agents/*.md`.
+5. **Selected instructions** (Phase 2).
+6. **Memory rules + project memory** (as today).
+7. **Environment** (dynamic, per request): `prompts/domain/build-environment-block.ts`.
+
+### Identity (draft wording; refine, but keep every point)
+
+> You are Doty, an autonomous coding agent. You work inside the user's software project through tools: you read and search files, edit and create files, run shell commands, and use git. Your changes are real: they are written to the user's disk, and commands run on their machine.
+>
+> How you work: understand the request → inspect the relevant code (read before you edit; never guess file contents) → make the smallest change that does the job, following the project's existing patterns → verify it (type-check, lint, tests, or running the code) → report what changed and what you checked.
+>
+> - Use your tools instead of asking the user to paste code or run commands for you.
+> - Some tools ask the user for approval. If the user denies a call, don't retry the same call; adjust or ask.
+> - Stay inside the workspace. Don't run destructive commands (deleting data, force-pushing, rewriting history) unless the user explicitly asked.
+> - Never claim a check you didn't run, or a file you didn't read.
+> - Refer to code as `path:line` (the interface makes these clickable). Show code blocks for snippets and proposals, not for whole files you have already written.
+
+When the selected model has no tool support (`supportsTools: false`), the identity says instead that tools are unavailable in this conversation: the model can't read or change files, must say so when asked to, and can only explain and propose code.
+
+### Environment block
+
+```
+Environment
+- Interface: VS Code extension (or: web app)
+- Workspace roots: /path/a, /path/b · active root: /path/a
+- Platform: darwin 24.5 · shell: /bin/zsh
+- Date: 2026-10-18
+- Git: branch feat/x, 3 changed files (or: not a git repository)
+- Model: anthropic:claude-sonnet-5-5 · tools: available
+- Instructions in use: landing-pages, forms
+```
+
+- The interface comes from a new env var `DOTY_CLIENT` (`vscode` set by [build-api-env.ts](../vscode/src/domain/build-api-env.ts); default `web`). Don't trust a request field for this.
+- Git status: `git status --porcelain=v1 -b` with a ~1 s timeout; on failure or timeout, leave the line out. Count only; never list file names (keeps the block small and stable).
+
+### Checklist
+
+- [ ] `build-agent-identity.ts` (+ spec): tools/no-tools variants; the spec asserts the key facts (Doty, coding agent, real files, verify, approvals, `path:line`).
+- [ ] `build-tool-guide.ts` (+ spec): short per-group guidance (files: read before edit, prefer `edit_file` over `overwrite_file`; search before guessing paths; bash: non-interactive commands, check exit codes; git: inspect with status/diff before committing, commit only when asked; subagents: self-contained tasks only; MCP: external systems, mind side effects). A group appears only if one of its tools is present.
+- [ ] `build-environment-block.ts` (+ spec) and `data/read-git-summary.ts` (IO, timeout).
+- [ ] `AGENTS.md` loading in `skill-loaders.ts` (+ spec).
+- [ ] `PromptsService.getInstructions` takes the toolset/model info it needs and assembles the new order. `buildBaseInstruction` merges into identity + environment (keep `REPLY_LANGUAGE_RULE` in code).
+- [ ] Subagents get the environment block too (their definitions already describe their role).
+- [ ] `api/scripts/preview-prompt.ts` (`pnpm --dir api prompt:preview -- --root <dir> --model <ref>`): prints the assembled system prompt, for humans to read. Add a snapshot spec of the assembled prompt for a fixture setup, so accidental prompt changes show up in review.
+- [ ] Manual check with one strong model and one small OpenAI-compatible model (record the results in Notes): "Who are you and what can you do here?" (says coding agent + workspace + tools); "What scripts does package.json have?" (calls `read_file`, doesn't ask for a paste); "Fix the failing test in <file>" (reads, edits, runs the test, reports); the same question on a no-tools model (says it can't access files).
+
+#### Progress
+
+```
+Status: not started
+Last commit: —
+Done: —
+Left: —
+Notes: —
+```
+
+---
+
+## Phase 2 — Instructions (API) (Session B)
+
+**Instruction file** (Markdown + frontmatter, like subagent definitions). The file name is the id:
+
+```md
+---
+name: Landing pages
+description: Conversion-focused landing pages: sections, copy hierarchy, responsive layout.
+starters:
+  - Build a landing page for a SaaS product with pricing and FAQ
+---
+Guidance in plain Markdown…
+```
+
+**Scopes**, merged by id (project wins over global, global over built-in):
+
+- built-in: `api/src/instructions/builtin/*.md` (shipped; read-only)
+- global: `<DOTY_DATA_DIR>/instructions/*.md` (default `~/.doty/instructions/`)
+- project: `<root>/.doty/instructions/*.md` (can be committed and shared with a team)
+
+**Built-ins**: convert the current skills into short guidance (aim for ≤ 80 lines each, no "pipelines" or quality gates): `landing-pages`, `forms`, `refactoring` (from `frontend/specialty/`), `design-system` (`frontend/default/design.system.md`), `react-architecture` (`frontend/index.md`), `backend-architecture` (`backend/index.md`), `clean-architecture` (`agnostic/index.md`). `git/index.md` moves into the git part of the tool guide (Phase 1).
+
+### Checklist
+
+- [ ] `api/src/instructions/` module: `domain/parse-instruction.ts` (+ spec: frontmatter, missing name → id, invalid `starters` dropped), `domain/merge-instructions.ts` (+ spec: precedence, `source` per entry), `domain/validate-instruction-id.ts` (+ spec: `^[a-z0-9][a-z0-9-]{0,63}$`), `data/instructions.repository.ts` (reads all three scopes; project paths through `WorkspaceService`; mtime cache like `McpConfigRepository`).
+- [ ] Limits: a body over 20 KB is rejected on write and truncated with a notice on read; at most 8 instructions per request.
+- [ ] Endpoints (behind the existing auth guard): `GET /instructions?root=` (id, name, description, starters, source, editable), `GET /instructions/:id?root=` (with body), `PUT /instructions/:scope/:id` (`scope` = `global` | `project`; body: name, description, starters, content; atomic write), `DELETE /instructions/:scope/:id`. Built-ins can't be written or deleted; "edit" a built-in = save a copy in global or project scope with the same id.
+- [ ] Chat request field `instructions: string[]` → request context `instructionIds`. Unknown ids are ignored (logged once). `PromptsService` loads the selected bodies as one system message each, headed `Instruction "<name>" (selected by the user):`. Modes still work during the transition (removed in Phase 5).
+- [ ] Copy `instructions/builtin/*.md` into `dist` (`nest-cli.json` assets); the VS Code build already copies every `.md` under `api/dist` (check `vscode/scripts/build.mjs`).
+- [ ] Security note in the repository code: project instructions are prompt text from the repo, as trusted as `AGENTS.md`; they can't run anything by themselves. The UI shows their source (Phase 4).
+
+#### Progress
+
+```
+Status: not started
+Last commit: —
+Done: —
+Left: —
+Notes: —
+```
+
+---
+
+## Phase 3 — MCP config writes (API) (Session C)
+
+### Checklist
+
+- [ ] Schema: add `disabled?: boolean` to both server shapes; `parse-mcp-config` skips disabled servers but still lists them (status `disabled`).
+- [ ] Pure edits on the file text, each with a spec: `domain/upsert-mcp-server.ts`, `remove-mcp-server.ts`, `set-mcp-server-disabled.ts`, `set-mcp-tool-approval.ts`. They keep the other servers and unknown top-level keys, write 2-space JSON, and validate the new server against `mcpServerSchema` before returning.
+- [ ] Secrets: `domain/mask-mcp-secrets.ts` (+ spec) replaces literal values in `env` and `headers` with `"••••"` in responses (`${VAR}` references are shown as-is); `merge-masked-secrets.ts` (+ spec) keeps the stored value when an update sends the mask back unchanged.
+- [ ] Endpoints: `GET /mcp/servers` gains `scope`, `disabled`, masked `config`, and the file `hash` per scope. `PUT /mcp/servers/:name` `{ scope, config, baseHash }`, `DELETE /mcp/servers/:name?scope=&baseHash=`, `PATCH /mcp/servers/:name` `{ scope, disabled?, toolApproval? }`.
+- [ ] Concurrency: `baseHash` must match the file's current hash, or the answer is `409` with the fresh list (the file was edited elsewhere).
+- [ ] Writes are atomic (temp file + rename). The global file is written with mode `0o600` (it may hold tokens). The project file goes through the workspace sandbox and creates `.doty/` if needed.
+- [ ] A project write by the user through the UI is consent: re-trust the new content hash right after writing, so the server doesn't switch off.
+- [ ] After a write, the client pool reconnects only the changed server, or closes it when removed or disabled.
+- [ ] Integration spec on a temp dir: add → list → edit (with masked secret kept) → disable → remove, plus a 409 case.
+
+#### Progress
+
+```
+Status: not started
+Last commit: —
+Done: —
+Left: —
+Notes: —
+```
+
+---
+
+## Phase 4 — Instructions replace modes (UI) (Session D)
+
+**In the message box**, the agent picker becomes an **Instructions** chip: `[✎ Landing pages +1 ▾]`, or `[✎ Instructions ▾]` when none are selected. It opens a multi-select list (search, check rows, source badge `built-in` / `global` / `project`) with "Manage instructions…" at the bottom.
+
+**Manage dialog**: list by source; create, edit, duplicate (a built-in becomes an editable copy) and delete; fields: name, id (derived from the name, editable on create), description, starters (one per line), body (plain textarea; a Markdown preview is optional), scope (global or project).
+
+**Selection** is stored per conversation (`instructionIds` on the conversation in [chatDb.ts](../ui/src/lib/chatDb.ts)). A new conversation starts with the last selection used in that project (localStorage, keyed by root).
+
+### Checklist
+
+- [ ] `features/instructions/`: `api/instructions.api.ts`, `domain/` (selection rules, chip label, id-from-name, form validation; all with specs), `hooks/useInstructions.ts` (list, cache, refetch on root change), `hooks/useInstructionSelection.ts`, `components/InstructionsPicker.tsx`, `InstructionsDialog.tsx`, `InstructionForm.tsx`.
+- [ ] Transport sends `instructions` and no longer sends `chatMode` / `chatSpecialty`.
+- [ ] Starter prompts come from the selected instructions' `starters`, falling back to a default set; one empty-state heading ("What do you want to build?").
+- [ ] New-project dialog: an explicit template choice (`vite-base`, `next-base`, `nest-base` from `templates/`) instead of deriving it from the mode.
+- [ ] Remove: `features/agent-picker/`, `useAgentChoice`, `agent.enum.ts`, `CHAT_MODE_OPTIONS`, `CHAT_SPECIALTY_OPTIONS`, `types/plugin/specialty.plugin.ts`, `focus` / `specialty` in `ProjectContext` (keep `reference`), `filterModeOptions` and `canBuildAgents` in host features, mode-based `new-project-label` and `empty-state-heading`. Saved `project-context` values with `focus` / `specialty` are read and ignored (no migration needed).
+- [ ] Settings dialog: drop the mode fields; keep the project root.
+
+#### Progress
+
+```
+Status: not started
+Last commit: —
+Done: —
+Left: —
+Notes: —
+```
+
+---
+
+## Phase 5 — Remove modes (API cleanup) (Session E)
+
+### Checklist
+
+- [ ] Remove `mode` / `specialty` from the request context, the controller and `PromptsService`; delete `skills/frontend|backend|agnostic|git/` (now built-in instructions or tool guide) and `pluginSkillsDir` from `app-paths`.
+- [ ] Remove Agent Builder: `common/agents/plugin/` (tools, skills, module). Instructions replace it, and it edited Doty's own source tree.
+- [ ] Tools no longer depend on a mode: git tools are always included (when the root is a git repository); `create_commit` gets approval `ask` through the approval map. Remove `create_component_blueprint` and its `templates/componentBlueprint` (recommended: it encoded the old frontend mode's folder structure; the `react-architecture` instruction covers the guidance). Delete `getCustomTools`.
+- [ ] Rename the misspelled `install_depency` tool to `install_dependency` (update the UI tool label mapping).
+- [ ] Update subagent toolkit comments ("of the chat mode") and any spec still mentioning modes. `grep -rn "mode\b\|specialty\|agent_builder" api/src` comes back clean apart from unrelated meanings.
+
+#### Progress
+
+```
+Status: not started
+Last commit: —
+Done: —
+Left: —
+Notes: —
+```
+
+---
+
+## Phase 6 — Slash commands in the message box (Session F)
+
+Typing `/` as the first character of the message opens a command menu above the message box, filtered as you type.
+
+| Command | Does |
+|---------|------|
+| `/mcp` | Opens the MCP dialog (Phase 7; until then, the settings dialog) |
+| `/instructions` | Opens the instructions picker/manager |
+| `/<instruction-id>` | Toggles that instruction for this conversation (e.g. `/landing-pages`) |
+| `/new` | New conversation |
+| `/settings` | Settings |
+
+### Checklist
+
+- [ ] `features/slash-commands/domain/parse-slash-input.ts` (+ spec): a query only when the whole input is `/` + letters, digits or dashes (no spaces or newlines), so `/usr/bin is…` or a pasted path doesn't trigger it.
+- [ ] `domain/match-slash-commands.ts` (+ spec): prefix matches first, then substring; built-in commands before instruction ids; stable order.
+- [ ] `hooks/useSlashCommands.ts`: open state, active index; ArrowUp/ArrowDown, Enter or Tab runs, Esc closes (with `preventDefault`, so it doesn't also stop a response; see `match-chat-shortcut.ts`). Running a command clears the input. When nothing matches, Enter sends the text as a normal message.
+- [ ] `components/SlashCommandMenu.tsx`: `role="listbox"`, `aria-activedescendant` on the textarea, theme tokens only, opens upwards like the pickers.
+- [ ] The placeholder hints at it: "Ask Doty… (/ for commands)".
+
+#### Progress
+
+```
+Status: not started
+Last commit: —
+Done: —
+Left: —
+Notes: —
+```
+
+---
+
+## Phase 7 — MCP dialog (UI) + `/mcp` (Session G)
+
+One dialog for everything MCP, opened by `/mcp`, from the "⋯" menu (web) and from a new **Doty: MCP servers** command (VS Code palette). The MCP section moves out of the settings dialog, which keeps a link to it.
+
+```
+MCP servers                                   [+ Add server]
+──────────────────────────────────────────────────────────
+● github     http · global · 12 tools        [⋯]
+● postgres   stdio · project · 1 tool        [⋯]
+○ browser    stdio · global · disabled       [⋯]
+⚠ docs       project · not trusted           [Trust]
+──────────────────────────────────────────────────────────
+Global: ~/.doty/mcp.json · Project: <root>/.doty/mcp.json
+```
+
+Row menu: Edit, Enable/Disable, Reconnect, Tools (per-tool approval: ask / never), Remove, Open file (VS Code opens it through the host bridge; the web shows the path).
+
+**Add / edit form**: name, scope (global or project), transport (stdio or HTTP/SSE). stdio: command, arguments (one per row), environment (key/value rows). HTTP: URL, headers (key/value rows). Secret fields show `••••` for stored values and suggest `${ENV_VAR}` references; a value that looks like a token (long, no spaces) gets a hint to use an env var instead. An "Edit JSON" toggle shows the server's raw JSON for advanced fields.
+
+### Checklist
+
+- [ ] `features/mcp/`: `api/mcp.api.ts` (new endpoints), `domain/` (form ↔ config mapping, validation mirroring the server schema, token-looking value detection, status label; all with specs), `hooks/useMcpServers.ts` (list, mutations, 409 → refresh and show "changed elsewhere"), `components/McpDialog.tsx`, `McpServerRow.tsx`, `McpServerForm.tsx`, `McpToolList.tsx`.
+- [ ] `/mcp` in the slash commands opens it; the "⋯" menu gets "MCP servers".
+- [ ] VS Code: `doty.openMcp` command → host message `runCommand: openMcp` (follow the Phase 5 pattern in `host-messages.ts` on both sides, with specs).
+- [ ] The trust notice for an untrusted project file stays (now inside the dialog) and shows the file's server names and commands before the user trusts it.
+- [ ] Keyboard: full dialog keyboard flow; focus returns to the message box on close.
+
+#### Progress
+
+```
+Status: not started
+Last commit: —
+Done: —
+Left: —
+Notes: —
+```
+
+---
+
+## Phase 8 — Wrap-up (Session H)
+
+- [ ] Bump `vscode/package.json` `version` (VS Code caches icons and the manifest by version), rebuild everything and the VSIX (`pnpm --dir api build && pnpm --dir ui build && pnpm --dir vscode build && pnpm --dir vscode package`).
+- [ ] README (root and `vscode/`): instructions (files, scopes, slash commands), MCP dialog, removed modes, `DOTY_CLIENT`.
+- [ ] End-to-end check in the real VS Code with a light and a dark theme: pick and create instructions, `/landing-pages`, `/mcp` add → edit → disable → remove a stdio server, trust a project server, the prompt preview for the same setup. How to drive VS Code: Playwright `_electron.launch` with VS Code's binary, `--extensionDevelopmentPath=vscode`, a throwaway short `--user-data-dir`, `ELECTRON_RUN_AS_NODE` and `VSCODE_*` unset, and a mock OpenAI-compatible server for streaming (`doty.openaiCompatible.*` settings). Optionally commit that driver as `vscode/scripts/smoke.mjs` with `playwright-core` as a dev dependency.
+- [ ] Carry-over from the previous UI plan (Phase 5): click the view title-bar buttons (＋, History, Settings) in VS Code; until now they were only run through the command palette.
+
+#### Progress
+
+```
+Status: not started
+Last commit: —
+Done: —
+Left: —
+Notes: —
+```
+
+---
+
+## Decisions (recommended; change them here before the session starts)
+
+1. **Instructions are files**, not database rows: users can edit them in any editor, commit project ones, and the API stays the single reader.
+2. **Selection is per conversation**, defaulting to the last one used in the project.
+3. **Agent Builder and `create_component_blueprint` are removed.** Instructions cover the first; the second only made sense with the old frontend mode.
+4. **Git tools are always on**, with `create_commit` asking for approval.
+5. **Project MCP writes from the UI re-trust the file**; edits made outside Doty still revoke trust.
+
+## Out of scope
+
+- MCP resources, prompts, sampling and OAuth flows (header tokens and env vars only, as before).
+- Automatic instruction selection by the model (the model can't pick instructions for itself in v1).
+- Rewriting the subagent definitions beyond adding the environment block.
