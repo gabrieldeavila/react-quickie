@@ -20,6 +20,9 @@ Then open a folder, run **Doty: Set API key** and click the Doty icon in the act
 | Command | What it does |
 |---|---|
 | Doty: Set API key | Stores the Anthropic, OpenAI, DeepSeek or OpenAI-compatible server key in the system keychain (SecretStorage) and restarts the API. |
+| Doty: New chat | Starts a new conversation. Also the ＋ button in the chat view's title bar. |
+| Doty: History | Opens the recent conversations, with search. Also the history button in the title bar. |
+| Doty: Settings | Opens the chat settings (workspace folder, mode). Also the gear button in the title bar. |
 | Doty: Ask about selection | Sends the selected code (file and lines) to the message box. Also available in the editor context menu. |
 | Doty: Restart API | Restarts the API and reloads the view. |
 | Doty: Show logs | Shows the API output (the "Doty" channel). |
@@ -36,4 +39,5 @@ Then open a folder, run **Doty: Set API key** and click the Doty icon in the act
 - Data (memory, MCP trust, global `mcp.json`) lives in the extension's storage, not in `~/.doty`.
 - Conversation history lives in the webview's IndexedDB, separate from the browser interface's history.
 - If the API crashes, it restarts with increasing delays; after 5 crashes in a row, use **Doty: Restart API**.
+- The chat has no in-page header in VS Code: new chat, history and settings are the view's title-bar buttons, and the active conversation's title shows next to the view name.
 - Not available in VS Code: **New project** (the templates aren't packaged) and **Agent Builder** mode (it edits Doty's own source code).

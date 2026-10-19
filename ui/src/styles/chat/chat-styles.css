@@ -1,6 +1,7 @@
 @import "./chat-base.css";
 @import "./chat-shell.css";
 @import "./chat-conversation-switcher.css";
+@import "./chat-view-history.css";
 @import "./chat-focus.css";
 @import "./chat-controls.css";
 @import "./chat-mode-popover.css";

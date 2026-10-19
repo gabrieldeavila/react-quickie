@@ -11,7 +11,10 @@ export type OpenFileMessage = {
 
 export type ReadyMessage = { type: 'ready' };
 
-export type WebviewToHostMessage = OpenFileMessage | ReadyMessage;
+/** Active conversation title, shown in the view's title bar. */
+export type SetTitleMessage = { type: 'setTitle'; title: string };
+
+export type WebviewToHostMessage = OpenFileMessage | ReadyMessage | SetTitleMessage;
 
 export type InsertSelectionMessage = {
   type: 'insertSelection';
@@ -22,11 +25,24 @@ export type InsertSelectionMessage = {
   text: string;
 };
 
+/** View title-bar buttons ("New chat", "History", "Settings"). */
+export type HostCommand = 'newChat' | 'showHistory' | 'openSettings';
+
+export type RunCommandMessage = { type: 'runCommand'; command: HostCommand };
+
+export type HostToWebviewMessage = InsertSelectionMessage | RunCommandMessage;
+
+/** Longest title shown next to the view name; the UI has no limit of its own. */
+const MAX_TITLE_LENGTH = 80;
+
 export function parseWebviewMessage(data: unknown): WebviewToHostMessage | null {
   if (!data || typeof data !== 'object') return null;
   const message = data as Record<string, unknown>;
 
   if (message.type === 'ready') return { type: 'ready' };
+  if (message.type === 'setTitle' && typeof message.title === 'string') {
+    return { type: 'setTitle', title: message.title.trim().slice(0, MAX_TITLE_LENGTH) };
+  }
   if (message.type !== 'openFile' || typeof message.path !== 'string') {
     return null;
   }

@@ -13,7 +13,7 @@ export async function askAboutSelection(bridge: HostBridge): Promise<void> {
   const { document, selection } = editor;
   await vscode.commands.executeCommand(`${DOTY_VIEW_ID}.focus`);
 
-  bridge.postSelection({
+  bridge.post({
     type: 'insertSelection',
     file: vscode.workspace.asRelativePath(document.uri, false),
     startLine: selection.start.line + 1,

@@ -1,5 +1,5 @@
 import {
-  isInsertSelectionMessage,
+  parseHostMessage,
   type HostToWebviewMessage,
   type WebviewToHostMessage,
 } from "./domain/host-messages";
@@ -17,6 +17,8 @@ export type HostBridge = {
   /** Subscribes to editor messages; returns the unsubscribe function. */
   onMessage(handler: (message: HostToWebviewMessage) => void): () => void;
   notifyReady(): void;
+  /** Shows the active conversation title in the editor's view title bar. */
+  setTitle(title: string): void;
 };
 
 const browserHost: HostBridge = {
@@ -24,6 +26,7 @@ const browserHost: HostBridge = {
   openFile: () => {},
   onMessage: () => () => {},
   notifyReady: () => {},
+  setTitle: () => {},
 };
 
 function createVscodeHost(): HostBridge {
@@ -36,12 +39,14 @@ function createVscodeHost(): HostBridge {
       vscode.postMessage({ type: "openFile", path, line, root }),
     onMessage: (handler) => {
       const listener = (event: MessageEvent) => {
-        if (isInsertSelectionMessage(event.data)) handler(event.data);
+        const message = parseHostMessage(event.data);
+        if (message) handler(message);
       };
       window.addEventListener("message", listener);
       return () => window.removeEventListener("message", listener);
     },
     notifyReady: () => vscode.postMessage({ type: "ready" }),
+    setTitle: (title) => vscode.postMessage({ type: "setTitle", title }),
   };
 }
 

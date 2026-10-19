@@ -385,20 +385,74 @@ Notes:
 
 ## Phase 5 — Panel title-bar actions in VS Code (Session G, optional)
 
-- [ ] Register "New chat", "History" and "Settings" as `contributes.menus` → `view/title` in `vscode/package.json`.
-- [ ] Each command posts a message to the chat view through the host bridge, and the UI handles it.
-- [ ] In VS Code, hide the in-page header. The web host keeps the slim header. The existing host-feature check (`getHostFeatures`) decides which one to show.
-- [ ] Rebuild the VSIX and check it in VS Code.
+- [x] Register "New chat", "History" and "Settings" as `contributes.menus` → `view/title` in `vscode/package.json`.
+- [x] Each command posts a message to the chat view through the host bridge, and the UI handles it.
+- [x] In VS Code, hide the in-page header. The web host keeps the slim header. The existing host-feature check (`getHostFeatures`) decides which one to show.
+- [ ] Rebuild the VSIX and check it in VS Code. (Rebuilt and install-checked; the visual click-through in the panel is still to do, see Notes.)
 
 #### Progress
 
 ```
-Status: not started
-Branch: —
-Last commit: —
-Done: —
-Left: —
-Notes: —
+Status: in progress (code done; only the manual click-through in VS Code is left)
+Branch: feat/ui-a-english-ui
+Last commit: b6a1b9f + the following feat(vscode,ui) commit (code + rebuilt VSIX + this block)
+Done:
+  - vscode/package.json: commands doty.newChat ($(add)), doty.showHistory ($(history)),
+    doty.openSettings ($(gear)), in view/title for `view == doty.chatView`
+    (navigation@1–3). They also show in the palette as "Doty: New chat/History/Settings".
+  - vscode/src: commands/run-view-command.ts focuses the view, then posts
+    {type: "runCommand", command}. host-bridge.ts: postSelection → generic post()
+    (same queue-until-"ready"), attach() takes the WebviewView, and a new
+    webview→host "setTitle" message sets view.description (cleared on reload).
+    domain/host-messages.ts: RunCommandMessage, SetTitleMessage (title trimmed,
+    capped at 80 chars) + spec cases. README lists the new commands.
+  - ui/src/host: domain/host-messages.ts gets HOST_COMMANDS, RunCommandMessage,
+    SetTitleMessage and parseHostMessage (replaces isInsertSelectionMessage, + new
+    spec). host-bridge.ts parses every message and adds setTitle().
+    hooks/useHostCommands.ts (handlers per command) and hooks/useHostTitle.ts.
+    getHostFeatures gains hasViewTitleActions (vscode: true, browser: false).
+  - ui chat: main/index.tsx renders ChatHeader on the web and the new
+    main/viewTitleActions.tsx in VS Code. That one renders no header row: it wires the
+    three commands and holds the history panel in a zero-height strip at the top
+    (styles/chat/chat-view-history.css). The conversation panel was split out of
+    ConversationSwitcher into ConversationSwitcherPanel.tsx, which both use.
+    hooks/events/useOpenSettings.ts is shared by the "⋯" menu and the Settings command.
+Left:
+  - Manual check in VS Code: install vscode/doty.vsix, open the Doty view and click
+    ＋ / History / Settings in its title bar; check the history panel opens under the
+    title bar with the search focused, closes on Esc / outside click / second History
+    click, and that the conversation title shows next to "Chat". Then tick the last box
+    and set Status: done.
+Notes:
+  - "History" toggles the panel (a second click closes it). Same from the palette.
+  - The view title bar shows the active conversation title as the view description,
+    so the title isn't lost along with the header.
+  - The header's error pill is gone in VS Code. Errors still show inline in the message
+    list (chat-request-error with Retry), so nothing user-facing is lost.
+  - "ready" ordering: useHostSelection (in ChatBaseProvider) sends "ready";
+    useHostCommands runs in a child, so its listener subscribes first. Keep any new
+    host listener below ChatBaseProvider, or move notifyReady out.
+  - Commands sent before the webview is ready wait in the bridge queue, like
+    selections. The view only exists once it has been shown, so a queued command fires
+    once the app loads.
+  - The web host is unchanged: hasViewTitleActions is false there, so the in-page
+    header (switcher, ＋, ⋯) renders as before. Covered by the host-features spec.
+  - How the VSIX was checked: rebuilt api, ui, vscode (`pnpm --dir <pkg> build`) and
+    `pnpm --dir vscode package` (33 files, 3.27 MB). Unzipped it and confirmed the
+    packaged package.json has the three view/title entries and commands, dist/extension.js
+    registers doty.newChat/showHistory/openSettings, and the UI bundle contains
+    runCommand / setTitle / chat-view-history (the only "Nova conversa" hit is Session A's
+    legacy-title matcher). Installed it with VS Code 1.141's CLI into a throwaway
+    --user-data-dir/--extensions-dir: installed as geavila.doty@0.0.1, so the manifest
+    is valid. NOT clicked through by eye: there's no way to drive the GUI from this
+    session.
+  - Pitfall for anyone automating this: inside a VS Code terminal, ELECTRON_RUN_AS_NODE
+    and VSCODE_IPC_HOOK* are inherited. The `code` CLI then talks to the running window,
+    and the Code binary runs as plain Node ("bad option"). Unset them. Also keep
+    --user-data-dir short: VS Code's IPC socket path has a 103-char limit.
+  - Checks: ui typecheck, lint and tests (37 files / 150 tests) green; vscode
+    typecheck and tests (5 files / 19 tests) green (vscode has no lint script).
+    api untouched (rebuilt only for the bundle).
 ```
 
 ---

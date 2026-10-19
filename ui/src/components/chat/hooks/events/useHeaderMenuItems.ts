@@ -5,17 +5,14 @@ import { newProjectLabel } from "@/features/header-menu/domain/new-project-label
 import { getHostFeatures } from "@/host/domain/host-features";
 import { getRuntimeConfig } from "@/host/runtime-config";
 import { useChatBaseContext } from "../../context/context";
+import { useOpenSettings } from "./useOpenSettings";
 
 const HOST_FEATURES = getHostFeatures(getRuntimeConfig().host);
 
 /** Items of the header "⋯" menu: new project (when offered) and settings. */
 export function useHeaderMenuItems(): HeaderMenuItem[] {
-  const {
-    projectContext,
-    setDraftContext,
-    setIsRootModalOpen,
-    setIsCreateModalOpen,
-  } = useChatBaseContext();
+  const { projectContext, setIsCreateModalOpen } = useChatBaseContext();
+  const openSettings = useOpenSettings();
 
   return useMemo(() => {
     const projectLabel = newProjectLabel(projectContext.focus, HOST_FEATURES);
@@ -23,10 +20,7 @@ export function useHeaderMenuItems(): HeaderMenuItem[] {
       key: "settings",
       label: "Settings",
       icon: FiSettings,
-      onSelect: () => {
-        setDraftContext(projectContext);
-        setIsRootModalOpen(true);
-      },
+      onSelect: openSettings,
     };
     if (!projectLabel) return [settings];
 
@@ -37,10 +31,5 @@ export function useHeaderMenuItems(): HeaderMenuItem[] {
       onSelect: () => setIsCreateModalOpen(true),
     };
     return [newProject, settings];
-  }, [
-    projectContext,
-    setDraftContext,
-    setIsCreateModalOpen,
-    setIsRootModalOpen,
-  ]);
+  }, [projectContext.focus, openSettings, setIsCreateModalOpen]);
 }

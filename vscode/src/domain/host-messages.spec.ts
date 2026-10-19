@@ -21,9 +21,19 @@ describe('parseWebviewMessage', () => {
     });
   });
 
+  it('reads setTitle, trimmed and capped', () => {
+    expect(parseWebviewMessage({ type: 'setTitle', title: '  Login form  ' })).toEqual({
+      type: 'setTitle',
+      title: 'Login form',
+    });
+    const long = parseWebviewMessage({ type: 'setTitle', title: 'x'.repeat(200) });
+    expect(long).toEqual({ type: 'setTitle', title: 'x'.repeat(80) });
+  });
+
   it('rejects unknown or malformed messages', () => {
     expect(parseWebviewMessage(null)).toBeNull();
     expect(parseWebviewMessage({ type: 'runBash', command: 'rm -rf /' })).toBeNull();
     expect(parseWebviewMessage({ type: 'openFile' })).toBeNull();
+    expect(parseWebviewMessage({ type: 'setTitle', title: 3 })).toBeNull();
   });
 });

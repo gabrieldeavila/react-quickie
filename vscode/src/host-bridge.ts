@@ -1,40 +1,42 @@
 import * as vscode from 'vscode';
 import {
   parseWebviewMessage,
-  type InsertSelectionMessage,
+  type HostToWebviewMessage,
   type OpenFileMessage,
 } from './domain/host-messages';
 import { resolveOpenFilePath } from './domain/resolve-open-file-path';
 import { getWorkspaceRoots } from './workspace-roots';
 
 /**
- * Messages from the webview (open file, ready) and to it (selection).
- * Selections sent before the UI is listening wait until it says "ready".
+ * Messages from the webview (open file, ready, title) and to it (selection,
+ * title-bar commands). Messages sent before the UI is listening wait until it
+ * says "ready".
  */
 export class HostBridge {
-  private webview: vscode.Webview | undefined;
+  private view: vscode.WebviewView | undefined;
   private ready = false;
-  private pending: InsertSelectionMessage[] = [];
+  private pending: HostToWebviewMessage[] = [];
 
-  attach(webview: vscode.Webview): vscode.Disposable {
-    this.webview = webview;
+  attach(view: vscode.WebviewView): vscode.Disposable {
+    this.view = view;
     this.ready = false;
-    return webview.onDidReceiveMessage((data) => this.handle(data));
+    return view.webview.onDidReceiveMessage((data) => this.handle(data));
   }
 
   detach(): void {
-    this.webview = undefined;
+    this.view = undefined;
     this.ready = false;
   }
 
   /** The webview HTML was replaced; wait for the new page's "ready". */
   markReloading(): void {
     this.ready = false;
+    if (this.view) this.view.description = undefined;
   }
 
-  postSelection(message: InsertSelectionMessage): void {
-    if (this.webview && this.ready) {
-      void this.webview.postMessage(message);
+  post(message: HostToWebviewMessage): void {
+    if (this.view && this.ready) {
+      void this.view.webview.postMessage(message);
     } else {
       this.pending.push(message);
     }
@@ -44,13 +46,14 @@ export class HostBridge {
     const message = parseWebviewMessage(data);
     if (message?.type === 'ready') this.flush();
     if (message?.type === 'openFile') void openFile(message);
+    if (message?.type === 'setTitle' && this.view) this.view.description = message.title;
   }
 
   private flush(): void {
     this.ready = true;
     const pending = this.pending;
     this.pending = [];
-    for (const message of pending) void this.webview?.postMessage(message);
+    for (const message of pending) void this.view?.webview.postMessage(message);
   }
 }
 

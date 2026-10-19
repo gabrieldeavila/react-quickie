@@ -8,6 +8,10 @@ type UseConversationSwitcherParams = {
   onSelect: (conversationId: string) => void;
 };
 
+export type ConversationSwitcherState = ReturnType<
+  typeof useConversationSwitcher
+>;
+
 /** Open/close state and search query of the conversation dropdown. */
 export function useConversationSwitcher({
   conversations,

@@ -24,7 +24,7 @@ export class DotyViewProvider implements vscode.WebviewViewProvider {
     this.renderedKey = undefined;
     view.webview.options = { enableScripts: true, localResourceRoots: [this.uiDir] };
 
-    const messages = this.bridge.attach(view.webview);
+    const messages = this.bridge.attach(view);
     view.onDidDispose(() => {
       messages.dispose();
       this.bridge.detach();
