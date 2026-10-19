@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { isStepCount, streamText } from 'ai';
 import { buildToolApprovalMap } from 'src/chat/domain/approval-policy';
 import { ContextService } from 'src/common/context/context.service';
+import { EnvironmentService } from 'src/common/helpers/environment.service';
 import { ProviderRegistryService } from 'src/llm/data/provider-registry.service';
 import { priceUsage } from 'src/llm/domain/price-usage';
 import { toTokenUsage } from 'src/llm/domain/to-token-usage';
@@ -50,6 +51,7 @@ export class SubagentRunnerService {
     private readonly providerRegistry: ProviderRegistryService,
     private readonly contextService: ContextService,
     private readonly toolkitService: SubagentToolkitService,
+    private readonly environmentService: EnvironmentService,
   ) {
     this.limiter = new ConcurrencyLimiter(
       readMaxParallel(configService.get<string>('DOTY_MAX_PARALLEL_SUBAGENTS')),
@@ -99,11 +101,20 @@ export class SubagentRunnerService {
     if (!selected) throw new Error('No AI model is configured.');
 
     const toolkit = await this.toolkitService.forAgent(root, definition);
+    const toolsAvailable = selected.model.supportsTools;
+    // The definition describes the role; the environment block, where it runs.
+    const environment = await this.environmentService.describe({
+      modelRef: selected.ref,
+      toolsAvailable,
+    });
     const result = streamText({
       model: this.providerRegistry.languageModel(selected),
-      instructions: definition.instructions,
+      instructions: [
+        { role: 'system', content: definition.instructions },
+        environment,
+      ],
       prompt: buildPrompt(task, context),
-      tools: selected.model.supportsTools ? toolkit.tools : {},
+      tools: toolsAvailable ? toolkit.tools : {},
       toolApproval: buildToolApprovalMap(toolkit.approvalPolicies),
       stopWhen: isStepCount(definition.maxSteps),
       maxRetries: this.providerRegistry.maxRetries,

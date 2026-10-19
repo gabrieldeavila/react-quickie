@@ -9,6 +9,7 @@ import { MarkdownService } from './markdown.module';
 import { TsCheckerService } from './tschecker.service';
 import { LinterService } from './linter.service';
 import { MemoryService } from './memory.service';
+import { EnvironmentService } from './environment.service';
 
 @Module({
   providers: [
@@ -19,6 +20,7 @@ import { MemoryService } from './memory.service';
     FileSearchService,
     MemoryService,
     PromptsService,
+    EnvironmentService,
     MarkdownService,
     TsCheckerService,
     LinterService,
@@ -28,6 +30,7 @@ import { MemoryService } from './memory.service';
     MemoryService,
     StorageService,
     PromptsService,
+    EnvironmentService,
     MarkdownService,
     TsCheckerService,
     LinterService,

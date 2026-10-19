@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import type { Instructions, SystemModelMessage } from 'ai';
-import path from 'path';
+import type { SystemModelMessage } from 'ai';
 import { getAppPaths } from 'src/config/app-paths';
+import type { SelectedModel } from 'src/llm/domain/find-model';
 import { ContextService } from '../context/context.service';
+import { EnvironmentService } from './environment.service';
 import { MarkdownService } from './markdown.module';
 import { MemoryService } from './memory.service';
-import { buildBaseInstruction } from './prompts/domain/build-base-instruction';
-import { formatProjectMemory } from './prompts/domain/format-project-memory';
-import {
-  loadProjectAgents,
-  loadSkillDirectory,
-  loadSkillFile,
-  type ReadMarkdown,
-} from './prompts/skill-loaders';
+import { loadSystemPrompt } from './prompts/load-system-prompt';
+import type { ReadMarkdown } from './prompts/skill-loaders';
+
+export type InstructionsRequest = {
+  model: SelectedModel;
+  /** Names of the tools this request gives the model. */
+  toolNames: string[];
+};
 
 @Injectable()
 export class PromptsService {
@@ -22,52 +23,40 @@ export class PromptsService {
     markdownService: MarkdownService,
     private readonly contextService: ContextService,
     private readonly memoryService: MemoryService,
+    private readonly environmentService: EnvironmentService,
   ) {
     this.readMarkdown = async (file) =>
       (await markdownService.getMarkdownFile(file)?.html) ?? '';
   }
 
-  /**
-   * System instructions for a request, in order: workspace and reply
-   * language, behavior rules, project agents, mode skills, plugin skills,
-   * memory rules, project memory.
-   */
-  async getInstructions(): Promise<Instructions> {
+  /** System instructions for a request (order in `loadSystemPrompt`). */
+  async getInstructions({
+    model,
+    toolNames,
+  }: InstructionsRequest): Promise<SystemModelMessage[]> {
     const { skillsDir, pluginSkillsDir } = getAppPaths();
     const root = this.contextService.get('root');
-    const mode = `${this.contextService.get('mode')}`;
-    const specialty = this.contextService.get('specialty');
-    const read = this.readMarkdown;
+    const toolsAvailable = model.model.supportsTools;
 
-    const groups: SystemModelMessage[][] = [
-      [buildBaseInstruction(root)],
-      await loadSkillFile(read, path.join(skillsDir, 'behavior.md')),
-      await loadProjectAgents(read, root),
-      await loadSkillDirectory(read, path.join(skillsDir, mode), specialty),
-      await loadSkillDirectory(
-        read,
-        path.join(pluginSkillsDir, mode),
-        specialty,
-      ),
-      await loadSkillFile(read, path.join(skillsDir, 'memory.md')),
-      await this.getProjectMemory(root),
-    ];
-    return groups.flat();
+    return loadSystemPrompt({
+      readMarkdown: this.readMarkdown,
+      skillsDir,
+      pluginSkillsDir,
+      root,
+      mode: this.contextService.get('mode'),
+      specialty: this.contextService.get('specialty'),
+      toolsAvailable,
+      toolNames,
+      projectMemory: await this.readProjectMemory(root),
+      environment: await this.environmentService.describe({
+        modelRef: model.ref,
+        toolsAvailable,
+      }),
+    });
   }
 
-  private async getProjectMemory(
-    root: string | undefined,
-  ): Promise<SystemModelMessage[]> {
-    if (!root) return [];
-    const { topics } = await this.memoryService.readProjectMemory(root);
-    const memory = formatProjectMemory(topics);
-    return memory
-      ? [
-          {
-            role: 'system',
-            content: `Project memory from the current workspace:\n${memory}`,
-          },
-        ]
-      : [];
+  private async readProjectMemory(root: string | undefined) {
+    if (!root) return undefined;
+    return (await this.memoryService.readProjectMemory(root)).topics;
   }
 }

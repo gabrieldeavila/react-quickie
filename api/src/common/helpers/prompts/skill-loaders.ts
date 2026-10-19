@@ -63,7 +63,16 @@ export async function loadSkillDirectory(
   ];
 }
 
-/** The project's own `.agents/*.md` instructions. */
+/** `AGENTS.md` at the project root (the cross-tool convention). */
+export async function loadAgentsFile(
+  readMarkdown: ReadMarkdown,
+  root: string | undefined,
+): Promise<SystemModelMessage[]> {
+  if (!root) return [];
+  return loadSkillFile(readMarkdown, path.join(root, 'AGENTS.md'));
+}
+
+/** The project's own `.agents/*.md` instructions (legacy). */
 export async function loadProjectAgents(
   readMarkdown: ReadMarkdown,
   root: string | undefined,

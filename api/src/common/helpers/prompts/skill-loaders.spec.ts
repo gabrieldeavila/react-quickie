@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { formatProjectMemory } from './domain/format-project-memory';
 import {
+  loadAgentsFile,
   loadProjectAgents,
   loadSkillDirectory,
   loadSkillFile,
@@ -73,6 +74,17 @@ describe('skill loaders', () => {
       'agent b',
     ]);
     expect(await loadProjectAgents(readMarkdown, undefined)).toEqual([]);
+  });
+
+  it('loads AGENTS.md from the project root when present', async () => {
+    expect(await loadAgentsFile(readMarkdown, dir)).toEqual([]);
+
+    write('AGENTS.md', 'use pnpm');
+
+    expect(contents(await loadAgentsFile(readMarkdown, dir))).toEqual([
+      'use pnpm',
+    ]);
+    expect(await loadAgentsFile(readMarkdown, undefined)).toEqual([]);
   });
 });
 

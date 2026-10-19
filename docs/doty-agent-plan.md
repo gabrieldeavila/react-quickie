@@ -98,25 +98,69 @@ Environment
 
 ### Checklist
 
-- [ ] `build-agent-identity.ts` (+ spec): tools/no-tools variants; the spec asserts the key facts (Doty, coding agent, real files, verify, approvals, `path:line`).
-- [ ] `build-tool-guide.ts` (+ spec): short per-group guidance (files: read before edit, prefer `edit_file` over `overwrite_file`; search before guessing paths; bash: non-interactive commands, check exit codes; git: inspect with status/diff before committing, commit only when asked; subagents: self-contained tasks only; MCP: external systems, mind side effects). A group appears only if one of its tools is present.
-- [ ] `build-environment-block.ts` (+ spec) and `data/read-git-summary.ts` (IO, timeout).
-- [ ] `AGENTS.md` loading in `skill-loaders.ts` (+ spec).
-- [ ] `PromptsService.getInstructions` takes the toolset/model info it needs and assembles the new order. `buildBaseInstruction` merges into identity + environment (keep `REPLY_LANGUAGE_RULE` in code).
-- [ ] Subagents get the environment block too (their definitions already describe their role).
-- [ ] `api/scripts/preview-prompt.ts` (`pnpm --dir api prompt:preview -- --root <dir> --model <ref>`): prints the assembled system prompt, for humans to read. Add a snapshot spec of the assembled prompt for a fixture setup, so accidental prompt changes show up in review.
+- [x] `build-agent-identity.ts` (+ spec): tools/no-tools variants; the spec asserts the key facts (Doty, coding agent, real files, verify, approvals, `path:line`).
+- [x] `build-tool-guide.ts` (+ spec): short per-group guidance (files: read before edit, prefer `edit_file` over `overwrite_file`; search before guessing paths; bash: non-interactive commands, check exit codes; git: inspect with status/diff before committing, commit only when asked; subagents: self-contained tasks only; MCP: external systems, mind side effects). A group appears only if one of its tools is present.
+- [x] `build-environment-block.ts` (+ spec) and `data/read-git-summary.ts` (IO, timeout).
+- [x] `AGENTS.md` loading in `skill-loaders.ts` (+ spec).
+- [x] `PromptsService.getInstructions` takes the toolset/model info it needs and assembles the new order. `buildBaseInstruction` merges into identity + environment (keep `REPLY_LANGUAGE_RULE` in code).
+- [x] Subagents get the environment block too (their definitions already describe their role).
+- [x] `api/scripts/preview-prompt.ts` (`pnpm --dir api prompt:preview -- --root <dir> --model <ref>`): prints the assembled system prompt, for humans to read. Add a snapshot spec of the assembled prompt for a fixture setup, so accidental prompt changes show up in review.
 - [ ] Manual check with one strong model and one small OpenAI-compatible model (record the results in Notes): "Who are you and what can you do here?" (says coding agent + workspace + tools); "What scripts does package.json have?" (calls `read_file`, doesn't ask for a paste); "Fix the failing test in <file>" (reads, edits, runs the test, reports); the same question on a no-tools model (says it can't access files).
 
 #### Progress
 
 ```
-Status: not started
-Last commit: —
-Done: —
-Left: —
-Notes: —
+Status: in progress (code done; manual model check left)
+Last commit: see `git log` — "feat(api): coding-agent system prompt (Phase 1)"
+Done:
+- Identity, tool guide, environment block as pure builders with specs in
+  api/src/common/helpers/prompts/domain/ (build-agent-identity, build-tool-guide,
+  build-environment-block, parse-git-status, resolve-doty-client).
+  REPLY_LANGUAGE_RULE now lives in build-agent-identity.ts;
+  build-base-instruction.ts was deleted.
+- prompts/data/read-git-summary.ts: `git status --porcelain=v1 -b`, 1 s timeout;
+  "not a git repository" is reported, any other failure leaves the line out.
+- prompts/load-system-prompt.ts assembles the order (identity → behavior.md →
+  tool guide → AGENTS.md → .agents/ → mode skills → plugin skills → memory.md →
+  project memory → environment). Snapshot spec: load-system-prompt.spec.ts
+  (uses the shipped behavior.md / memory.md, so edits to them show in review).
+- EnvironmentService (common/helpers/environment.service.ts) collects the facts;
+  WorkspaceService gained a `roots` getter.
+- PromptsService.getInstructions({ model, toolNames }); ChatStreamService passes
+  the toolset actually given to the model (empty for no-tools models).
+- Subagents: instructions = [definition body, environment block].
+- behavior.md: dropped the language, coding-task, report and subagent bullets
+  (now in identity / tool guide).
+- AGENTS.md loader (skill-loaders.ts `loadAgentsFile`, + spec).
+- vscode build-api-env.ts sets DOTY_CLIENT=vscode (+ spec).
+- `pnpm --dir api prompt:preview -- --root <dir> [--model <ref>]`
+  (scripts/preview-prompt.ts, ts-node; boots the real Nest app, so it also
+  connects the root's MCP servers). `scripts/` is excluded in tsconfig.build.json
+  so dist keeps its layout.
+Left:
+- Manual check with a strong model and a small OpenAI-compatible model (last
+  checklist item). Not run in this session: it needs real model calls through
+  the UI; do it before Phase 8 at the latest and record the results here.
+Notes:
+- Checks: api typecheck, lint:check, test (78 suites / 450 tests, 1 snapshot);
+  vscode typecheck, test (20). All pass.
+- Shell in the environment block is always `bash`: run_bash_command runs
+  `bash -lc` whatever the user's $SHELL is.
+- memory.md is only included when tools are available (it is about
+  save_project_memory). It is still a 5-phase "pipeline" that contradicts
+  behavior.md; Phase 2 or 5 should shorten it like the mode skills.
+- Pre-existing quirk, not changed: MarkdownService renders every skill /
+  AGENTS.md to HTML (marked) before it goes into the prompt (see the preview
+  output). Plain Markdown would be cheaper and clearer for the model; consider
+  switching PromptsService.readMarkdown to the frontmatter-stripped Markdown
+  (the snapshot spec already reads it that way).
+- "Instructions in use" line: EnvironmentService.describe accepts
+  `instructionNames`; Phase 2 should pass the selected names.
+- Selected instructions (Phase 2) go between project instructions and memory,
+  where the mode skills are now.
+- Without a mode, the toolset contains the Agent Builder plugin tools and no
+  git tools (getCustomTools); the guide follows the toolset. Fixed in Phase 5.
 ```
-
 ---
 
 ## Phase 2 — Instructions (API) (Session B)
