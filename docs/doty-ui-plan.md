@@ -282,21 +282,57 @@ Notes:
 
 New files under `ui/src/features/conversations/`:
 
-- [ ] `domain/filter-conversations.ts` + `.spec.ts`: search and sort rules.
-- [ ] `hooks/useConversationSwitcher.ts`: open/close state and the search query.
-- [ ] `components/ConversationSwitcher.tsx`: the header title becomes a button that opens a list of recent conversations, with search at the top.
-- [ ] `components/ConversationSwitcherItem.tsx`: one row, with delete shown on hover.
-- [ ] Remove the persistent `chat-sidebar`, its floating ⟨ toggle tab, the `isSidebarOpen` state and the related CSS.
+- [x] `domain/filter-conversations.ts` + `.spec.ts`: search and sort rules.
+- [x] `hooks/useConversationSwitcher.ts`: open/close state and the search query.
+- [x] `components/ConversationSwitcher.tsx`: the header title becomes a button that opens a list of recent conversations, with search at the top.
+- [x] `components/ConversationSwitcherItem.tsx`: one row, with delete shown on hover.
+- [x] Remove the persistent `chat-sidebar`, its floating ⟨ toggle tab, the `isSidebarOpen` state and the related CSS.
 
 #### Progress
 
 ```
-Status: not started
-Branch: —
-Last commit: —
-Done: —
+Status: done
+Branch: feat/ui-a-english-ui
+Last commit: d0f957c + the following feat(ui) commit (code + this block)
+Done:
+  - ui/src/features/conversations/:
+    domain/filter-conversations.ts (+ spec): case- and accent-insensitive search that
+    needs every query word in the title (any order), sorted by lastMessageAt then
+    updatedAt, newest first. Doesn't mutate its input.
+    hooks/useConversationSwitcher.ts: reuses usePopoverPanel (outside click / Escape),
+    holds the query (cleared on every open), select() closes the panel,
+    selectFirstMatch() for Enter in the search box.
+    components/ConversationSwitcher.tsx: the header title is now a button (title +
+    chevron) that opens a panel: search box (autofocused) and a scrolling list,
+    with "Loading conversations…" / "No conversations yet." / "No conversations match.".
+    components/ConversationSwitcherItem.tsx: title (ellipsis) + timestamp; trash
+    button shown on hover/focus-within (always shown on touch, via hover: none).
+  - header.tsx renders ConversationSwitcher from history (conversations, active id,
+    isHydrated, setActiveConversationId, deleteConversation).
+  - Removed: features/sidebar.tsx, chat-sidebar.css, chat-conversation-list.css, the
+    ⟨ toggle, isSidebarOpen/setIsSidebarOpen (ChatBaseContext + chat-context
+    interface), the localStorage sync in useStartChatState, readSidebarOpenState,
+    SIDEBAR_OPEN_STORAGE_KEY and the chat-container--sidebar-* classes.
+  - New styles/chat/chat-conversation-switcher.css; chat-focus.css focus rings point
+    at the new classes.
 Left: —
-Notes: —
+Notes:
+  - The title element is now a <span class="chat-title"> inside the trigger button
+    (a heading isn't allowed inside a <button>), so the page has no <h1> any more.
+  - The panel is role="dialog" (it holds a search input), not a menu. Arrow-key
+    navigation through rows is NOT done: Tab moves between rows/delete buttons and
+    Enter in the search box opens the first match. Session H should add arrow keys
+    and move focus back to the trigger on close.
+  - Deleting a row keeps the panel open; deleting the active conversation clears
+    the selection (existing useChatHistory behaviour, unchanged).
+  - Old "chat-sidebar-open" localStorage values are just ignored now; no cleanup.
+  - Session G: the "History" title-bar command can open this switcher. The open
+    state lives in useConversationSwitcher (local), so G needs to lift it or expose
+    an open() trigger when the in-page header is hidden in VS Code.
+  - No browser on this machine, so the layout was checked by reading the CSS, not
+    by eye. Worth a look in the VS Code panel at narrow widths.
+  - Checks: ui typecheck, lint and tests (34 files / 132 tests) green; vite build OK.
+    vscode/ and api/ untouched.
 ```
 
 ---

@@ -1,6 +1,6 @@
-.chat-sidebar__item-button:focus-visible,
-.chat-sidebar__item-delete:focus-visible,
-.chat-sidebar__toggle:focus-visible,
+.chat-conversation-switcher__trigger:focus-visible,
+.chat-conversation-item__open:focus-visible,
+.chat-conversation-item__delete:focus-visible,
 .chat-mode-popover__trigger:focus-visible,
 .chat-mode-popover__option:focus-visible {
   outline: 2px solid rgba(124, 140, 255, 0.9);

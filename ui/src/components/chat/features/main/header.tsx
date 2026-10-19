@@ -8,8 +8,9 @@ import { FiPlus } from "react-icons/fi";
 import { HeaderOverflowMenu } from "@/features/header-menu/components/HeaderOverflowMenu";
 import { DEFAULT_CONVERSATION_TITLE } from "@/lib/conversation-title";
 import { useHeaderMenuItems } from "../../hooks/events/useHeaderMenuItems";
+import { ConversationSwitcher } from "@/features/conversations/components/ConversationSwitcher";
 
-/** Slim header: title, new chat and the "⋯" menu. Pickers live in the message box. */
+/** Slim header: conversation switcher, new chat and the "⋯" menu. Pickers live in the message box. */
 const ChatHeader = memo(() => {
   const { history, status } = useChatBaseContext();
   const { chatStatusLabel, handleCreateConversation } =
@@ -25,9 +26,14 @@ const ChatHeader = memo(() => {
     <header className="chat-header">
       <div className="chat-header__top">
         <div className="chat-header__title-wrap">
-          <h1 className="chat-title" title={activeConversationTitle}>
-            {activeConversationTitle}
-          </h1>
+          <ConversationSwitcher
+            title={activeConversationTitle}
+            conversations={history.conversations}
+            activeConversationId={history.activeConversationId}
+            isLoading={!history.isHydrated}
+            onSelect={history.setActiveConversationId}
+            onDelete={history.deleteConversation}
+          />
         </div>
 
         <div className="chat-header__actions">

@@ -6,7 +6,6 @@ import {
   CHAT_MODE_OPTIONS,
   DEFAULT_PROJECT_CONTEXT,
   PROJECT_CONTEXT_STORAGE_KEY,
-  SIDEBAR_OPEN_STORAGE_KEY,
 } from "../../types/consts/chat.const";
 import type { ProjectContext } from "../../types/interface/chat.interface";
 import { pickHostRoot } from "@/host/domain/pick-host-root";
@@ -84,14 +83,6 @@ function readStoredProjectContext(): ProjectContext {
 export function readActiveConversationId(): string | null {
   if (typeof window === "undefined") return null;
   return window.localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY);
-}
-
-export function readSidebarOpenState(): boolean {
-  if (typeof window === "undefined") return true;
-  const storedValue: string | null = window.localStorage.getItem(
-    SIDEBAR_OPEN_STORAGE_KEY,
-  );
-  return storedValue === null ? true : storedValue === "true";
 }
 
 export function serializeProjectContext(context: ProjectContext): string {
