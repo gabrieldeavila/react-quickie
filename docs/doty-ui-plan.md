@@ -339,19 +339,46 @@ Notes:
 
 ## Phase 4 — Useful empty state (Session F)
 
-- [ ] `domain/starter-prompts.ts` + `.spec.ts`: maps each mode to 3–4 starter prompts.
-- [ ] `components/StarterPrompts.tsx`: clicking a prompt fills the message box; it doesn't send.
-- [ ] Replace the orb in [empty.tsx](../ui/src/components/chat/features/main/empty.tsx) with a short heading, the starter prompts and a hint that images can be pasted.
+- [x] `domain/starter-prompts.ts` + `.spec.ts`: maps each mode to 3–4 starter prompts.
+- [x] `components/StarterPrompts.tsx`: clicking a prompt fills the message box; it doesn't send.
+- [x] Replace the orb in [empty.tsx](../ui/src/components/chat/features/main/empty.tsx) with a short heading, the starter prompts and a hint that images can be pasted.
 
 #### Progress
 
 ```
-Status: not started
-Branch: —
-Last commit: —
-Done: —
+Status: done
+Branch: feat/ui-a-english-ui
+Last commit: 069878d + the following feat(ui) commit (code + this block)
+Done:
+  - ui/src/features/starter-prompts/:
+    domain/starter-prompts.ts (+ spec): StarterPrompt {label, text}; 3–4 prompts per
+    mode (frontend, backend, agnostic, git, agent_builder); starterPromptsFor(focus)
+    falls back to the agnostic prompts for an unknown mode. The spec checks every
+    mode in AgentFocusEnum + AgentFocusPluginEnum, so a new mode without prompts fails.
+    domain/empty-state-heading.ts (+ spec): "What do you want to build?" by default,
+    own wording for agnostic, git and agent_builder.
+    components/StarterPrompts.tsx: a list of pill buttons (full text as tooltip).
+  - components/chat/hooks/events/useFillComposer.ts: setInput(text), then focuses the
+    textarea with the cursor at the end. It never sends.
+  - composer/chat-input-id.ts: CHAT_INPUT_ID ("chat-input"), set as the textarea id
+    so the hook can focus it without lifting the composer's ref.
+  - empty.tsx: orb removed; heading + starter prompts for projectContext.focus + a
+    "Tip: paste a screenshot or mockup…" hint, shown only when the model accepts images.
+  - Styles: empty-state rules moved out of messages.css (orb CSS deleted) into new
+    styles/chat/chat-empty-state.css; .starter-prompts__item added to chat-focus.css.
 Left: —
-Notes: —
+Notes:
+  - Picking a prompt replaces whatever draft is in the message box (the empty state
+    only shows before the first message, so that's usually nothing).
+  - Some prompts end in ": " (e.g. "Refactor this component…: ") so the user types the
+    target right after; that's why the cursor goes to the end.
+  - Prompts follow the mode only, not the specialty. Specialty-specific prompts could
+    be added later by keying on `${focus}:${specialty}`.
+  - Session H: the chips use a plain 1px border and the shared focus ring; switch them
+    to theme tokens along with the rest.
+  - No browser on this machine, so the layout was checked by reading the CSS, not by eye.
+  - Checks: ui typecheck, lint and tests (36 files / 147 tests) green; vite build OK.
+    vscode/ and api/ untouched.
 ```
 
 ---

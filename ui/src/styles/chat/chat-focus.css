@@ -2,7 +2,8 @@
 .chat-conversation-item__open:focus-visible,
 .chat-conversation-item__delete:focus-visible,
 .chat-mode-popover__trigger:focus-visible,
-.chat-mode-popover__option:focus-visible {
+.chat-mode-popover__option:focus-visible,
+.starter-prompts__item:focus-visible {
   outline: 2px solid rgba(124, 140, 255, 0.9);
   outline-offset: 2px;
 }

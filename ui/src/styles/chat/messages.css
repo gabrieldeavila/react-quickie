@@ -78,37 +78,6 @@
 .chat-messages:hover::-webkit-scrollbar-thumb {
   background: rgba(124, 140, 255, 0.38);
 }
-.chat-empty {
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 12px;
-  text-align: center;
-  color: var(--chat-text-muted);
-}
-.chat-empty__orb {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(255, 255, 255, 0.2),
-    rgba(124, 140, 255, 0.14) 40%,
-    rgba(138, 92, 246, 0.08) 72%,
-    transparent 100%
-  );
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-}
-.chat-empty h2 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--chat-text);
-}
-.chat-empty p {
-  max-width: 36ch;
-  margin: 0;
-  line-height: 1.6;
-}
 .message {
   display: flex;
   gap: 10px;

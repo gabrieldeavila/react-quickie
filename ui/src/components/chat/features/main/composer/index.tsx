@@ -5,6 +5,7 @@ import {
 } from "../../../context/context";
 import useSendMessage from "../../../hooks/events/useSendMessage";
 import { ModelNotices } from "@/features/models/components/ModelNotices";
+import { CHAT_INPUT_ID } from "./chat-input-id";
 import { ComposerToolbar } from "./ComposerToolbar";
 import { PastedImages } from "./PastedImages";
 import { SendButton } from "./SendButton";
@@ -96,6 +97,7 @@ export function ChatComposer() {
         <div className="chat-composer__field">
           <textarea
             ref={textareaRef}
+            id={CHAT_INPUT_ID}
             className="chat-input"
             aria-label="Message"
             placeholder={

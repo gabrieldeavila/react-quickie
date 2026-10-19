@@ -6,6 +6,7 @@
 @import "./chat-mode-popover.css";
 @import "./editor.css";
 @import "./messages.css";
+@import "./chat-empty-state.css";
 @import "./chat-markdown-base.css";
 @import "./chat-composer-base.css";
 @import "./chat-composer-field.css";
