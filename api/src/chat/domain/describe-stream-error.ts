@@ -2,9 +2,8 @@ import { InvalidToolApprovalSignatureError } from 'ai';
 import { describeProviderError } from 'src/llm/domain/describe-provider-error';
 
 export const APPROVAL_EXPIRED_MESSAGE =
-  'A aprovação expirou (o servidor foi reiniciado com outro segredo). Peça para o agente tentar de novo.';
-export const GENERIC_STREAM_ERROR =
-  'Não foi possível concluir a resposta do agente.';
+  'The approval expired (the server restarted with a different secret). Ask the agent to try again.';
+export const GENERIC_STREAM_ERROR = 'The agent could not finish its response.';
 
 /**
  * Text shown to the user when the agent stream fails. `provider` (the

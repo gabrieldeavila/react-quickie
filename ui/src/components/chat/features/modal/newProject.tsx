@@ -69,7 +69,7 @@ export function ChatModalNewProject() {
 
   const handleSubmit = useCallback(async () => {
     if (!projectName.trim() || !selectedPath.trim()) {
-      setError("Informe o nome do projeto e selecione uma pasta.");
+      setError("Enter a project name and select a folder.");
       return;
     }
 
@@ -91,10 +91,10 @@ export function ChatModalNewProject() {
       if (response.data.success) {
         onCreated();
       } else {
-        setError("Erro ao criar o projeto. Verifique!");
+        setError("Couldn't create the project. Check the details and try again.");
       }
     } catch {
-      setError("Falha ao criar o projeto.");
+      setError("Failed to create the project.");
     } finally {
       setIsSubmitting(false);
     }
@@ -115,18 +115,18 @@ export function ChatModalNewProject() {
           <div>
             <h2 id="project-create-title">
               {isBackendMode
-                ? "Novo projeto backend"
+                ? "New backend project"
                 : isAgnosticMode
-                  ? "Novo servidor fullstack"
-                  : "Novo projeto frontend"}
+                  ? "New full-stack server"
+                  : "New frontend project"}
             </h2>
-            <p>Escolha a pasta, o template e se quer iniciar git.</p>
+            <p>Choose the folder, the template and whether to initialize git.</p>
           </div>
           <button
             type="button"
             className="chat-modal__close"
             onClick={onClose}
-            aria-label="Fechar modal"
+            aria-label="Close dialog"
           >
             ×
           </button>
@@ -134,17 +134,17 @@ export function ChatModalNewProject() {
 
         <div className="chat-modal__fields">
           <label className="chat-control chat-control--full">
-            <span className="chat-control__label">Nome do projeto</span>
+            <span className="chat-control__label">Project name</span>
             <input
               className="chat-input chat-input--modal"
               value={projectName}
               onChange={(event) => setProjectName(event.target.value)}
-              placeholder="Ex: Meu novo app"
+              placeholder="e.g. My new app"
             />
           </label>
 
           <label className="chat-control chat-control--full">
-            <span className="chat-control__label">Tipo de projeto</span>
+            <span className="chat-control__label">Project type</span>
             <select
               className="chat-input chat-input--modal"
               value={projectTemplate}
@@ -161,13 +161,13 @@ export function ChatModalNewProject() {
           </label>
 
           <label className="chat-control chat-control--full">
-            <span className="chat-control__label">Pasta de destino</span>
+            <span className="chat-control__label">Destination folder</span>
             <div className="chat-folder-picker">
               <input
                 className="chat-input chat-input--modal"
                 value={selectedPath}
                 onChange={(event) => setSelectedPath(event.target.value)}
-                placeholder="Selecione uma pasta"
+                placeholder="Select a folder"
               />
             </div>
           </label>
@@ -175,8 +175,8 @@ export function ChatModalNewProject() {
           <Toggle
             checked={initializeGit}
             onChange={setInitializeGit}
-            label="Habilitar git"
-            description="Cria o projeto já com repositório Git inicializado."
+            label="Enable git"
+            description="Creates the project with a Git repository already initialized."
           />
 
           {error ? <p className="chat-modal__error">{error}</p> : null}
@@ -188,7 +188,7 @@ export function ChatModalNewProject() {
             className="chat-button chat-button--ghost"
             onClick={onClose}
           >
-            Cancelar
+            Cancel
           </button>
           <button
             type="button"
@@ -196,7 +196,7 @@ export function ChatModalNewProject() {
             onClick={handleSubmit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Enviando..." : "Criar projeto"}
+            {isSubmitting ? "Creating..." : "Create project"}
           </button>
         </div>
       </div>

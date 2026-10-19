@@ -10,7 +10,7 @@ export type ContextCompaction = {
 export const COMPACTION_DATA_TYPE = 'data-compaction';
 
 const MAX_SUMMARY_CHARS = 100_000;
-const INVALID_COMPACTION = 'Resumo da conversa inválido.';
+const INVALID_COMPACTION = 'Invalid conversation summary.';
 
 function isValid(value: Record<string, unknown>): boolean {
   return (

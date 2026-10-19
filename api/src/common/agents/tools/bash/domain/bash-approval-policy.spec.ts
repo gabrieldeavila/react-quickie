@@ -19,7 +19,7 @@ describe('createBashApprovalPolicy', () => {
     const verdict = policy({ command: 'sudo reboot' });
 
     expect(verdict.decision).toBe('always-deny');
-    expect(verdict.reason).toMatch(/não permitido/);
+    expect(verdict.reason).toMatch(/not allowed/);
   });
 
   it('asks when the input has no readable command', () => {

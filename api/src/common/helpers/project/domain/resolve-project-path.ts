@@ -12,7 +12,7 @@ export function validateProjectName(projectName: string | undefined): string {
     name !== path.basename(name) ||
     name.includes(path.sep)
   ) {
-    throw new Error('O nome do projeto é inválido.');
+    throw new Error('The project name is invalid.');
   }
   return name;
 }
@@ -32,8 +32,8 @@ export function resolveTargetDir(
   if (!rootPath) {
     throw new Error(
       targetPath
-        ? 'Caminho relativo exige uma raiz de workspace configurada.'
-        : 'Informe uma pasta de destino ou configure a raiz do workspace.',
+        ? 'A relative path needs a configured workspace root.'
+        : 'Give a target folder or configure the workspace root.',
     );
   }
   return targetPath ? path.resolve(rootPath, targetPath) : rootPath;

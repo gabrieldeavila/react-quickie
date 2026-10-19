@@ -30,7 +30,7 @@ describe('validateAgentInput', () => {
     'rejects the icon %p',
     (icon) => {
       expect(() => validateAgentInput({ ...valid, icon })).toThrow(
-        'ícone inválido',
+        'Invalid icon name',
       );
     },
   );
@@ -39,7 +39,7 @@ describe('validateAgentInput', () => {
     'rejects the icon import %p',
     (iconImport) => {
       expect(() => validateAgentInput({ ...valid, iconImport })).toThrow(
-        'Import de ícone inválido',
+        'Invalid icon import',
       );
     },
   );

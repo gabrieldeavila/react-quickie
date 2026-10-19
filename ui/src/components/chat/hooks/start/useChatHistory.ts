@@ -126,7 +126,7 @@ export const useChatHistory = (): UseChatHistoryResult => {
       content: string,
       parts?: UIMessage["parts"],
     ): Promise<void> => {
-      await ensureConversation(conversationId, content || "Imagem");
+      await ensureConversation(conversationId, content || "Image");
       await appendMessage(conversationId, "user", content, parts);
       await reloadConversations();
     },

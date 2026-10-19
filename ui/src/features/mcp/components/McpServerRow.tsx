@@ -7,7 +7,7 @@ type Props = {
   onReconnect: (name: string) => void;
 };
 
-const SOURCE_LABEL = { global: "global", project: "projeto" } as const;
+const SOURCE_LABEL = { global: "global", project: "project" } as const;
 
 export function McpServerRow({ server, isBusy, onReconnect }: Props) {
   const status = describeServerStatus(server);
@@ -33,7 +33,7 @@ export function McpServerRow({ server, isBusy, onReconnect }: Props) {
           disabled={isBusy}
           onClick={() => onReconnect(server.name)}
         >
-          {isBusy ? "Conectando…" : "Reconectar"}
+          {isBusy ? "Connecting…" : "Reconnect"}
         </button>
       ) : null}
     </li>

@@ -29,7 +29,7 @@ export async function copyFullstackTemplate(
   const apiTemplate = path.join(templatesRoot, FULLSTACK_PARTS.api);
   const uiTemplate = path.join(templatesRoot, FULLSTACK_PARTS.ui);
   if (!(await pathExists(apiTemplate)) || !(await pathExists(uiTemplate))) {
-    throw new Error('Os templates nest-base e vite-base são necessários.');
+    throw new Error('The nest-base and vite-base templates are required.');
   }
 
   await fs.mkdir(projectPath, { recursive: true });
@@ -61,6 +61,6 @@ export async function renamePackage(
     pkg.name = name;
     await fs.writeFile(packageJsonPath, JSON.stringify(pkg, null, 2), 'utf8');
   } catch {
-    console.log(`Aviso: package.json não encontrado no template ${template}`);
+    console.log(`Warning: package.json not found in template ${template}`);
   }
 }

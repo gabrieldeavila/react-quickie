@@ -6,20 +6,20 @@ import {
 } from "./subagent-view";
 
 const STATUS_LABELS: Record<SubagentViewStatus, string> = {
-  starting: "iniciando",
-  queued: "na fila",
-  running: "executando",
-  completed: "concluído",
-  failed: "falhou",
-  aborted: "interrompido",
-  denied: "negado",
+  starting: "starting",
+  queued: "queued",
+  running: "running",
+  completed: "completed",
+  failed: "failed",
+  aborted: "stopped",
+  denied: "denied",
 };
 
 const STEP_LABELS: Record<SubagentStepView["state"], string> = {
-  running: "executando",
+  running: "running",
   done: "ok",
-  error: "erro",
-  denied: "não executado",
+  error: "error",
+  denied: "not run",
 };
 
 export function describeSubagentStatus(status: SubagentViewStatus): string {
@@ -30,9 +30,9 @@ export function describeStepState(state: SubagentStepView["state"]): string {
   return STEP_LABELS[state] ?? state;
 }
 
-/** Group header: "3 subagentes · 2 em execução" or "3 subagentes · concluídos". */
+/** Group header: "3 sub-agents · 2 running" or "3 sub-agents · done". */
 export function describeSubagentGroup(views: SubagentView[]): string {
   const active = views.filter(isSubagentActive).length;
-  const count = `${views.length} subagentes`;
-  return active ? `${count} · ${active} em execução` : `${count} · concluídos`;
+  const count = `${views.length} sub-agents`;
+  return active ? `${count} · ${active} running` : `${count} · done`;
 }

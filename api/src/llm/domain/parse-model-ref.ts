@@ -6,7 +6,7 @@ import {
 
 export class InvalidModelRefError extends Error {
   constructor(ref: string) {
-    super(`Modelo inválido: "${ref}". Use o formato provedor:modelo.`);
+    super(`Invalid model: "${ref}". Use the provider:model format.`);
     this.name = 'InvalidModelRefError';
   }
 }

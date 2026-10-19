@@ -10,7 +10,7 @@ export function ConversationUsageBadge({ total }: ConversationUsageBadgeProps) {
   const detail = formatUsageSummary(total);
 
   return (
-    <span className="chat-usage-badge" title={`Total da conversa: ${detail}`}>
+    <span className="chat-usage-badge" title={`Conversation total: ${detail}`}>
       {total.costUsd !== undefined ? formatCost(total.costUsd) : detail}
     </span>
   );

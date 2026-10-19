@@ -24,8 +24,8 @@
 .chat-input--modal {
   min-height: 58px;
   border: 1px solid var(--chat-border-strong);
-  background: rgba(6, 10, 15, 0.55);
-  color: var(--chat-text);
+  background: var(--chat-input-bg);
+  color: var(--chat-input-text);
   padding: 16px 14px;
   outline: none;
   box-sizing: border-box;
@@ -62,16 +62,48 @@
 }
 
 .chat-mode-popover__trigger {
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--chat-border-strong);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
   color: var(--chat-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+.chat-mode-popover__trigger:hover {
+  background: var(--chat-hover);
+}
+
+.chat-mode-popover__trigger--chip {
+  width: auto;
+  height: 26px;
+  gap: 5px;
+  padding: 0 6px;
+  min-width: 0;
+  color: var(--chat-text-muted);
+  font-size: 0.78rem;
+}
+
+.chat-mode-popover__trigger-label {
+  max-width: 120px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chat-mode-popover__chevron {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+.chat-mode-popover__trigger--chip .chat-mode-popover__icon-svg {
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 .chat-mode-popover__icon {
@@ -97,9 +129,9 @@
   z-index: 60;
   min-width: 220px;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid var(--chat-popover-border);
   border-radius: 12px;
-  background: rgba(18, 22, 29, 0.98);
+  background: var(--chat-popover-bg);
   box-shadow: var(--chat-shadow);
   display: grid;
   gap: 6px;
@@ -111,4 +143,11 @@
 
 .chat-mode-popover__panel--left {
   right: 0;
+}
+
+.chat-mode-popover__panel--up {
+  top: auto;
+  bottom: calc(100% + 8px);
+  max-height: min(360px, 60vh);
+  overflow-y: auto;
 }

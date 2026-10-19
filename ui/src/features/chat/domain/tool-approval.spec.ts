@@ -84,16 +84,16 @@ describe("approval texts", () => {
     });
 
     expect(describeApprovalTitle(approval("run_bash_command"), "x")).toBe(
-      "O agente precisa de permissão para executar:",
+      "The agent needs permission to run:",
     );
     expect(
       describeApprovalTitle(
         approval("run_subagent", { agent: "implementer" }),
         "x",
       ),
-    ).toBe("O subagente implementer quer fazer alterações:");
+    ).toBe("The implementer sub-agent wants to make changes:");
     expect(describeApprovalTitle(approval("mcp__gh__x"), "gh › x")).toBe(
-      "O agente precisa de permissão para usar gh › x:",
+      "The agent needs permission to use gh › x:",
     );
   });
 

@@ -12,14 +12,14 @@ import { formatCommitLog } from '../domain/format-git-output';
 import { runGit } from '../run-git';
 import { withRoot, type GetRoot } from './with-root';
 
-const NO_ITEMS = ['Nenhum item encontrado.'];
+const NO_ITEMS = ['No items found.'];
 
 const recentCommitsInputSchema = z.object({
   limit: z
     .number()
     .optional()
     .default(5)
-    .describe('Número máximo de commits para recuperar (ex: 5, 10).'),
+    .describe('Maximum number of commits to fetch (e.g. 5, 10).'),
 });
 
 const searchCommitsInputSchema = z.object({
@@ -27,31 +27,31 @@ const searchCommitsInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      'Filtra os commits por nome ou email do autor (ex: "Gabriel", "geavila").',
+      'Filters commits by author name or email (e.g. "Gabriel", "geavila").',
     ),
   since: z
     .string()
     .optional()
     .describe(
-      'Data inicial para a busca. Aceita formatos como "YYYY-MM-DD" ou "2 weeks ago".',
+      'Start date of the search. Accepts formats like "YYYY-MM-DD" or "2 weeks ago".',
     ),
   until: z
     .string()
     .optional()
     .describe(
-      'Data final para a busca. Aceita formatos como "YYYY-MM-DD" ou "yesterday".',
+      'End date of the search. Accepts formats like "YYYY-MM-DD" or "yesterday".',
     ),
   limit: z
     .number()
     .optional()
     .default(10)
-    .describe('Número máximo de commits a serem retornados. Padrão é 10.'),
+    .describe('Maximum number of commits to return. Defaults to 10.'),
 });
 
 const reviewCommitInputSchema = z.object({
   commitHash: z
     .string()
-    .describe('O hash do commit que deve ser revisado (ex: abc1234, HEAD~1).'),
+    .describe('Hash of the commit to review (e.g. abc1234, HEAD~1).'),
 });
 
 /** Read-only history tools: recent commits, search, one commit's diff. */
@@ -59,46 +59,43 @@ export function createGitHistoryTools(getRoot: GetRoot) {
   return {
     get_recent_commits: tool({
       description:
-        'Recupera o histórico dos últimos commits do repositório Git. Retorna o hash, autor, data e mensagem.',
+        'Fetches the latest commits of the Git repository. Returns the hash, author, date and message.',
       inputSchema: recentCommitsInputSchema,
       execute: ({ limit }: { limit: number }) =>
-        withRoot(getRoot, 'obter os commits recentes', async (root) => {
+        withRoot(getRoot, 'get the recent commits', async (root) => {
           const commits = formatCommitLog(
             await runGit(root, recentCommitsArgs(limit)),
           );
           return commits.length
-            ? toolSuccess('Commits recentes encontrados.', commits)
-            : toolSuccess('Nenhum commit encontrado.', NO_ITEMS);
+            ? toolSuccess('Recent commits found.', commits)
+            : toolSuccess('No commits found.', NO_ITEMS);
         }),
     }),
 
     search_commits: tool({
       description:
-        'Busca e lista commits antigos aplicando filtros específicos, como um autor exato ou um intervalo de datas (desde/até). Útil para auditorias ou entender o que foi feito num período.',
+        'Searches and lists older commits with specific filters, such as an exact author or a date range (since/until). Useful for audits or to see what was done in a period.',
       inputSchema: searchCommitsInputSchema,
       execute: (search: CommitSearch) =>
-        withRoot(getRoot, 'buscar commits', async (root) => {
+        withRoot(getRoot, 'search commits', async (root) => {
           const commits = formatCommitLog(
             await runGit(root, searchCommitsArgs(search)),
           );
           return commits.length
-            ? toolSuccess('Commits encontrados.', commits)
-            : toolSuccess(
-                'Nenhum commit encontrado para estes filtros.',
-                NO_ITEMS,
-              );
+            ? toolSuccess('Commits found.', commits)
+            : toolSuccess('No commits match these filters.', NO_ITEMS);
         }),
     }),
 
     review_commit: tool({
       description:
-        'Revisa os detalhes de um commit específico. Retorna os arquivos modificados e as linhas de código adicionadas/removidas (diff).',
+        'Reviews the details of a specific commit. Returns the changed files and the added/removed lines (diff).',
       inputSchema: reviewCommitInputSchema,
       execute: ({ commitHash }: { commitHash: string }) =>
-        withRoot(getRoot, 'revisar o commit', async (root) => {
+        withRoot(getRoot, 'review the commit', async (root) => {
           const filesChanged = await runGit(root, showStatArgs(commitHash));
           const diffPatch = await runGit(root, showPatchArgs(commitHash));
-          return toolSuccess('Resumo do commit.', [
+          return toolSuccess('Commit summary.', [
             `${filesChanged.trim()}\n\nDiff:\n${diffPatch.trim()}`,
           ]);
         }),

@@ -9,7 +9,7 @@ type ModelPickerProps = Pick<
   "modelRef" | "options" | "selectModel"
 >;
 
-/** Provider/model picker for the active conversation (next to the mode popover). */
+/** Provider/model picker for the active conversation, shown as a chip in the message box. */
 export const ModelPicker = memo(
   ({ modelRef, options, selectModel }: ModelPickerProps) => {
     const popoverOptions: PopoverOption<string>[] = useMemo(
@@ -22,6 +22,11 @@ export const ModelPicker = memo(
       [options],
     );
 
+    const currentLabel = useMemo(
+      () => options.find((option) => option.ref === modelRef)?.model.label,
+      [options, modelRef],
+    );
+
     if (!modelRef || popoverOptions.length === 0) return null;
 
     return (
@@ -29,9 +34,11 @@ export const ModelPicker = memo(
         value={modelRef}
         onChange={selectModel}
         options={popoverOptions}
-        ariaLabel="Selecionar modelo"
-        title="Modelo"
+        ariaLabel="Select model"
+        title="Model"
         defaultIcon={FiCpu}
+        triggerLabel={currentLabel ?? "Model"}
+        placement="up"
       />
     );
   },

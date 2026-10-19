@@ -1,9 +1,9 @@
 export class WorkspaceEscapeError extends Error {
   constructor(
     readonly input: string,
-    reason = 'fora do workspace permitido',
+    reason = 'outside the allowed workspace',
   ) {
-    super(`O caminho "${input}" está ${reason}.`);
+    super(`The path "${input}" is ${reason}.`);
     this.name = 'WorkspaceEscapeError';
   }
 }

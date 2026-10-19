@@ -41,7 +41,7 @@ export class McpToolsService {
       return await this.load(root, active.filter(isUsableServer));
     } catch (error) {
       this.logger.warn(
-        `MCP indisponível para ${root}: ${error instanceof Error ? error.message : String(error)}`,
+        `MCP unavailable for ${root}: ${error instanceof Error ? error.message : String(error)}`,
       );
       return EMPTY_TOOLKIT;
     }

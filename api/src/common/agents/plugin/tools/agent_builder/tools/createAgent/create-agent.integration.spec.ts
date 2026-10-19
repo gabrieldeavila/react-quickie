@@ -103,7 +103,7 @@ describe('createAgent (integration)', () => {
 
   it('refuses a name that would leave the plugin folder', () => {
     expect(() => createAgent({ ...agent, name: '../../escape' })).toThrow(
-      'Nome de agente inválido',
+      'Invalid agent name',
     );
     expect(fs.existsSync(path.join(tmp, 'escape'))).toBe(false);
   });

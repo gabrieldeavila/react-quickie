@@ -54,18 +54,18 @@ describe("formatToolOutput", () => {
       formatToolOutput(
         part("output-denied", { approval: { reason: "blocked by policy" } }),
       ),
-    ).toBe("Negado: blocked by policy");
+    ).toBe("Denied: blocked by policy");
     expect(formatToolOutput(part("output-denied", { approval: {} }))).toBe(
-      "Negado pelo usuário.",
+      "Denied by the user.",
     );
     // Policy denials stay `approval-responded` (isAutomatic) in the UI message.
     expect(
       formatToolOutput(
         part("approval-responded", {
-          approval: { approved: false, isAutomatic: true, reason: "bloqueado" },
+          approval: { approved: false, isAutomatic: true, reason: "blocked" },
         }),
       ),
-    ).toBe("Negado: bloqueado");
+    ).toBe("Denied: blocked");
     expect(
       formatToolOutput(part("output-error", { errorText: "interrupted" })),
     ).toBe("interrupted");

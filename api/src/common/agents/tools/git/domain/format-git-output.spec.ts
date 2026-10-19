@@ -27,7 +27,7 @@ describe('formatChanges', () => {
     );
 
     expect(lines.slice(0, 5)).toEqual([
-      'Arquivos:',
+      'Files:',
       '-  M a.ts',
       '- ?? b.ts',
       '',

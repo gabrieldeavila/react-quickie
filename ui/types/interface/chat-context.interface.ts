@@ -11,8 +11,6 @@ export type ChatBaseContextValue = {
   setIsRootModalOpen: Dispatch<SetStateAction<boolean>>;
   isCreateModalOpen: boolean;
   setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
   projectContext: ProjectContext;
   setProjectContext: Dispatch<SetStateAction<ProjectContext>>;
   draftContext: ProjectContext;

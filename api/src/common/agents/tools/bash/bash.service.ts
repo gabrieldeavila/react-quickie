@@ -24,14 +24,14 @@ export class BashToolsService {
     return {
       run_bash_command: tool({
         description:
-          'Executa um comando Bash no workspace. Comandos de leitura locais são automáticos; comandos que alteram arquivos, acessam fora do workspace ou usam rede pedem aprovação do usuário antes de rodar. Comandos globais perigosos são negados.',
+          'Runs a Bash command in the workspace. Local read-only commands run right away; commands that change files, reach outside the workspace or use the network ask the user for approval first. Dangerous system-wide commands are denied.',
         inputSchema: z.object({
           command: z
             .string()
             .trim()
             .min(1)
             .max(10_000)
-            .describe('Comando Bash a ser executado.'),
+            .describe('The Bash command to run.'),
         }),
         execute: async (
           { command }: { command: string },
@@ -40,8 +40,8 @@ export class BashToolsService {
           const rootPath = this.contextService.get('root');
           if (!rootPath)
             return formatToolError(
-              'executar o comando Bash',
-              new Error('Raiz do workspace não encontrada.'),
+              'run the Bash command',
+              new Error('Workspace root not found.'),
             );
 
           // Approval is decided by `streamText({ toolApproval })` before this
@@ -90,11 +90,9 @@ export class BashToolsService {
         .join('\n\n')
         .trim();
 
-      return toolSuccess('Comando Bash executado com sucesso.', [
-        output || '(sem saída)',
-      ]);
+      return toolSuccess('Bash command finished.', [output || '(no output)']);
     } catch (error) {
-      return formatToolError('executar o comando Bash', error);
+      return formatToolError('run the Bash command', error);
     }
   }
 }

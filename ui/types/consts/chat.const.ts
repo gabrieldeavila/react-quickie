@@ -22,7 +22,6 @@ import {
 
 export const PROJECT_CONTEXT_STORAGE_KEY: string = "project-context";
 export const ACTIVE_CHAT_STORAGE_KEY: string = "active-chat-conversation-id";
-export const SIDEBAR_OPEN_STORAGE_KEY: string = "chat-sidebar-open";
 
 export const DEFAULT_PROJECT_CONTEXT: ProjectContext = {
   reference: "/workspace",
@@ -33,7 +32,7 @@ export const DEFAULT_PROJECT_CONTEXT: ProjectContext = {
 export const CHAT_MODE_OPTIONS: PopoverOption<CombinedAgentEnum>[] = [
   { value: AgentFocusEnum.FRONTEND, label: "Frontend", icon: FaPalette },
   { value: AgentFocusEnum.BACKEND, label: "Backend", icon: AiFillApi },
-  { value: AgentFocusEnum.AGNOSTIC, label: "Agnóstico", icon: FiShuffle },
+  { value: AgentFocusEnum.AGNOSTIC, label: "Agnostic", icon: FiShuffle },
   { value: AgentFocusEnum.GIT, label: "Git", icon: FaGitAlt },
   ...CHAT_PLUGIN_MODE_OPTIONS,
 ];
@@ -44,7 +43,7 @@ export const CHAT_SPECIALTY_OPTIONS: Partial<
   [AgentFocusEnum.FRONTEND]: [
     {
       value: AgentSpecialtyEnum.NONE,
-      label: "Sem especialidade",
+      label: "No specialty",
       icon: FiMinusCircle,
     },
     {
@@ -53,7 +52,7 @@ export const CHAT_SPECIALTY_OPTIONS: Partial<
       icon: FiLayout,
     },
     { value: AgentSpecialtyEnum.FORMS, label: "Forms", icon: FiPackage },
-    { value: AgentSpecialtyEnum.REFACTOR, label: "Refatoração", icon: FiTool },
+    { value: AgentSpecialtyEnum.REFACTOR, label: "Refactoring", icon: FiTool },
   ],
   ...CHAT_PLUGIN_SPECIALTY_OPTIONS,
 };

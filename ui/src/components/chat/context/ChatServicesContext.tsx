@@ -24,10 +24,10 @@ export function ChatServicesProvider({ children }: { children: ReactNode }) {
   const chatStatusLabel: string = useMemo(
     () =>
       status === "error"
-        ? "Erro"
+        ? "Error"
         : status === "ready"
           ? "Online"
-          : "Respondendo",
+          : "Responding",
     [status],
   );
 

@@ -11,17 +11,17 @@ const MAX_TEXT_LENGTH = 100_000;
 export function validateMessageContent(messages: UIMessage[]): void {
   messages.forEach((message, index) => {
     if (message.role !== 'user' && message.role !== 'assistant') {
-      throw new InvalidChatMessagesError('Papel de mensagem inválido.');
+      throw new InvalidChatMessagesError('Invalid message role.');
     }
     if (message.parts.length === 0) {
-      throw new InvalidChatMessagesError(`A mensagem ${index + 1} está vazia.`);
+      throw new InvalidChatMessagesError(`Message ${index + 1} is empty.`);
     }
     const hasLongText = message.parts.some(
       (part) => part.type === 'text' && part.text.length > MAX_TEXT_LENGTH,
     );
     if (hasLongText) {
       throw new InvalidChatMessagesError(
-        'Texto da mensagem inválido ou muito longo.',
+        'Message text is invalid or too long.',
       );
     }
   });

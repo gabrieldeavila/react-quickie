@@ -20,7 +20,7 @@ function NeedsApproval({ commands }: { commands: string[] }) {
   if (!commands.length) return null;
   return (
     <div className="subagent-card__held">
-      <strong>Não executado (precisa de aprovação):</strong>
+      <strong>Not run (needs approval):</strong>
       <ul>
         {commands.map((command) => (
           <li key={command}>
@@ -44,13 +44,13 @@ export const SubagentCard = memo(function SubagentCard({
           <SubagentStatusIcon status={view.status} />
         </span>
         <span className="subagent-status__body">
-          <strong>{view.agent || "subagente"}</strong>
+          <strong>{view.agent || "sub-agent"}</strong>
           <span>{view.task}</span>
           <LatestStep view={view} />
         </span>
         <span className="subagent-status__state">
           {describeSubagentStatus(view.status)}
-          {view.steps.length ? ` · ${view.steps.length} passos` : ""}
+          {view.steps.length ? ` · ${view.steps.length} steps` : ""}
         </span>
         <FiChevronDown className="subagent-card__chevron" aria-hidden="true" />
       </summary>

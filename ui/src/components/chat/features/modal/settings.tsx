@@ -66,16 +66,16 @@ export function ChatModalSettings() {
       >
         <div className="chat-modal__header">
           <div>
-            <h2 id="project-root-title">Configurar contexto do projeto</h2>
+            <h2 id="project-root-title">Project context</h2>
             <p>
-              Defina as informações base usadas pelo chat em qualquer projeto.
+              Set the base information the chat uses in any project.
             </p>
           </div>
           <button
             type="button"
             className="chat-modal__close"
             onClick={handleClose}
-            aria-label="Fechar modal"
+            aria-label="Close dialog"
           >
             ×
           </button>
@@ -84,7 +84,7 @@ export function ChatModalSettings() {
           {canTypeRoot ? (
             <label className="chat-control chat-control--full">
               <span className="chat-control__label">
-                Caminho ou referência principal
+                Main path or reference
               </span>
               <input
                 className="chat-input chat-input--modal"
@@ -92,7 +92,7 @@ export function ChatModalSettings() {
                 onChange={(event) =>
                   handleChangeDraft("reference", event.target.value)
                 }
-                placeholder="Ex: /src, app/frontend, nome do projeto"
+                placeholder="e.g. /src, app/frontend, project name"
               />
             </label>
           ) : (
@@ -113,10 +113,10 @@ export function ChatModalSettings() {
             className="chat-button chat-button--ghost"
             onClick={handleClose}
           >
-            Cancelar
+            Cancel
           </button>
           <button type="button" className="chat-button" onClick={handleSave}>
-            Salvar configurações
+            Save settings
           </button>
         </div>
       </div>

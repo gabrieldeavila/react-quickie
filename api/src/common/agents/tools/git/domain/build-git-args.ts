@@ -13,7 +13,7 @@ export function assertSafeRevision(revision: string): string {
   const trimmed = revision.trim();
   if (!trimmed || trimmed.startsWith('-')) {
     throw new UnsafeGitArgumentError(
-      `Revisão inválida: "${revision}". Use um hash, branch ou HEAD~N.`,
+      `Invalid revision: "${revision}". Use a hash, branch or HEAD~N.`,
     );
   }
   return trimmed;

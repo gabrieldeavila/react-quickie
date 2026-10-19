@@ -1,0 +1,24 @@
+/* The settings on/off switch. Same rule as theme-tokens.css: VS Code theme first, original palette on the web. */
+:root {
+  --chat-toggle-card-bg: var(--vscode-editorWidget-background, rgba(14, 18, 25, 0.96));
+  --chat-toggle-track: var(
+    --vscode-input-background,
+    linear-gradient(180deg, rgba(22, 26, 33, 0.98), rgba(16, 19, 25, 0.98))
+  );
+  --chat-toggle-track-border: var(--vscode-input-border, rgba(255, 255, 255, 0.07));
+  --chat-toggle-track-on: var(
+    --vscode-button-background,
+    linear-gradient(180deg, rgba(46, 34, 72, 0.98), rgba(29, 21, 48, 0.98))
+  );
+  --chat-toggle-track-on-border: var(--vscode-button-background, rgba(149, 105, 255, 0.38));
+  --chat-toggle-thumb: var(
+    --vscode-descriptionForeground,
+    linear-gradient(180deg, #f4f5f8, #dde2ea)
+  );
+  --chat-toggle-thumb-on: var(
+    --vscode-button-foreground,
+    linear-gradient(180deg, #f0ebff, #d7c8ff)
+  );
+  --chat-toggle-state: var(--vscode-descriptionForeground, rgba(215, 221, 230, 0.74));
+  --chat-toggle-state-on: var(--vscode-button-foreground, rgba(229, 219, 255, 0.95));
+}

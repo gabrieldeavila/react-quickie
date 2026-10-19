@@ -10,8 +10,8 @@ import { InvalidChatMessagesError } from './invalid-chat-messages.error';
 import { validateAttachments } from './validate-attachments';
 import { validateMessageContent } from './validate-message-content';
 
-const INVALID_MESSAGES = 'Não foi possível processar as mensagens enviadas.';
-const NO_MESSAGES = 'Nenhuma mensagem válida encontrada na requisição.';
+const INVALID_MESSAGES = 'The messages sent could not be processed.';
+const NO_MESSAGES = 'No valid messages found in the request.';
 
 async function validateShape(
   raw: unknown,

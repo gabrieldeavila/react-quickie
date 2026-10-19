@@ -1,0 +1,56 @@
+import { memo, useMemo } from "react";
+import { useChatBaseContext, useChatServicesContext } from "../../context/context";
+import { ConversationSwitcherPanel } from "@/features/conversations/components/ConversationSwitcherPanel";
+import { useConversationSwitcher } from "@/features/conversations/hooks/useConversationSwitcher";
+import { useHostCommands } from "@/host/hooks/useHostCommands";
+import { useHostFocus } from "@/host/hooks/useHostFocus";
+import { useHostTitle } from "@/host/hooks/useHostTitle";
+import { DEFAULT_CONVERSATION_TITLE } from "@/lib/conversation-title";
+import { useOpenSettings } from "../../hooks/events/useOpenSettings";
+import { CHAT_INPUT_ID } from "./composer/chat-input-id";
+
+// No in-page trigger to return to, so closing the panel focuses the message box.
+const getMessageBox = () => document.getElementById(CHAT_INPUT_ID);
+
+/**
+ * Stands in for the header in VSCode: new chat, history and settings are view
+ * title-bar buttons. Only the history panel renders here, under the title bar.
+ */
+const ViewTitleActions = memo(() => {
+  const { history } = useChatBaseContext();
+  const { handleCreateConversation } = useChatServicesContext();
+  const openSettings = useOpenSettings();
+  const switcher = useConversationSwitcher({
+    conversations: history.conversations,
+    onSelect: history.setActiveConversationId,
+    getReturnFocusTarget: getMessageBox,
+  });
+
+  useHostTitle(history.activeConversation?.title ?? DEFAULT_CONVERSATION_TITLE);
+
+  const handlers = useMemo(
+    () => ({
+      newChat: () => void handleCreateConversation(),
+      showHistory: switcher.toggleOpen,
+      openSettings,
+    }),
+    [handleCreateConversation, switcher.toggleOpen, openSettings],
+  );
+  useHostCommands(handlers);
+  useHostFocus();
+
+  return (
+    <div className="chat-view-history" ref={switcher.containerRef}>
+      {switcher.isOpen ? (
+        <ConversationSwitcherPanel
+          switcher={switcher}
+          activeConversationId={history.activeConversationId}
+          isLoading={!history.isHydrated}
+          onDelete={history.deleteConversation}
+        />
+      ) : null}
+    </div>
+  );
+});
+
+export default ViewTitleActions;

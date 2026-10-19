@@ -36,7 +36,7 @@ function partSize(part: ContentPart): number {
 function truncationNotice(shown: number, total: number): ContentPart {
   return {
     type: 'text',
-    text: `\n[saída truncada: ${shown} de ${total} caracteres]`,
+    text: `\n[output truncated: ${shown} of ${total} characters]`,
   };
 }
 

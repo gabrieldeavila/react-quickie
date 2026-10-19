@@ -33,7 +33,7 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
       </strong>
       <pre>{describeApprovalInput(approval)}</pre>
       {!isAnswerable ? (
-        <small>Pedido não respondido.</small>
+        <small>Request not answered.</small>
       ) : (
         <>
           <div className="bash-approval-actions">
@@ -43,7 +43,7 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
               disabled={disabled}
               onClick={approve}
             >
-              Permitir
+              Allow
             </button>
             <button
               className="bash-approval-button bash-approval-button--reject"
@@ -51,7 +51,7 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
               disabled={disabled}
               onClick={deny}
             >
-              Negar
+              Deny
             </button>
           </div>
           {isBash ? (
@@ -59,8 +59,8 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
               <input
                 value={alternative}
                 onChange={(event) => setAlternative(event.target.value)}
-                placeholder="Ou informe outro comando"
-                aria-label="Outro comando Bash"
+                placeholder="Or enter a different command"
+                aria-label="Different Bash command"
               />
               <button
                 className="bash-approval-button bash-approval-button--revise"
@@ -68,7 +68,7 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
                 disabled={disabled || !alternative.trim()}
                 onClick={() => suggestAlternative(alternative)}
               >
-                Enviar alternativa
+                Send alternative
               </button>
             </div>
           ) : null}

@@ -16,7 +16,7 @@ function ConfigFileHint({
   return (
     <li>
       {label}: <code>{file.path}</code>
-      {file.exists ? "" : " (não existe)"}
+      {file.exists ? "" : " (doesn't exist)"}
       {file.error ? (
         <span className="mcp-tone--error"> · {file.error}</span>
       ) : null}
@@ -30,19 +30,19 @@ export function McpServersSection({ root }: Props) {
   return (
     <section className="mcp-section" aria-labelledby="mcp-section-title">
       <div className="mcp-section__header">
-        <h3 id="mcp-section-title">Servidores MCP</h3>
+        <h3 id="mcp-section-title">MCP servers</h3>
         <button
           type="button"
           className="chat-button chat-button--ghost"
           onClick={refresh}
         >
-          Atualizar
+          Refresh
         </button>
       </div>
 
       {error ? <p className="chat-modal__error">{error}</p> : null}
       {!data && !error ? (
-        <p className="mcp-section__empty">Carregando…</p>
+        <p className="mcp-section__empty">Loading…</p>
       ) : null}
 
       {data ? (
@@ -56,7 +56,7 @@ export function McpServersSection({ root }: Props) {
           ) : null}
 
           {data.servers.length === 0 ? (
-            <p className="mcp-section__empty">Nenhum servidor configurado.</p>
+            <p className="mcp-section__empty">No servers configured.</p>
           ) : (
             <ul className="mcp-server-list">
               {data.servers.map((server) => (
@@ -72,7 +72,7 @@ export function McpServersSection({ root }: Props) {
 
           <ul className="mcp-section__files">
             <ConfigFileHint label="Global" file={data.globalConfig} />
-            <ConfigFileHint label="Projeto" file={data.projectConfig} />
+            <ConfigFileHint label="Project" file={data.projectConfig} />
           </ul>
         </>
       ) : null}

@@ -69,45 +69,14 @@
   width: 10px;
 }
 .chat-messages::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--chat-tint) 4%, transparent);
 }
 .chat-messages::-webkit-scrollbar-thumb {
-  background: rgba(124, 140, 255, 0.26);
+  background: var(--chat-scrollbar);
   border-radius: 999px;
 }
 .chat-messages:hover::-webkit-scrollbar-thumb {
-  background: rgba(124, 140, 255, 0.38);
-}
-.chat-empty {
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 12px;
-  text-align: center;
-  color: var(--chat-text-muted);
-}
-.chat-empty__orb {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(255, 255, 255, 0.2),
-    rgba(124, 140, 255, 0.14) 40%,
-    rgba(138, 92, 246, 0.08) 72%,
-    transparent 100%
-  );
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-}
-.chat-empty h2 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--chat-text);
-}
-.chat-empty p {
-  max-width: 36ch;
-  margin: 0;
-  line-height: 1.6;
+  background: var(--chat-scrollbar-hover);
 }
 .message {
   display: flex;
@@ -140,7 +109,7 @@
   letter-spacing: 0.08em;
   color: var(--chat-text);
   border: 1px solid var(--chat-border-strong);
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--chat-tint) 5%, transparent);
 }
 .assistant-message {
   justify-content: flex-start;
@@ -160,13 +129,13 @@
   order: 2;
   background: linear-gradient(
     135deg,
-    rgba(124, 140, 255, 0.24),
-    rgba(138, 92, 246, 0.24)
+    color-mix(in srgb, var(--chat-accent) 24%, transparent),
+    color-mix(in srgb, var(--chat-accent-2) 24%, transparent)
   );
 }
 .user-message .message-content {
   background: var(--chat-user);
-  color: #f5f7ff;
+  color: var(--chat-on-accent);
   border-radius: 10px 10px 4px 10px;
 }
 .message-content {
@@ -202,7 +171,7 @@
   align-self: flex-end;
   border: 0;
   background: transparent;
-  color: rgba(231, 237, 245, 0.78);
+  color: var(--chat-on-accent-muted);
   font: inherit;
   font-size: 0.8rem;
   font-weight: 600;
@@ -213,7 +182,7 @@
 }
 .message-expand-toggle:hover,
 .message-expand-toggle:focus-visible {
-  color: #ffffff;
+  color: var(--chat-on-accent-strong);
 }
 .typing-indicator {
   display: flex;
@@ -225,7 +194,7 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(231, 237, 245, 0.7);
+  background: var(--chat-typing-dot);
   animation: typing 1.2s infinite ease-in-out;
 }
 .typing-indicator span:nth-child(2) {

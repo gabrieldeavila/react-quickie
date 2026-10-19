@@ -1,5 +1,5 @@
 export const formatTimestamp = (timestamp: number): string => {
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "2-digit",
     hour: "2-digit",

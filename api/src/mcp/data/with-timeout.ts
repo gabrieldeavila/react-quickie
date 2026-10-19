@@ -1,6 +1,6 @@
 export class McpTimeoutError extends Error {
   constructor(ms: number) {
-    super(`O servidor não respondeu em ${Math.round(ms / 1000)}s.`);
+    super(`The server did not respond within ${Math.round(ms / 1000)}s.`);
     this.name = 'McpTimeoutError';
   }
 }

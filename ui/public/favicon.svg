@@ -1,7 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <rect x="2" y="2" width="44" height="44" rx="13" fill="#121821" />
-  <rect x="2.5" y="2.5" width="43" height="43" rx="12.5" stroke="#303B4B" />
-  <path d="m13 18 9 6-9 6" stroke="#7C8CFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M26 30h9" stroke="#E7EDF5" stroke-width="3.5" stroke-linecap="round" />
-  <path d="M35 10.5v7m-3.5-3.5h7" stroke="#8A5CF6" stroke-width="2.5" stroke-linecap="round" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3f7d82"/>
+      <stop offset="1" stop-color="#1c3f45"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe08a"/>
+      <stop offset="0.55" stop-color="#e0a93e"/>
+      <stop offset="1" stop-color="#a8701f"/>
+    </linearGradient>
+    <linearGradient id="goldShade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c98f2c"/>
+      <stop offset="1" stop-color="#8f5c17"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="0.4" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#e8fbff"/>
+      <stop offset="0.45" stop-color="#6cc8f5"/>
+      <stop offset="1" stop-color="#1f6fb5"/>
+    </radialGradient>
+    <linearGradient id="feather" x1="0" y1="1" x2="0.3" y2="0">
+      <stop offset="0" stop-color="#2f7fc8"/>
+      <stop offset="1" stop-color="#8fd3ff"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+  <!-- gold halo with gems, as in the art nouveau frame -->
+  <circle cx="64" cy="66" r="47" fill="none" stroke="#d9a440" stroke-width="5"/>
+  <g stroke="#3d2a0c" stroke-width="0.8">
+    <circle cx="64" cy="19" r="3.4" fill="#d63b4f"/>
+    <circle cx="97.2" cy="32.8" r="3" fill="#2bb3a3"/>
+    <circle cx="111" cy="66" r="3.4" fill="#d63b4f"/>
+    <circle cx="97.2" cy="99.2" r="3" fill="#2bb3a3"/>
+    <circle cx="30.8" cy="99.2" r="3" fill="#2bb3a3"/>
+    <circle cx="17" cy="66" r="3.4" fill="#d63b4f"/>
+    <circle cx="30.8" cy="32.8" r="3" fill="#2bb3a3"/>
+  </g>
+  <!-- Doty's blue quill: a big plume curling up and over from the crown -->
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M60 38 C 54 20, 40 10, 24 12 C 14 14, 10 24, 14 34 C 18 26, 26 22, 32 24 C 26 28, 24 36, 28 44 C 32 36, 40 32, 46 34 C 44 40, 46 46, 52 50 Z"
+          fill="url(#feather)" stroke="#173f66" stroke-width="2.2"/>
+    <path d="M58 40 C 50 26, 36 18, 22 20" fill="none" stroke="#e8f7ff" stroke-width="2"/>
+    <path d="M44 30 C 38 30, 32 34, 30 40 M50 38 C 46 40, 46 44, 48 47 M36 22 C 30 22, 24 26, 20 30" fill="none" stroke="#1f5f99" stroke-width="1.5"/>
+  </g>
+  <!-- head -->
+  <g stroke="#4a3109" stroke-width="2.6" stroke-linejoin="round">
+    <path d="M64 26 L90 44 L92 76 L80 102 H48 L36 76 L38 44 Z" fill="url(#gold)"/>
+    <path d="M64 26 L90 44 L92 76 L80 102 H64 Z" fill="url(#goldShade)" opacity="0.45" stroke="none"/>
+    <path d="M38 50 L64 58 L90 50" fill="none"/>
+    <path d="M64 26 V58" fill="none" stroke-width="2"/>
+    <path d="M47 80 H81 L76 98 H52 Z" fill="#7a4f12"/>
+  </g>
+  <g stroke="#f6d27a" stroke-width="2.4" stroke-linecap="round">
+    <path d="M56 83 V95 M64 83 V96 M72 83 V95"/>
+  </g>
+  <g stroke="#123a5e" stroke-width="2">
+    <circle cx="52" cy="66" r="6.5" fill="url(#eye)"/>
+    <circle cx="76" cy="66" r="6.5" fill="url(#eye)"/>
+  </g>
+  <circle cx="50" cy="64" r="1.8" fill="#fff"/>
+  <circle cx="74" cy="64" r="1.8" fill="#fff"/>
 </svg>

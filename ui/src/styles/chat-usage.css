@@ -8,8 +8,8 @@
 .chat-usage-badge {
   display: inline-flex;
   align-items: center;
-  height: 36px;
-  padding: 0 12px;
+  height: 28px;
+  padding: 0 8px;
   border: 1px solid var(--chat-border);
   border-radius: 7px;
   color: var(--chat-text-muted);
@@ -19,8 +19,8 @@
 }
 
 .chat-usage-badge--warning {
-  border-color: rgba(245, 180, 70, 0.5);
-  color: #f5b446;
+  border-color: color-mix(in srgb, var(--chat-warning-strong) 50%, transparent);
+  color: var(--chat-warning-strong);
 }
 
 .chat-compaction-notice {

@@ -5,6 +5,7 @@ import { getAppPaths } from 'src/config/app-paths';
 import { ContextService } from '../context/context.service';
 import { MarkdownService } from './markdown.module';
 import { MemoryService } from './memory.service';
+import { buildBaseInstruction } from './prompts/domain/build-base-instruction';
 import { formatProjectMemory } from './prompts/domain/format-project-memory';
 import {
   loadProjectAgents,
@@ -27,8 +28,9 @@ export class PromptsService {
   }
 
   /**
-   * System instructions for a request, in order: workspace, behavior rules,
-   * project agents, mode skills, plugin skills, memory rules, project memory.
+   * System instructions for a request, in order: workspace and reply
+   * language, behavior rules, project agents, mode skills, plugin skills,
+   * memory rules, project memory.
    */
   async getInstructions(): Promise<Instructions> {
     const { skillsDir, pluginSkillsDir } = getAppPaths();
@@ -38,7 +40,7 @@ export class PromptsService {
     const read = this.readMarkdown;
 
     const groups: SystemModelMessage[][] = [
-      [{ role: 'system', content: `The user project is ${root}` }],
+      [buildBaseInstruction(root)],
       await loadSkillFile(read, path.join(skillsDir, 'behavior.md')),
       await loadProjectAgents(read, root),
       await loadSkillDirectory(read, path.join(skillsDir, mode), specialty),

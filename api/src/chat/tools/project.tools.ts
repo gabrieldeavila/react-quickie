@@ -22,34 +22,34 @@ function toLineList(values: unknown[]): string[] {
       try {
         return `- ${JSON.stringify(value)}`;
       } catch {
-        return '- Erro desconhecido.';
+        return '- Unknown error.';
       }
     }
 
-    return '- Erro desconhecido.';
+    return '- Unknown error.';
   });
 }
 
 export function createProjectTools(projectService: ProjectService) {
   return {
     created_projects: tool({
-      description: 'Lista os projetos criados no diretório principal',
+      description: 'Lists the projects created in the main folder',
       inputSchema: z.object({}),
       execute: async () => {
         try {
           const projects = await projectService.getProjectsCreatedInDirectory();
           return toolSuccess(
-            'Projetos criados no diretório principal.',
+            'Projects created in the main folder.',
             toLineList(projects),
           );
         } catch (error) {
-          return formatToolError('listar os projetos criados', error);
+          return formatToolError('list the created projects', error);
         }
       },
     }),
     check_typescript: tool({
       description:
-        'Valida o código TypeScript do projeto, retornando erros caso existam',
+        'Type-checks the project TypeScript code and returns any errors',
       inputSchema: z.object({
         file_or_folder_path: z.string().optional(),
       }),
@@ -59,22 +59,19 @@ export function createProjectTools(projectService: ProjectService) {
             projectService.checkTypeScriptErrors(file_or_folder_path);
 
           if (!result.length) {
-            return toolSuccess('Verificação TypeScript concluída.', [
-              'Nenhum problema encontrado.',
+            return toolSuccess('TypeScript check finished.', [
+              'No problems found.',
             ]);
           }
 
-          return toolSuccess(
-            'Verificação TypeScript concluída.',
-            toLineList(result),
-          );
+          return toolSuccess('TypeScript check finished.', toLineList(result));
         } catch (error) {
-          return formatToolError('validar o TypeScript', error);
+          return formatToolError('check TypeScript', error);
         }
       },
     }),
     install_depency: tool({
-      description: 'Instala uma nova dependência',
+      description: 'Installs a new dependency',
       inputSchema: z.object({
         dependecyName: z.string(),
         isDev: z.boolean(),
@@ -91,13 +88,13 @@ export function createProjectTools(projectService: ProjectService) {
             dependecyName,
             isDev,
           );
-          return toolSuccess('Dependência instalada com sucesso.', [
+          return toolSuccess('Dependency installed.', [
             typeof result === 'string'
               ? result
               : JSON.stringify(result, null, 2),
           ]);
         } catch (error) {
-          return formatToolError('instalar a dependência', error);
+          return formatToolError('install the dependency', error);
         }
       },
     }),

@@ -1,10 +1,27 @@
-.chat-sidebar__item-button:focus-visible,
-.chat-sidebar__item-delete:focus-visible,
-.chat-sidebar__toggle:focus-visible,
-.chat-mode-popover__trigger:focus-visible,
-.chat-mode-popover__option:focus-visible {
-  outline: 2px solid rgba(124, 140, 255, 0.9);
+/* Every control shows the theme's focus colour when reached by keyboard.
+   :where() keeps it at zero specificity, so a component's own ring wins. */
+:where(
+    button,
+    a[href],
+    summary,
+    select,
+    [tabindex]:not([tabindex="-1"])
+  ):focus-visible {
+  outline: 2px solid var(--chat-focus-ring);
   outline-offset: 2px;
+}
+
+/* Rows inside scrolling panels: draw the ring inside so the list doesn't clip it. */
+.chat-conversation-item__open:focus-visible,
+.chat-conversation-item__delete:focus-visible,
+.chat-mode-popover__option:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Fields drop the outline and colour their border instead. */
+.chat-select:focus-visible,
+.chat-input--modal:focus-visible {
+  border-color: var(--chat-focus-ring);
 }
 
 .chat-status-pill,
@@ -39,8 +56,18 @@
   flex-shrink: 0;
 }
 
-.chat-header__action-button {
+.chat-button.chat-header__action-button {
+  width: 32px;
+  min-height: 32px;
+  height: 32px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
   color: var(--chat-text-muted);
+}
+
+.chat-button.chat-header__action-button:hover {
+  background: var(--chat-hover);
 }
 
 .chat-header__action-icon-wrap {

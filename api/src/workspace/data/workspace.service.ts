@@ -59,7 +59,7 @@ export class WorkspaceService implements OnModuleInit {
     if (this.isAllowedRoot(root)) return;
 
     throw new ForbiddenException(
-      `A pasta "${root}" não está dentro de um workspace permitido (DOTY_WORKSPACE_ROOTS).`,
+      `The folder "${root}" is not inside an allowed workspace (DOTY_WORKSPACE_ROOTS).`,
     );
   }
 
@@ -67,7 +67,7 @@ export class WorkspaceService implements OnModuleInit {
   resolve(input: string | undefined): string {
     const root = this.contextService.get('root');
     if (!root) {
-      throw new BadRequestException('Raiz do workspace não encontrada.');
+      throw new BadRequestException('Workspace root not found.');
     }
 
     return this.resolveIn(root, input);

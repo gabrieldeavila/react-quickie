@@ -18,7 +18,7 @@ export type ToolPartView = {
 };
 
 export const LEGACY_APPROVAL_TEXT =
-  "Pedido de aprovação de uma versão anterior. Ele não pode mais ser respondido.";
+  "Approval request from an earlier version. It can no longer be answered.";
 
 function stringifyResult(output: unknown): string {
   if (output == null) return "";
@@ -26,10 +26,10 @@ function stringifyResult(output: unknown): string {
 
   const result = output as ToolOutput;
   if (result.success === false) {
-    return result.error || result.message || "Erro na execução da tool.";
+    return result.error || result.message || "The tool failed.";
   }
   if (result.success === true) {
-    const message = result.message || "Tool executada com sucesso.";
+    const message = result.message || "The tool ran successfully.";
     if (result.data === undefined) return message;
     const data =
       typeof result.data === "string"
@@ -41,7 +41,7 @@ function stringifyResult(output: unknown): string {
   try {
     return JSON.stringify(output, null, 2);
   } catch {
-    return "Saída da tool indisponível.";
+    return "Tool output unavailable.";
   }
 }
 
@@ -63,7 +63,7 @@ export function getToolStatus(part: ToolPartView): ToolStatus {
 export function formatToolOutput(part: ToolPartView): string {
   if (isDeniedToolPart(part)) {
     const reason = getDeniedReason(part);
-    return reason ? `Negado: ${reason}` : "Negado pelo usuário.";
+    return reason ? `Denied: ${reason}` : "Denied by the user.";
   }
   if (part.state === "output-error") return part.errorText ?? "";
   if (isLegacyApprovalRequestOutput(part.output)) return LEGACY_APPROVAL_TEXT;

@@ -4,7 +4,7 @@ import "@/styles/chat-usage.css";
 export function CompactionNotice() {
   return (
     <p className="chat-compaction-notice" role="note">
-      Mensagens antigas resumidas para caber no contexto do modelo.
+      Older messages were summarized to fit the model's context.
     </p>
   );
 }

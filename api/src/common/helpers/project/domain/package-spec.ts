@@ -7,7 +7,7 @@ export function assertPackageSpec(dependency: string): string {
   const spec = dependency.trim();
   if (!spec || spec.startsWith('-') || /\s/.test(spec)) {
     throw new Error(
-      `Nome de dependência inválido: "${dependency}". Informe um único pacote, como "lodash" ou "@types/node@^24".`,
+      `Invalid dependency name: "${dependency}". Give a single package, such as "lodash" or "@types/node@^24".`,
     );
   }
   return spec;

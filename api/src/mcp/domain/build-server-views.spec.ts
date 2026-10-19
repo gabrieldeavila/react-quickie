@@ -13,7 +13,7 @@ describe('buildServerViews', () => {
         {
           name: 'bad',
           source: 'global',
-          error: 'Variáveis de ambiente ausentes: X',
+          error: 'Missing environment variables: X',
         },
       ],
       [{ name: 'shell', source: 'project', config: { command: 'sh' } }],
@@ -37,7 +37,7 @@ describe('buildServerViews', () => {
         source: 'global',
         transport: 'unknown',
         status: 'error',
-        error: 'Variáveis de ambiente ausentes: X',
+        error: 'Missing environment variables: X',
       },
       {
         name: 'shell',

@@ -57,7 +57,7 @@ export function runPrettier(filePath: string) {
     execFileSync('npx', ['prettier', '--write', filePath], { stdio: 'ignore' });
   } catch (error) {
     console.warn(
-      'Aviso: Não foi possível rodar o Prettier automaticamente.',
+      'Warning: could not run Prettier automatically.',
       (error as Error)?.message,
     );
   }

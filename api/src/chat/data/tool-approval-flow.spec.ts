@@ -214,7 +214,7 @@ describe('tool approval flow (AI SDK + Doty policy)', () => {
     const { tools, toolApproval, execute } = setup();
     const model = mockModel(
       toolCallStream('sudo reboot'),
-      textStream('Não posso rodar isso.'),
+      textStream("I can't run that."),
     );
 
     const result = streamText({
@@ -233,7 +233,7 @@ describe('tool approval flow (AI SDK + Doty policy)', () => {
     // The SDK leaves an automatic denial as `approval-responded` in the UI message.
     expect(part.state).toBe('approval-responded');
     expect(part.approval).toMatchObject({ approved: false, isAutomatic: true });
-    expect(part.approval.reason).toMatch(/não permitido/);
+    expect(part.approval.reason).toMatch(/not allowed/);
     expect(execute).not.toHaveBeenCalled();
     expect(JSON.stringify(model.doStreamCalls[1].prompt)).toContain(
       'execution-denied',

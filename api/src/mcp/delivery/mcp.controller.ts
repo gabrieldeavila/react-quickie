@@ -55,16 +55,16 @@ export class McpController {
   async trust(@Body() body: { hash?: unknown }) {
     const root = this.requireRoot();
     if (typeof body.hash !== 'string') {
-      throw new BadRequestException('Informe o hash da configuração revisada.');
+      throw new BadRequestException('Send the hash of the reviewed config.');
     }
 
     const result = await this.serversService.trustProject(root, body.hash);
     if (result === 'missing') {
-      throw new NotFoundException('Este projeto não tem .doty/mcp.json.');
+      throw new NotFoundException('This project has no .doty/mcp.json.');
     }
     if (result === 'changed') {
       throw new ConflictException(
-        'O arquivo mudou desde que foi exibido. Revise-o novamente.',
+        'The file changed since it was shown. Review it again.',
       );
     }
     return this.list();
@@ -77,8 +77,7 @@ export class McpController {
     const root = this.requireRoot();
     const { active } = await this.serversService.resolve(root);
     const server = active.find((candidate) => candidate.name === name);
-    if (!server)
-      throw new NotFoundException(`Servidor MCP "${name}" não encontrado.`);
+    if (!server) throw new NotFoundException(`MCP server "${name}" not found.`);
 
     await this.pool.disconnect(root, name);
     if (isUsableServer(server)) await this.pool.getTools(root, server);
@@ -87,8 +86,7 @@ export class McpController {
 
   private requireRoot(): string {
     const root = this.contextService.get('root');
-    if (!root)
-      throw new BadRequestException('Informe a raiz do projeto (root).');
+    if (!root) throw new BadRequestException('Send the project root (root).');
     return root;
   }
 }

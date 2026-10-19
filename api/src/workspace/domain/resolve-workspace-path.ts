@@ -21,7 +21,7 @@ export function resolveWorkspacePath(
   }
 
   if (deniedPaths.some((denied) => isPathInside(denied, candidate))) {
-    throw new WorkspaceEscapeError(value, 'em uma pasta protegida');
+    throw new WorkspaceEscapeError(value, 'in a protected folder');
   }
 
   return candidate;

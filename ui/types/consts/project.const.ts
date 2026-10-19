@@ -15,7 +15,7 @@ export const PROJECT_TEMPLATE_OPTIONS: Array<{
   { label: "next-base", value: "next-base" },
   { label: "nest-base (backend)", value: "nest-base" },
   {
-    label: "Nest + Vite (servidor fullstack)",
+    label: "Nest + Vite (full-stack server)",
     value: "nest-vite-base",
   },
 ];

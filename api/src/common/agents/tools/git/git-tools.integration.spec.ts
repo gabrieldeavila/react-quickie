@@ -97,7 +97,7 @@ describe('git tools (integration)', () => {
     });
 
     expect(review.success).toBe(false);
-    expect(review.error).toContain('Revisão inválida');
+    expect(review.error).toContain('Invalid revision');
     expect(fs.existsSync(output)).toBe(false);
   });
 });

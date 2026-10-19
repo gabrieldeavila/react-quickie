@@ -9,15 +9,13 @@ import { withRoot, type GetRoot } from './with-root';
 const createCommitInputSchema = z.object({
   message: z
     .string()
-    .describe(
-      'Mensagem descritiva do commit (ex: "feat: adiciona componente de header")',
-    ),
+    .describe('Descriptive commit message (e.g. "feat: add header component")'),
   files: z
     .array(z.string())
     .optional()
     .default(['.'])
     .describe(
-      'Lista de caminhos dos arquivos para adicionar ao commit. Use ["."] para commitar todos os arquivos modificados.',
+      'File paths to add to the commit. Use ["."] to commit every changed file.',
     ),
 });
 
@@ -33,22 +31,19 @@ function hasHead(root: string): Promise<boolean> {
 async function readChanges(root: string) {
   const status = await runGit(root, ['status', '-s']);
   if (!status.trim()) {
-    return toolSuccess('Nenhuma alteração pendente.', ['working tree clean']);
+    return toolSuccess('No uncommitted changes.', ['working tree clean']);
   }
 
   if (!(await hasHead(root))) {
     const staged = await runGit(root, ['diff', '--cached']);
     return toolSuccess(
-      'Primeiro commit do repositório.',
+      'First commit of the repository.',
       formatChanges(status, staged),
     );
   }
 
   const diff = await runGit(root, ['diff', 'HEAD']);
-  return toolSuccess(
-    'Alterações pendentes encontradas.',
-    formatChanges(status, diff),
-  );
+  return toolSuccess('Uncommitted changes found.', formatChanges(status, diff));
 }
 
 /** Working-tree tools: pending changes and committing them. */
@@ -56,24 +51,24 @@ export function createGitChangesTools(getRoot: GetRoot) {
   return {
     create_commit: tool({
       description:
-        'Realiza o stage (git add) de arquivos específicos e cria um novo commit (git commit) com a mensagem fornecida.',
+        'Stages specific files (git add) and creates a new commit (git commit) with the given message.',
       inputSchema: createCommitInputSchema,
       execute: ({ message, files }: { message: string; files: string[] }) =>
-        withRoot(getRoot, 'criar o commit', async (root) => {
+        withRoot(getRoot, 'create the commit', async (root) => {
           await runGit(root, addArgs(files));
           const stdout = await runGit(root, commitArgs(message));
-          return toolSuccess('Commit criado com sucesso.', [
-            stdout.trim() || 'Commit criado com sucesso.',
+          return toolSuccess('Commit created.', [
+            stdout.trim() || 'Commit created.',
           ]);
         }),
     }),
 
     get_uncommitted_changes: tool({
       description:
-        'Verifica o status atual do repositório (arquivos modificados, adicionados ou deletados) e o diff do código. DEVE ser usada antes de criar um commit para entender o contexto, revisar o código e sugerir mensagens.',
+        'Shows the current repository status (changed, added or deleted files) and the code diff. MUST be used before creating a commit, to understand the context, review the code and suggest messages.',
       inputSchema: z.object({}),
       execute: () =>
-        withRoot(getRoot, 'verificar alterações pendentes', readChanges),
+        withRoot(getRoot, 'check uncommitted changes', readChanges),
     }),
   };
 }

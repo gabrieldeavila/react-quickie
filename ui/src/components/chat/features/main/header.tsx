@@ -1,95 +1,51 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useMemo } from "react";
 import {
   useChatBaseContext,
   useChatServicesContext,
 } from "../../context/context";
-import ChatModePopover from "./modePopover";
-import ChatSpecialtyPopover from "./specialtyPopover";
-import { ModelPicker } from "@/features/models/components/ModelPicker";
-import { UsageHeaderBadges } from "@/features/usage/components/UsageHeaderBadges";
 import Button from "@/components/primitives/button";
-import { FiFolderPlus, FiMessageCircle, FiSettings } from "react-icons/fi";
-import { getHostFeatures } from "@/host/domain/host-features";
-import { getRuntimeConfig } from "@/host/runtime-config";
+import { FiPlus } from "react-icons/fi";
+import { HeaderOverflowMenu } from "@/features/header-menu/components/HeaderOverflowMenu";
+import { DEFAULT_CONVERSATION_TITLE } from "@/lib/conversation-title";
+import { useHeaderMenuItems } from "../../hooks/events/useHeaderMenuItems";
+import { ConversationSwitcher } from "@/features/conversations/components/ConversationSwitcher";
 
-const { canCreateProjects } = getHostFeatures(getRuntimeConfig().host);
-
+/** Slim header: conversation switcher, new chat and the "⋯" menu. Pickers live in the message box. */
 const ChatHeader = memo(() => {
-  const {
-    history,
-    setIsCreateModalOpen,
-    setDraftContext,
-    projectContext,
-    setIsRootModalOpen,
-    conversationModel,
-  } = useChatBaseContext();
-  const {
-    renderedMessages,
-    chatStatusLabel,
-    isFrontendMode,
-    isBackendMode,
-    isAgnosticMode,
-    handleCreateConversation,
-  } = useChatServicesContext();
+  const { history, status } = useChatBaseContext();
+  const { chatStatusLabel, handleCreateConversation } =
+    useChatServicesContext();
+  const menuItems = useHeaderMenuItems();
 
   const activeConversationTitle: string = useMemo(
-    () => history.activeConversation?.title ?? "Nova conversa",
+    () => history.activeConversation?.title ?? DEFAULT_CONVERSATION_TITLE,
     [history.activeConversation],
   );
-
-  const handleOpenRootModal = useCallback((): void => {
-    setDraftContext(projectContext);
-    setIsRootModalOpen(true);
-  }, [projectContext, setDraftContext, setIsRootModalOpen]);
 
   return (
     <header className="chat-header">
       <div className="chat-header__top">
-        <div>
-          <div className="chat-header__eyebrow">AI Assistant</div>
-          <h1 className="chat-title">{activeConversationTitle}</h1>
+        <div className="chat-header__title-wrap">
+          <ConversationSwitcher
+            title={activeConversationTitle}
+            conversations={history.conversations}
+            activeConversationId={history.activeConversationId}
+            isLoading={!history.isHydrated}
+            onSelect={history.setActiveConversationId}
+            onDelete={history.deleteConversation}
+          />
         </div>
 
-        <div className="chat-header__actions flex items-center gap-3">
-          <span className="chat-status-pill">{chatStatusLabel}</span>{" "}
-          <UsageHeaderBadges
-            messages={renderedMessages}
-            contextWindow={conversationModel.resolved?.model.contextWindow}
-          />
-          <ModelPicker
-            modelRef={conversationModel.modelRef}
-            options={conversationModel.options}
-            selectModel={conversationModel.selectModel}
-          />
-          <ChatModePopover />
-          <ChatSpecialtyPopover />
-          {canCreateProjects &&
-          (isFrontendMode || isBackendMode || isAgnosticMode) ? (
-            <Button
-              title={
-                isBackendMode
-                  ? "Novo backend"
-                  : isAgnosticMode
-                    ? "Novo servidor fullstack"
-                    : "Novo frontend"
-              }
-              icon={FiFolderPlus}
-              onClick={() => setIsCreateModalOpen(true)}
-            />
+        <div className="chat-header__actions">
+          {status === "error" ? (
+            <span className="chat-status-pill">{chatStatusLabel}</span>
           ) : null}
           <Button
-            icon={FiMessageCircle}
-            highlight
+            icon={FiPlus}
             onClick={handleCreateConversation}
-            title="Nova conversa"
+            title="New conversation"
           />
-          <Button
-            icon={FiSettings}
-            highlight
-            onClick={handleOpenRootModal}
-            aria-label="Abrir configurações do projeto"
-            title="Configurações"
-          />
+          <HeaderOverflowMenu items={menuItems} />
         </div>
       </div>
     </header>

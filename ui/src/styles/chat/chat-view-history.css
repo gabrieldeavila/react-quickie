@@ -1,0 +1,13 @@
+/* VSCode: no in-page header. The "History" title-bar button opens the
+   conversation panel from this zero-height strip at the top of the chat. */
+.chat-view-history {
+  position: relative;
+  flex: 0 0 auto;
+  height: 0;
+}
+
+.chat-view-history .chat-conversation-switcher__panel {
+  top: 6px;
+  left: 8px;
+  width: min(360px, calc(100vw - 16px));
+}

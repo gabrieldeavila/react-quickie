@@ -1,11 +1,14 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
-import { FiSend, FiSquare, FiX } from "react-icons/fi";
 import {
   useChatBaseContext,
   useChatServicesContext,
-} from "../../context/context";
-import useSendMessage from "../../hooks/events/useSendMessage";
+} from "../../../context/context";
+import useSendMessage from "../../../hooks/events/useSendMessage";
 import { ModelNotices } from "@/features/models/components/ModelNotices";
+import { CHAT_INPUT_ID } from "./chat-input-id";
+import { ComposerToolbar } from "./ComposerToolbar";
+import { PastedImages } from "./PastedImages";
+import { SendButton } from "./SendButton";
 
 export function ChatComposer() {
   const {
@@ -16,7 +19,6 @@ export function ChatComposer() {
     stop,
     pastedImages,
     addPastedImages,
-    removePastedImage,
     attachmentError,
     rejectAttachments,
     conversationModel,
@@ -28,7 +30,6 @@ export function ChatComposer() {
 
   const onSend = useSendMessage();
 
-  const isStoppable = isChatPending;
   const isSendDisabled = useMemo(
     () => !hasInput || (status !== "ready" && status !== "error"),
     [hasInput, status],
@@ -71,7 +72,7 @@ export function ChatComposer() {
       if (files.length === 0) return;
       event.preventDefault();
       if (!imagesAllowed) {
-        rejectAttachments("O modelo selecionado não aceita imagens.");
+        rejectAttachments("The selected model doesn't accept images.");
         return;
       }
       void addPastedImages(files);
@@ -82,24 +83,7 @@ export function ChatComposer() {
   return (
     <div className="chat-input-section">
       <div className="chat-composer">
-        {pastedImages.length > 0 ? (
-          <div className="chat-pasted-images" aria-label="Imagens para enviar">
-            {pastedImages.map((image) => (
-              <div className="chat-pasted-image" key={image.id}>
-                <img src={image.url} alt={image.filename ?? "Imagem colada"} />
-                <button
-                  type="button"
-                  className="chat-pasted-image__remove"
-                  onClick={() => removePastedImage(image.id)}
-                  aria-label={`Remover ${image.filename ?? "imagem"}`}
-                  title="Remover imagem"
-                >
-                  <FiX aria-hidden="true" />
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : null}
+        <PastedImages />
         <ModelNotices
           unavailableModel={conversationModel.unavailableModel}
           resolved={conversationModel.resolved}
@@ -110,14 +94,14 @@ export function ChatComposer() {
             {attachmentError}
           </p>
         ) : null}
-        <div className="input-wrapper">
+        <div className="chat-composer__field">
           <textarea
             ref={textareaRef}
+            id={CHAT_INPUT_ID}
             className="chat-input"
+            aria-label="Message"
             placeholder={
-              imagesAllowed
-                ? "Digite sua mensagem ou cole uma imagem..."
-                : "Digite sua mensagem..."
+              imagesAllowed ? "Ask Doty… (paste images too)" : "Ask Doty…"
             }
             value={input}
             onChange={(event) => setInput(event.target.value)}
@@ -125,21 +109,14 @@ export function ChatComposer() {
             onPaste={handlePaste}
             rows={1}
           />
-
-          <button
-            className={`send-button ${isStoppable ? "send-button--pause" : ""}`}
-            onClick={isStoppable ? stop : onSend}
-            disabled={isStoppable ? false : isSendDisabled}
-            title={isStoppable ? "Parar resposta" : "Enviar mensagem"}
-            aria-label={isStoppable ? "Parar resposta" : "Enviar mensagem"}
-            type="button"
-          >
-            {isStoppable ? (
-              <FiSquare aria-hidden="true" />
-            ) : (
-              <FiSend aria-hidden="true" />
-            )}
-          </button>
+          <ComposerToolbar>
+            <SendButton
+              isStoppable={isChatPending}
+              isSendDisabled={isSendDisabled}
+              onSend={onSend}
+              onStop={stop}
+            />
+          </ComposerToolbar>
         </div>
       </div>
     </div>

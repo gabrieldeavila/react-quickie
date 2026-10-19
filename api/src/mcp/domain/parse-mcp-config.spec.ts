@@ -68,7 +68,7 @@ describe('parseMcpConfig', () => {
 
     expect(server.config).toBeUndefined();
     expect(server.error).toBe(
-      'Variáveis de ambiente ausentes: MISSING_HOST, NOPE',
+      'Missing environment variables: MISSING_HOST, NOPE',
     );
   });
 
@@ -86,7 +86,7 @@ describe('parseMcpConfig', () => {
     const [server] = parse({
       mcpServers: { remote: { type: 'http', url: 'not a url' } },
     }).servers;
-    expect(server.error).toContain('URL inválida');
+    expect(server.error).toContain('Invalid URL');
   });
 
   it('errors only the invalid server and keeps the others', () => {
@@ -110,7 +110,7 @@ describe('parseMcpConfig', () => {
 
   it('reports a file-level error for bad JSON or a missing mcpServers object', () => {
     expect(parseMcpConfig('{', { source: 'global', env }).error).toBe(
-      'JSON inválido.',
+      'Invalid JSON.',
     );
     expect(parse({ servers: {} }).error).toContain('mcpServers');
     expect(parse([]).error).toContain('mcpServers');

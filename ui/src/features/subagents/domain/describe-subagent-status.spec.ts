@@ -17,9 +17,9 @@ const view = (status: SubagentView["status"]): SubagentView => ({
 
 describe("describe-subagent-status", () => {
   it("labels run and step states", () => {
-    expect(describeSubagentStatus("queued")).toBe("na fila");
-    expect(describeSubagentStatus("aborted")).toBe("interrompido");
-    expect(describeStepState("denied")).toBe("não executado");
+    expect(describeSubagentStatus("queued")).toBe("queued");
+    expect(describeSubagentStatus("aborted")).toBe("stopped");
+    expect(describeStepState("denied")).toBe("not run");
   });
 
   it("summarizes a group by how many are still active", () => {
@@ -29,9 +29,9 @@ describe("describe-subagent-status", () => {
         view("queued"),
         view("completed"),
       ]),
-    ).toBe("3 subagentes · 2 em execução");
+    ).toBe("3 sub-agents · 2 running");
     expect(describeSubagentGroup([view("completed"), view("failed")])).toBe(
-      "2 subagentes · concluídos",
+      "2 sub-agents · done",
     );
   });
 });

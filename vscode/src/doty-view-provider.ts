@@ -24,7 +24,7 @@ export class DotyViewProvider implements vscode.WebviewViewProvider {
     this.renderedKey = undefined;
     view.webview.options = { enableScripts: true, localResourceRoots: [this.uiDir] };
 
-    const messages = this.bridge.attach(view.webview);
+    const messages = this.bridge.attach(view);
     view.onDidDispose(() => {
       messages.dispose();
       this.bridge.detach();
@@ -41,7 +41,7 @@ export class DotyViewProvider implements vscode.WebviewViewProvider {
     const roots = getWorkspaceRoots();
 
     if (roots.length === 0) {
-      this.show('empty', buildLoadingHtml('Abra uma pasta para usar o Doty.'));
+      this.show('empty', buildLoadingHtml('Open a folder to use Doty.'));
     } else if (status.state === 'ready') {
       if (force) this.renderedKey = undefined;
       this.show(`app:${status.apiUrl}`, () =>
@@ -56,7 +56,7 @@ export class DotyViewProvider implements vscode.WebviewViewProvider {
       this.show(`failed:${status.message}`, buildLoadingHtml(status.message));
     } else if (!this.renderedKey?.startsWith('app:')) {
       // Keep the app on screen during a crash restart: same port and token.
-      this.show('starting', buildLoadingHtml('Iniciando o Doty…'));
+      this.show('starting', buildLoadingHtml('Starting Doty…'));
     }
   }
 

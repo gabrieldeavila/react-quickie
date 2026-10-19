@@ -100,7 +100,7 @@ export class MemoryService implements OnModuleInit {
       };
     } catch {
       throw new InternalServerErrorException(
-        'Erro ao ler a memória centralizada do projeto.',
+        'Failed to read the project memory.',
       );
     }
   }
@@ -131,7 +131,7 @@ export class MemoryService implements OnModuleInit {
       return nextMemory;
     } catch {
       throw new InternalServerErrorException(
-        'Erro ao salvar a memória centralizada do projeto.',
+        'Failed to save the project memory.',
       );
     }
   }

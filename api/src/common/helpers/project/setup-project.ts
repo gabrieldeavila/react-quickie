@@ -11,16 +11,16 @@ export function initGitRepository(projectPath: string): string {
   try {
     execSync('git init', options);
     execSync('git checkout -b main', options);
-    output += 'Repositório Git inicializado.\n';
+    output += 'Git repository initialized.\n';
 
     execSync('git add .', options);
     execSync(
       'git commit -m "chore: initial commit from react-quickie"',
       options,
     );
-    output += '\nCommit inicial finalizado com sucesso.\n';
+    output += '\nInitial commit created.\n';
   } catch (error) {
-    output += `\nAviso durante execução de comandos: ${(error as Error).message}`;
+    output += `\nWarning while running commands: ${(error as Error).message}`;
   }
   return output;
 }

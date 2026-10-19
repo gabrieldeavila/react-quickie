@@ -24,39 +24,37 @@ describe('describeProviderError', () => {
     );
 
     expect(message).toContain('anthropic');
-    expect(message).toContain('limite de uso (429)');
-    expect(message).toContain('Falhou 3 vezes');
+    expect(message).toContain('rate limit (429)');
+    expect(message).toContain('It failed 3 times in a row');
   });
 
   it.each([500, 503, 529])('explains an overload (%i)', (status) => {
     expect(describeProviderError(apiError(status), 'openai')).toContain(
-      `sobrecarregado ou fora do ar (${status})`,
+      `overloaded or down (${status})`,
     );
   });
 
   it('does not mention attempts for a single call', () => {
     expect(describeProviderError(apiError(503), 'openai')).not.toContain(
-      'vezes',
+      'times in a row',
     );
   });
 
   it.each([401, 403])('explains a rejected key (%i)', (status) => {
     expect(describeProviderError(apiError(status), 'deepseek')).toContain(
-      `recusou a chave de API (${status})`,
+      `rejected the API key (${status})`,
     );
   });
 
   it('explains a missing key', () => {
     const error = new LoadAPIKeyError({ message: 'missing' });
-    expect(describeProviderError(error, 'openai')).toContain(
-      'Nenhuma chave de API',
-    );
+    expect(describeProviderError(error, 'openai')).toContain('No API key');
   });
 
   it('shows the provider message for an unknown model (404)', () => {
     const error = apiError(404, "The model 'gpt-6.1-luna' does not exist");
     expect(describeProviderError(error, 'openai')).toBe(
-      "openai recusou a chamada (404): The model 'gpt-6.1-luna' does not exist",
+      "openai rejected the call (404): The model 'gpt-6.1-luna' does not exist",
     );
   });
 

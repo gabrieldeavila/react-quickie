@@ -8,10 +8,7 @@ import { createChatTransport } from "@/helpers/chat.transport.helper";
 import { shouldPersistAssistantMessage } from "@/features/chat/domain/to-assistant-record";
 import { useConversationModel } from "@/features/models/hooks/useConversationModel";
 import { useHostSelection } from "@/host/hooks/useHostSelection";
-import {
-  readProjectContext,
-  readSidebarOpenState,
-} from "../../../helpers/chat.helper";
+import { readProjectContext } from "../../../helpers/chat.helper";
 import { useChatComposer } from "../hooks/start/useChatComposer";
 import { useChatHistory } from "../hooks/start/useChatHistory";
 import type { ProjectContext } from "~types/interface/chat.interface";
@@ -21,8 +18,6 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
   const [isRootModalOpen, setIsRootModalOpen] = useState<boolean>(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
 
-  const [isSidebarOpen, setIsSidebarOpen] =
-    useState<boolean>(readSidebarOpenState);
   const [projectContext, setProjectContext] =
     useState<ProjectContext>(readProjectContext);
   const [draftContext, setDraftContext] =
@@ -109,8 +104,6 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       setIsRootModalOpen,
       isCreateModalOpen,
       setIsCreateModalOpen,
-      isSidebarOpen,
-      setIsSidebarOpen,
       projectContext,
       setProjectContext,
       draftContext,
@@ -130,7 +123,6 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
     [
       isRootModalOpen,
       isCreateModalOpen,
-      isSidebarOpen,
       projectContext,
       draftContext,
       history,

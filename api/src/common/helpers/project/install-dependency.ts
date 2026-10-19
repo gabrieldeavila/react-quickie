@@ -40,7 +40,7 @@ export function installDependency(
           ? { success: true, output: stdout }
           : {
               success: false,
-              error: stderr || `Falha ao instalar ${spec} (código ${code})`,
+              error: stderr || `Failed to install ${spec} (exit code ${code})`,
             },
       );
     });

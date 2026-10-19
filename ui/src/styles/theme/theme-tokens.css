@@ -1,0 +1,96 @@
+/*
+ * Colour tokens. VS Code injects its theme as --vscode-* variables into the
+ * webview; the browser has none, so every token falls back to the original
+ * dark palette. Alpha variants are written as
+ * `color-mix(in srgb, var(--token) N%, transparent)`, which equals the old
+ * rgba() on the web and follows the theme in VS Code.
+ */
+:root {
+  --chat-font: var(
+    --vscode-font-family,
+    "Cabinet Grotesk",
+    "Satoshi",
+    "Inter",
+    system-ui,
+    sans-serif
+  );
+
+  /* Text */
+  --chat-text: var(--vscode-foreground, #e7edf5);
+  --chat-text-strong: var(--vscode-foreground, #f3f6ff);
+  --chat-text-muted: var(--vscode-descriptionForeground, #91a0b4);
+  --chat-text-subtle: var(--vscode-descriptionForeground, rgba(231, 237, 245, 0.72));
+  --chat-quote-text: var(--vscode-foreground, rgba(231, 237, 245, 0.92));
+  --chat-typing-dot: var(--vscode-descriptionForeground, rgba(231, 237, 245, 0.7));
+  --chat-link: var(--vscode-textLink-foreground, #7c8cff);
+  --chat-link-hover: var(--vscode-textLink-activeForeground, #aab5ff);
+
+  /* Surfaces */
+  --chat-bg: var(--vscode-sideBar-background, #0b0f14);
+  --chat-surface: var(--vscode-editorWidget-background, rgba(15, 20, 28, 0.72));
+  --chat-surface-strong: var(--vscode-editor-background, rgba(18, 24, 33, 0.94));
+  --chat-popover-bg: var(--vscode-editorWidget-background, rgba(18, 22, 29, 0.98));
+  --chat-popover-border: var(--vscode-editorWidget-border, rgba(255, 255, 255, 0.09));
+  --chat-modal-bg: var(--vscode-editorWidget-background, rgba(10, 14, 20, 0.96));
+  --chat-backdrop: var(--vscode-widget-shadow, rgba(3, 6, 10, 0.6));
+  --chat-code-bg: var(--vscode-textCodeBlock-background, rgba(3, 6, 10, 0.85));
+  --chat-inline-code-bg: var(--vscode-textCodeBlock-background, rgba(255, 255, 255, 0.08));
+  --chat-quote-bg: var(--vscode-textBlockQuote-background, rgba(255, 255, 255, 0.03));
+  --chat-quote-border: var(--vscode-textBlockQuote-border, rgba(124, 140, 255, 0.55));
+  /* Base of the faint fills (ghost buttons, rows, pills), mixed at a few %. */
+  --chat-tint: var(--vscode-foreground, #ffffff);
+  --chat-hover: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.06));
+  --chat-row-hover: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05));
+  --chat-row-active: var(
+    --vscode-list-inactiveSelectionBackground,
+    rgba(255, 255, 255, 0.05)
+  );
+
+  /* Lines */
+  --chat-border: var(--vscode-panel-border, rgba(255, 255, 255, 0.08));
+  --chat-border-strong: var(
+    --vscode-input-border,
+    var(--vscode-panel-border, rgba(255, 255, 255, 0.14))
+  );
+  --chat-focus: var(--vscode-focusBorder, #7c8cff);
+  --chat-focus-ring: color-mix(in srgb, var(--chat-focus) 90%, transparent);
+
+  /* Inputs */
+  --chat-input-bg: var(--vscode-input-background, rgba(6, 10, 15, 0.55));
+  --chat-search-bg: var(--vscode-input-background, rgba(255, 255, 255, 0.03));
+  --chat-input-text: var(--vscode-input-foreground, #e7edf5);
+  --chat-input-placeholder: var(
+    --vscode-input-placeholderForeground,
+    rgba(145, 160, 180, 0.8)
+  );
+
+  /* Accent: the send button, the user's messages, links and highlights */
+  --chat-accent: var(--vscode-focusBorder, #7c8cff);
+  --chat-accent-2: var(--vscode-focusBorder, #8a5cf6);
+  --chat-accent-fill: var(
+    --vscode-button-background,
+    linear-gradient(135deg, rgba(124, 140, 255, 0.95), rgba(138, 92, 246, 0.92))
+  );
+  --chat-on-accent: var(--vscode-button-foreground, #f5f7ff);
+  --chat-on-accent-muted: var(--vscode-button-foreground, rgba(231, 237, 245, 0.78));
+  --chat-on-accent-strong: var(--vscode-button-foreground, #ffffff);
+  --chat-user: var(--chat-accent-fill);
+  /* Stop button: the toolbar's pressed colour, so it stands out from the input in every theme. */
+  --chat-stop-fill: var(--vscode-toolbar-activeBackground, rgba(255, 255, 255, 0.1));
+  --chat-stop-text: var(--vscode-foreground, #e7edf5);
+
+  /* Status */
+  --chat-error: var(--vscode-errorForeground, #f3b8b8);
+  --chat-success: var(--vscode-testing-iconPassed, #9be3b0);
+  --chat-warning: var(--vscode-editorWarning-foreground, #f1d38a);
+  --chat-warning-strong: var(--vscode-editorWarning-foreground, #f5b446);
+
+  /* Scrollbar */
+  --chat-scrollbar: var(--vscode-scrollbarSlider-background, rgba(124, 140, 255, 0.26));
+  --chat-scrollbar-hover: var(
+    --vscode-scrollbarSlider-hoverBackground,
+    rgba(124, 140, 255, 0.38)
+  );
+
+  --chat-shadow: 0 20px 60px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.35));
+}

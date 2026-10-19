@@ -14,18 +14,18 @@ export const ModelNotices = memo(
     if (unavailableModel) {
       notices.push(
         resolved
-          ? `O modelo ${unavailableModel} não está mais disponível. Usando ${resolved.model.label}.`
-          : `O modelo ${unavailableModel} não está mais disponível.`,
+          ? `The model ${unavailableModel} is no longer available. Using ${resolved.model.label}.`
+          : `The model ${unavailableModel} is no longer available.`,
       );
     }
     if (resolved && !resolved.model.supportsTools) {
       notices.push(
-        `${resolved.model.label} não usa ferramentas: o modo agente está indisponível.`,
+        `${resolved.model.label} doesn't use tools, so agent mode is unavailable.`,
       );
     }
     if (resolved && !resolved.model.supportsImages && hasPastedImages) {
       notices.push(
-        `${resolved.model.label} não aceita imagens; elas não serão enviadas.`,
+        `${resolved.model.label} doesn't accept images, so they won't be sent.`,
       );
     }
 

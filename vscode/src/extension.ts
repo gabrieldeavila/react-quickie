@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ApiProcess } from './api-process';
 import { askAboutSelection } from './commands/ask-about-selection';
+import { runViewCommand } from './commands/run-view-command';
 import { setApiKey } from './commands/set-api-key';
 import { DOTY_VIEW_ID, DotyViewProvider } from './doty-view-provider';
 import { HostBridge } from './host-bridge';
@@ -46,6 +47,11 @@ export function activate(context: vscode.ExtensionContext): void {
     api.onDidChangeStatus(() => view.render()),
     vscode.commands.registerCommand('doty.setApiKey', () => setApiKey(secrets)),
     vscode.commands.registerCommand('doty.askAboutSelection', () => askAboutSelection(bridge)),
+    vscode.commands.registerCommand('doty.newChat', () => runViewCommand(bridge, 'newChat')),
+    vscode.commands.registerCommand('doty.showHistory', () => runViewCommand(bridge, 'showHistory')),
+    vscode.commands.registerCommand('doty.openSettings', () =>
+      runViewCommand(bridge, 'openSettings'),
+    ),
     vscode.commands.registerCommand('doty.restartApi', restartApi),
     vscode.commands.registerCommand('doty.showLogs', () => log.show()),
     secrets.onDidChange(() => void restartApi()),

@@ -20,19 +20,19 @@ function base64Size(base64: string): number {
 
 function validateImage(part: FileUIPart): void {
   if (!ALLOWED_IMAGE_TYPES.has(part.mediaType)) {
-    throw new InvalidChatMessagesError('Tipo ou conteúdo de imagem inválido.');
+    throw new InvalidChatMessagesError('Invalid image type or content.');
   }
 
   const match = DATA_URL_PATTERN.exec(part.url);
   if (!match || match[1] !== part.mediaType) {
     throw new InvalidChatMessagesError(
-      'A imagem deve ser enviada como dado incorporado válido.',
+      'Images must be sent as valid embedded data.',
     );
   }
 
   const size = base64Size(match[2]);
   if (size <= 0 || size > MAX_IMAGE_BYTES) {
-    throw new InvalidChatMessagesError('Cada imagem deve ter até 5 MB.');
+    throw new InvalidChatMessagesError('Each image must be 5 MB or smaller.');
   }
 }
 
@@ -53,11 +53,11 @@ export function validateAttachments(messages: UIMessage[]): UIMessage[] {
     if (files.length === 0) continue;
 
     if (message.role !== 'user') {
-      throw new InvalidChatMessagesError('Tipo de anexo não suportado.');
+      throw new InvalidChatMessagesError('Unsupported attachment type.');
     }
     if (files.length > MAX_IMAGES_PER_MESSAGE) {
       throw new InvalidChatMessagesError(
-        'Você pode enviar até 4 imagens por mensagem.',
+        'You can send up to 4 images per message.',
       );
     }
     files.forEach(validateImage);

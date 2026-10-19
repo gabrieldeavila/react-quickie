@@ -85,7 +85,7 @@ describe("buildRequestMessages", () => {
           id: "u2",
           role: "user",
           parts: [
-            { type: "text", text: "[bash-approval-control] O resultado é..." },
+            { type: "text", text: "[bash-approval-control] The result is..." },
           ],
         },
       ]);

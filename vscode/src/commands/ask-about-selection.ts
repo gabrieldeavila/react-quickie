@@ -6,14 +6,14 @@ import type { HostBridge } from '../host-bridge';
 export async function askAboutSelection(bridge: HostBridge): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.selection.isEmpty) {
-    void vscode.window.showInformationMessage('Doty: selecione um trecho de código primeiro.');
+    void vscode.window.showInformationMessage('Doty: select some code first.');
     return;
   }
 
   const { document, selection } = editor;
   await vscode.commands.executeCommand(`${DOTY_VIEW_ID}.focus`);
 
-  bridge.postSelection({
+  bridge.post({
     type: 'insertSelection',
     file: vscode.workspace.asRelativePath(document.uri, false),
     startLine: selection.start.line + 1,

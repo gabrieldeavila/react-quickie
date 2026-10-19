@@ -11,7 +11,17 @@ export type OpenFileMessage = {
 
 export type ReadyMessage = { type: "ready" };
 
-export type WebviewToHostMessage = OpenFileMessage | ReadyMessage;
+/** Active conversation title, shown in the view's title bar. */
+export type SetTitleMessage = { type: "setTitle"; title: string };
+
+/** Whether focus is inside the webview; backs the editor's `doty.chatFocused` keybinding context. */
+export type SetFocusMessage = { type: "setFocus"; focused: boolean };
+
+export type WebviewToHostMessage =
+  | OpenFileMessage
+  | ReadyMessage
+  | SetTitleMessage
+  | SetFocusMessage;
 
 export type InsertSelectionMessage = {
   type: "insertSelection";
@@ -22,14 +32,15 @@ export type InsertSelectionMessage = {
   text: string;
 };
 
-export type HostToWebviewMessage = InsertSelectionMessage;
+/** View title-bar buttons ("New chat", "History", "Settings"). */
+export const HOST_COMMANDS = ["newChat", "showHistory", "openSettings"] as const;
+export type HostCommand = (typeof HOST_COMMANDS)[number];
 
-export function isInsertSelectionMessage(
-  data: unknown,
-): data is InsertSelectionMessage {
-  if (!data || typeof data !== "object") return false;
-  const message = data as Record<string, unknown>;
+export type RunCommandMessage = { type: "runCommand"; command: HostCommand };
 
+export type HostToWebviewMessage = InsertSelectionMessage | RunCommandMessage;
+
+function isInsertSelection(message: Record<string, unknown>): boolean {
   return (
     message.type === "insertSelection" &&
     typeof message.file === "string" &&
@@ -37,4 +48,19 @@ export function isInsertSelectionMessage(
     typeof message.startLine === "number" &&
     typeof message.endLine === "number"
   );
+}
+
+function isHostCommand(value: unknown): value is HostCommand {
+  return HOST_COMMANDS.includes(value as HostCommand);
+}
+
+export function parseHostMessage(data: unknown): HostToWebviewMessage | null {
+  if (!data || typeof data !== "object") return null;
+  const message = data as Record<string, unknown>;
+
+  if (isInsertSelection(message)) return message as InsertSelectionMessage;
+  if (message.type === "runCommand" && isHostCommand(message.command)) {
+    return { type: "runCommand", command: message.command };
+  }
+  return null;
 }

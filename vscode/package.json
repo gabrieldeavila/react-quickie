@@ -2,7 +2,8 @@
   "name": "doty",
   "displayName": "Doty",
   "description": "Doty AI assistant in the editor: chat, tools and approvals on the open workspace.",
-  "version": "0.0.1",
+  "icon": "media/doty-icon.png",
+  "version": "0.0.2",
   "publisher": "geavila",
   "private": true,
   "license": "UNLICENSED",
@@ -40,6 +41,24 @@
     },
     "commands": [
       {
+        "command": "doty.newChat",
+        "title": "New chat",
+        "category": "Doty",
+        "icon": "$(add)"
+      },
+      {
+        "command": "doty.showHistory",
+        "title": "History",
+        "category": "Doty",
+        "icon": "$(history)"
+      },
+      {
+        "command": "doty.openSettings",
+        "title": "Settings",
+        "category": "Doty",
+        "icon": "$(gear)"
+      },
+      {
         "command": "doty.setApiKey",
         "title": "Set API key",
         "category": "Doty"
@@ -61,6 +80,23 @@
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "doty.newChat",
+          "when": "view == doty.chatView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "doty.showHistory",
+          "when": "view == doty.chatView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "doty.openSettings",
+          "when": "view == doty.chatView",
+          "group": "navigation@3"
+        }
+      ],
       "editor/context": [
         {
           "command": "doty.askAboutSelection",
@@ -75,6 +111,14 @@
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "doty.newChat",
+        "key": "ctrl+n",
+        "mac": "cmd+n",
+        "when": "doty.chatFocused"
+      }
+    ],
     "configuration": {
       "title": "Doty",
       "properties": {

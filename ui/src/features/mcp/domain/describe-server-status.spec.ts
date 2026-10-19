@@ -18,13 +18,13 @@ describe("describeServerStatus", () => {
     expect(
       describeServerStatus(server({ status: "connected", toolCount: 3 })),
     ).toEqual({
-      label: "Conectado · 3 ferramentas",
+      label: "Connected · 3 tools",
       tone: "ok",
       canReconnect: true,
     });
     expect(
       describeServerStatus(server({ status: "connected", toolCount: 1 })).label,
-    ).toBe("Conectado · 1 ferramenta");
+    ).toBe("Connected · 1 tool");
   });
 
   it("does not offer reconnect for untrusted or connecting servers", () => {
