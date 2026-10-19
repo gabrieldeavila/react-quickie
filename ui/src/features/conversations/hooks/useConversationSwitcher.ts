@@ -2,10 +2,13 @@ import { useCallback, useMemo, useState } from "react";
 import { usePopoverPanel } from "@/components/primitives/usePopoverPanel";
 import type { ChatConversation } from "~types/interface/chat-db.interface";
 import { filterConversations } from "../domain/filter-conversations";
+import { useSwitcherKeyboard } from "./useSwitcherKeyboard";
 
 type UseConversationSwitcherParams = {
   conversations: ChatConversation[];
   onSelect: (conversationId: string) => void;
+  /** Where focus goes when the panel closes from the keyboard; defaults to the trigger. */
+  getReturnFocusTarget?: () => HTMLElement | null;
 };
 
 export type ConversationSwitcherState = ReturnType<
@@ -16,8 +19,11 @@ export type ConversationSwitcherState = ReturnType<
 export function useConversationSwitcher({
   conversations,
   onSelect,
+  getReturnFocusTarget,
 }: UseConversationSwitcherParams) {
-  const { isOpen, toggle, close, containerRef, panelRef } = usePopoverPanel();
+  const { isOpen, toggle, closeAndRestoreFocus, containerRef, panelRef } =
+    usePopoverPanel({ getReturnFocusTarget });
+  const handlePanelKeyDown = useSwitcherKeyboard(panelRef);
   const [query, setQuery] = useState<string>("");
 
   const visibleConversations = useMemo(
@@ -34,9 +40,9 @@ export function useConversationSwitcher({
   const select = useCallback(
     (conversationId: string) => {
       onSelect(conversationId);
-      close();
+      closeAndRestoreFocus();
     },
-    [onSelect, close],
+    [onSelect, closeAndRestoreFocus],
   );
 
   const selectFirstMatch = useCallback(() => {
@@ -49,6 +55,7 @@ export function useConversationSwitcher({
     toggleOpen,
     containerRef,
     panelRef,
+    handlePanelKeyDown,
     query,
     setQuery,
     visibleConversations,

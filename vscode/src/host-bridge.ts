@@ -4,11 +4,12 @@ import {
   type HostToWebviewMessage,
   type OpenFileMessage,
 } from './domain/host-messages';
+import { setChatFocusedContext } from './chat-focus-context';
 import { resolveOpenFilePath } from './domain/resolve-open-file-path';
 import { getWorkspaceRoots } from './workspace-roots';
 
 /**
- * Messages from the webview (open file, ready, title) and to it (selection,
+ * Messages from the webview (open file, ready, title, focus) and to it (selection,
  * title-bar commands). Messages sent before the UI is listening wait until it
  * says "ready".
  */
@@ -26,12 +27,14 @@ export class HostBridge {
   detach(): void {
     this.view = undefined;
     this.ready = false;
+    setChatFocusedContext(false);
   }
 
   /** The webview HTML was replaced; wait for the new page's "ready". */
   markReloading(): void {
     this.ready = false;
     if (this.view) this.view.description = undefined;
+    setChatFocusedContext(false);
   }
 
   post(message: HostToWebviewMessage): void {
@@ -47,6 +50,7 @@ export class HostBridge {
     if (message?.type === 'ready') this.flush();
     if (message?.type === 'openFile') void openFile(message);
     if (message?.type === 'setTitle' && this.view) this.view.description = message.title;
+    if (message?.type === 'setFocus') setChatFocusedContext(message.focused);
   }
 
   private flush(): void {

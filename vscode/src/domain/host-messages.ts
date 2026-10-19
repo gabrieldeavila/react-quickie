@@ -14,7 +14,14 @@ export type ReadyMessage = { type: 'ready' };
 /** Active conversation title, shown in the view's title bar. */
 export type SetTitleMessage = { type: 'setTitle'; title: string };
 
-export type WebviewToHostMessage = OpenFileMessage | ReadyMessage | SetTitleMessage;
+/** Whether focus is inside the webview; backs the `doty.chatFocused` keybinding context. */
+export type SetFocusMessage = { type: 'setFocus'; focused: boolean };
+
+export type WebviewToHostMessage =
+  | OpenFileMessage
+  | ReadyMessage
+  | SetTitleMessage
+  | SetFocusMessage;
 
 export type InsertSelectionMessage = {
   type: 'insertSelection';
@@ -42,6 +49,9 @@ export function parseWebviewMessage(data: unknown): WebviewToHostMessage | null 
   if (message.type === 'ready') return { type: 'ready' };
   if (message.type === 'setTitle' && typeof message.title === 'string') {
     return { type: 'setTitle', title: message.title.trim().slice(0, MAX_TITLE_LENGTH) };
+  }
+  if (message.type === 'setFocus' && typeof message.focused === 'boolean') {
+    return { type: 'setFocus', focused: message.focused };
   }
   if (message.type !== 'openFile' || typeof message.path !== 'string') {
     return null;

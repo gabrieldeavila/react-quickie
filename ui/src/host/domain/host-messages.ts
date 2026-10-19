@@ -14,10 +14,14 @@ export type ReadyMessage = { type: "ready" };
 /** Active conversation title, shown in the view's title bar. */
 export type SetTitleMessage = { type: "setTitle"; title: string };
 
+/** Whether focus is inside the webview; backs the editor's `doty.chatFocused` keybinding context. */
+export type SetFocusMessage = { type: "setFocus"; focused: boolean };
+
 export type WebviewToHostMessage =
   | OpenFileMessage
   | ReadyMessage
-  | SetTitleMessage;
+  | SetTitleMessage
+  | SetFocusMessage;
 
 export type InsertSelectionMessage = {
   type: "insertSelection";

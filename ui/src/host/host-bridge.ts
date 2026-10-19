@@ -19,6 +19,8 @@ export type HostBridge = {
   notifyReady(): void;
   /** Shows the active conversation title in the editor's view title bar. */
   setTitle(title: string): void;
+  /** Tells the editor whether focus is inside the chat, for its keybindings. */
+  setFocused(focused: boolean): void;
 };
 
 const browserHost: HostBridge = {
@@ -27,6 +29,7 @@ const browserHost: HostBridge = {
   onMessage: () => () => {},
   notifyReady: () => {},
   setTitle: () => {},
+  setFocused: () => {},
 };
 
 function createVscodeHost(): HostBridge {
@@ -47,6 +50,7 @@ function createVscodeHost(): HostBridge {
     },
     notifyReady: () => vscode.postMessage({ type: "ready" }),
     setTitle: (title) => vscode.postMessage({ type: "setTitle", title }),
+    setFocused: (focused) => vscode.postMessage({ type: "setFocus", focused }),
   };
 }
 

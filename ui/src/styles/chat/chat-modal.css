@@ -2,7 +2,7 @@
   width: min(520px, 100%);
   border: 1px solid var(--chat-border-strong);
   border-radius: 16px;
-  background: rgba(10, 14, 20, 0.96);
+  background: var(--chat-modal-bg);
   box-shadow: var(--chat-shadow);
   padding: 20px;
 }
@@ -29,7 +29,7 @@
   height: 40px;
   border: 1px solid var(--chat-border-strong);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--chat-tint) 4%, transparent);
   color: var(--chat-text);
   cursor: pointer;
 }
@@ -43,6 +43,6 @@
 
 .chat-modal__error {
   margin: 0;
-  color: #f3b8b8;
+  color: var(--chat-error);
   font-size: 0.92rem;
 }

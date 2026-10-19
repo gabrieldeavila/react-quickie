@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@1,200..800&display=swap');
+@import "./styles/theme/theme-tokens.css";
+@import "./styles/theme/theme-toggle-tokens.css";
 
 @font-face {
   font-family: "Cabinet Grotesk";
@@ -41,11 +43,11 @@
 }
 
 :root {
-  font-family: "Cabinet Grotesk", "Satoshi", "Inter", system-ui, sans-serif;
+  font-family: var(--chat-font);
   line-height: 1.5;
   font-weight: 400;
-  color: #e7edf5;
-  background: #0b0f14;
+  color: var(--chat-text);
+  background: var(--chat-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -65,7 +67,7 @@ body,
 
 body {
   min-height: 100dvh;
-  background: #0b0f14;
+  background: var(--chat-bg);
 }
 
 button,

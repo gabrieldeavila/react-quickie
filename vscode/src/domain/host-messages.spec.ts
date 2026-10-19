@@ -30,10 +30,22 @@ describe('parseWebviewMessage', () => {
     expect(long).toEqual({ type: 'setTitle', title: 'x'.repeat(80) });
   });
 
+  it('reads setFocus', () => {
+    expect(parseWebviewMessage({ type: 'setFocus', focused: true })).toEqual({
+      type: 'setFocus',
+      focused: true,
+    });
+    expect(parseWebviewMessage({ type: 'setFocus', focused: false })).toEqual({
+      type: 'setFocus',
+      focused: false,
+    });
+  });
+
   it('rejects unknown or malformed messages', () => {
     expect(parseWebviewMessage(null)).toBeNull();
     expect(parseWebviewMessage({ type: 'runBash', command: 'rm -rf /' })).toBeNull();
     expect(parseWebviewMessage({ type: 'openFile' })).toBeNull();
     expect(parseWebviewMessage({ type: 'setTitle', title: 3 })).toBeNull();
+    expect(parseWebviewMessage({ type: 'setFocus', focused: 'yes' })).toBeNull();
   });
 });

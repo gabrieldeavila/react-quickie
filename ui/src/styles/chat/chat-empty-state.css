@@ -46,5 +46,5 @@
 }
 .starter-prompts__item:hover {
   border-color: var(--chat-border-strong);
-  background: rgba(124, 140, 255, 0.1);
+  background: color-mix(in srgb, var(--chat-accent) 10%, transparent);
 }

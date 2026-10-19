@@ -9,6 +9,8 @@ export type HostFeatures = {
   canTypeRoot: boolean;
   /** VSCode: new chat, history and settings are view title-bar buttons, so the in-page header is hidden. */
   hasViewTitleActions: boolean;
+  /** VSCode: ⌘/Ctrl+N is a contributed keybinding (the editor sees every key first), not a page shortcut. */
+  hasEditorKeybindings: boolean;
 };
 
 export const AGENT_BUILDER_MODE = "agent_builder";
@@ -20,6 +22,7 @@ export function getHostFeatures(host: HostKind): HostFeatures {
     canBuildAgents: isBrowser,
     canTypeRoot: isBrowser,
     hasViewTitleActions: !isBrowser,
+    hasEditorKeybindings: !isBrowser,
   };
 }
 

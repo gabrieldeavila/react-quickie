@@ -459,20 +459,86 @@ Notes:
 
 ## Phase 6 — Theme tokens and keyboard (Session H)
 
-- [ ] Replace fixed colours with VS Code theme tokens (`--vscode-editor-background`, `--vscode-input-background`, `--vscode-focusBorder`, `--vscode-button-background`…), falling back to the current palette on the web host.
-- [ ] Check that both a light and a dark VS Code theme look right.
-- [ ] ⌘/Ctrl+N starts a new chat, and Esc stops the response.
-- [ ] Every control has a visible focus ring, and the conversation dropdown works fully from the keyboard.
+- [x] Replace fixed colours with VS Code theme tokens (`--vscode-editor-background`, `--vscode-input-background`, `--vscode-focusBorder`, `--vscode-button-background`…), falling back to the current palette on the web host.
+- [x] Check that both a light and a dark VS Code theme look right.
+- [x] ⌘/Ctrl+N starts a new chat, and Esc stops the response.
+- [x] Every control has a visible focus ring, and the conversation dropdown works fully from the keyboard.
 
 #### Progress
 
 ```
-Status: not started
-Branch: —
-Last commit: —
-Done: —
+Status: done
+Branch: feat/ui-a-english-ui
+Last commit: 0510b2d + the following feat(ui,vscode) commit (code + rebuilt VSIX + this block)
+Done:
+  - Theme tokens: new ui/src/styles/theme/theme-tokens.css (+ theme-toggle-tokens.css for
+    the settings switch), imported first in index.css. Every --chat-* token is
+    var(--vscode-…, <old value>); alpha variants are color-mix(in srgb, var(--token) N%,
+    transparent), which equals the old rgba() on the web. All colour literals in
+    ui/src/styles/** were replaced (only neutral rgba(0,0,0,…) shadows remain). The font
+    follows --vscode-font-family in VS Code. chat-base.css lost its :root palette.
+  - Removed the old partial override (host/styles/vscode-theme.css,
+    :root[data-host="vscode"]). It beat the new tokens on specificity and mapped
+    border-strong to focusBorder (blue borders everywhere) and the shadow to none. Its two
+    component rules stay in host/styles/file-links.css.
+  - Focus rings: chat-focus.css has one :where(button, a[href], summary, select,
+    [tabindex]) :focus-visible ring in --chat-focus-ring (theme focusBorder). Rows in
+    scrolling panels use an inset ring. Modal inputs and selects get a focus border (they had
+    outline: none and nothing else).
+  - Shortcuts: features/keyboard-shortcuts/domain/match-chat-shortcut.ts (+ spec) and
+    components/chat/hooks/events/useChatShortcuts.ts (window keydown, used in ChatMain).
+    Esc stops only while responding, and not when something already handled the key or
+    inside an aria-modal dialog. ⌘N on macOS, Ctrl+N elsewhere.
+  - VS Code ⌘/Ctrl+N: vscode/package.json keybinding doty.newChat, when "doty.chatFocused".
+    The webview reports focus/blur (host hooks/useHostFocus.ts → "setFocus" message, both
+    host-messages.ts + spec), and vscode/src/chat-focus-context.ts sets the context key
+    (reset on detach/reload). New HostFeatures.hasEditorKeybindings (vscode: true) keeps the
+    page from also handling ⌘N there.
+  - Popovers (primitives/usePopoverPanel.ts): Escape only acts while open, calls
+    preventDefault (so it doesn't also stop the response) and returns focus to the trigger
+    (or getReturnFocusTarget). closeAndRestoreFocus is used when picking a conversation.
+  - Conversation dropdown: domain/next-switcher-focus.ts (+ spec) and
+    hooks/useSwitcherKeyboard.ts. ArrowDown/ArrowUp move between search and rows, Home/End
+    jump between rows, Enter opens, Tab reaches the delete button, Escape closes. Focus goes
+    back to the title (web) or the message box (VS Code). List gets overflow-x: hidden (it
+    showed a horizontal scrollbar).
+  - vscode/README.md mentions ⌘N, Escape and theming. vscode/doty.vsix rebuilt.
 Left: —
-Notes: —
+Notes:
+  - How it was checked: Playwright's Electron mode drove the real VS Code 1.141 with
+    --extensionDevelopmentPath, a throwaway profile and a mock OpenAI-compatible server that
+    streams slowly (doty.openaiCompatible.* settings). It ran in Default Dark Modern and
+    Default Light Modern; Default High Contrast was checked on the empty state only. Results
+    that passed in both: tokens resolve to the theme (e.g. bg #181818 / #f8f8f8); ⌘N in the
+    chat clears the draft, opens no Untitled editor, and still opens Untitled-1 when the
+    editor has focus; Esc in the message box stops the stream (the mock saw the connection
+    close mid-answer); Esc with a picker open only closes the picker; history keyboard flow
+    as above; keyboard focus on a starter prompt shows a 2px focusBorder ring. Screenshots of
+    the empty state, picker, streaming markdown, history and settings looked right in both.
+  - Web host: built HEAD and this branch, then ran the same scenes in headless Chromium
+    against a local API + mock. 19 elements × 8 colour/font properties had identical computed
+    values. Screenshots of the empty state and "⋯" menu matched to the pixel. Picker, history
+    and settings differed only by 1/255 on focused borders (color-mix rounding).
+    Intentional web changes: the settings switch focus ring is now the accent (it was 12%
+    white), and every control has the accent focus ring.
+  - focusedView is NOT set while focus is inside a webview view (checked: the keybinding with
+    `focusedView == doty.chatView` never fired), hence the custom doty.chatFocused key. VS
+    Code forwards every webview keydown to the workbench whatever the page does, so the
+    page must not also handle ⌘N there (it would create two chats).
+  - Browsers reserve Ctrl/⌘+N (new window), so on the web the shortcut only works where the
+    browser hands it over (e.g. an installed PWA). Esc works everywhere. Add a second
+    binding if a web shortcut is wanted.
+  - In Dark Modern the secondary-button colour equals the input colour, so the stop button
+    uses toolbar.activeBackground (--chat-stop-fill).
+  - Not done: arrow-key navigation inside the agent/model pickers and the "⋯" menu (Tab
+    works; the plan only asked for the conversation dropdown).
+  - High contrast: the send button gets the theme's black button fill and no border. The
+    icon is visible, but a contrastBorder could be added.
+  - Session G: the same Electron approach can do its remaining click-through. Here the
+    title-bar commands ran through the palette (New chat, History, Settings) and worked.
+    The buttons themselves weren't clicked.
+  - Checks: ui typecheck, lint and tests (39 files / 170 tests) green; vscode typecheck and
+    tests (5 files / 20 tests) green (vscode has no lint script). api untouched.
 ```
 
 ---

@@ -10,6 +10,7 @@ describe("getHostFeatures", () => {
       canBuildAgents: true,
       canTypeRoot: true,
       hasViewTitleActions: false,
+      hasEditorKeybindings: false,
     });
   });
 
@@ -19,6 +20,7 @@ describe("getHostFeatures", () => {
       canBuildAgents: false,
       canTypeRoot: false,
       hasViewTitleActions: true,
+      hasEditorKeybindings: true,
     });
   });
 });

@@ -110,6 +110,14 @@
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "doty.newChat",
+        "key": "ctrl+n",
+        "mac": "cmd+n",
+        "when": "doty.chatFocused"
+      }
+    ],
     "configuration": {
       "title": "Doty",
       "properties": {

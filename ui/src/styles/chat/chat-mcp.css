@@ -42,7 +42,7 @@
   padding: 10px 12px;
   border: 1px solid var(--chat-border-strong);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: color-mix(in srgb, var(--chat-tint) 3%, transparent);
 }
 
 .mcp-server-row__main {
@@ -62,7 +62,7 @@
 }
 
 .mcp-server-row__error {
-  color: #f3b8b8;
+  color: var(--chat-error);
   overflow-wrap: anywhere;
 }
 
@@ -71,7 +71,7 @@
 }
 
 .mcp-tone--ok {
-  color: #9be3b0;
+  color: var(--chat-success);
 }
 
 .mcp-tone--muted {
@@ -79,11 +79,11 @@
 }
 
 .mcp-tone--warning {
-  color: #f1d38a;
+  color: var(--chat-warning);
 }
 
 .mcp-tone--error {
-  color: #f3b8b8;
+  color: var(--chat-error);
 }
 
 .mcp-trust-notice {
@@ -92,9 +92,9 @@
   gap: 8px;
   margin-bottom: 12px;
   padding: 12px;
-  border: 1px solid rgba(241, 211, 138, 0.4);
+  border: 1px solid color-mix(in srgb, var(--chat-warning) 40%, transparent);
   border-radius: 10px;
-  background: rgba(241, 211, 138, 0.06);
+  background: color-mix(in srgb, var(--chat-warning) 6%, transparent);
 }
 
 .mcp-trust-notice p {

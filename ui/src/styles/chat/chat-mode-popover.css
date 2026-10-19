@@ -1,6 +1,6 @@
 .chat-mode-popover__title {
   padding: 2px 10px 8px;
-  color: rgba(231, 237, 245, 0.72);
+  color: var(--chat-text-subtle);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -23,8 +23,8 @@
 
 .chat-mode-popover__option:hover,
 .chat-mode-popover__option--selected {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--chat-row-hover);
+  border-color: var(--chat-border);
 }
 
 .chat-mode-popover__option-icon {
@@ -66,5 +66,5 @@
 
 .chat-agent-picker__group + .chat-agent-picker__group {
   padding-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid color-mix(in srgb, var(--chat-tint) 6%, transparent);
 }

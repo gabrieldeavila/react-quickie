@@ -14,7 +14,10 @@ function emptyMessage(isLoading: boolean, query: string): string {
   return query.trim() ? "No conversations match." : "No conversations yet.";
 }
 
-/** Search box and recent conversations; opened by the header title or the VSCode "History" button. */
+/**
+ * Search box and recent conversations; opened by the header title or the VSCode "History" button.
+ * Keyboard: arrows/Home/End move between search and rows, Enter opens, Escape closes.
+ */
 export const ConversationSwitcherPanel = memo(
   ({
     switcher,
@@ -34,6 +37,7 @@ export const ConversationSwitcherPanel = memo(
         className="chat-conversation-switcher__panel"
         role="dialog"
         aria-label="Conversations"
+        onKeyDown={switcher.handlePanelKeyDown}
       >
         <input
           type="search"
