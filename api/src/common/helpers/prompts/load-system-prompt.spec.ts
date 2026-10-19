@@ -23,7 +23,7 @@ const environment = buildEnvironmentBlock({
   git: { isRepository: true, branch: 'main', changedFiles: 2 },
   modelRef: 'anthropic:claude-sonnet-5-5',
   toolsAvailable: true,
-  instructionNames: [],
+  instructionIds: [],
 });
 
 describe('loadSystemPrompt', () => {
@@ -77,6 +77,22 @@ describe('loadSystemPrompt', () => {
 
     expect(contents.indexOf('Use pnpm.')).toBeLessThan(
       contents.indexOf('Two-space indentation.'),
+    );
+  });
+
+  it('puts selected instructions after project instructions and before memory', async () => {
+    const contents = (
+      await load({
+        selectedInstructions: [{ role: 'system', content: 'Selected: forms' }],
+      })
+    ).map(({ content }) => content);
+    const selected = contents.indexOf('Selected: forms');
+
+    expect(selected).toBeGreaterThan(
+      contents.indexOf('Two-space indentation.'),
+    );
+    expect(selected).toBeLessThan(
+      contents.findIndex((text) => text.startsWith('Project memory')),
     );
   });
 

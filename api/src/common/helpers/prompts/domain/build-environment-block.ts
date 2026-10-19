@@ -14,7 +14,7 @@ export type EnvironmentFacts = {
   git?: GitSummary;
   modelRef?: string;
   toolsAvailable: boolean;
-  instructionNames: string[];
+  instructionIds: string[];
 };
 
 const CLIENT_LABELS: Record<DotyClient, string> = {
@@ -51,9 +51,9 @@ function formatModel({ modelRef, toolsAvailable }: EnvironmentFacts): string {
   return `- Model: ${modelRef ?? 'unknown'} · tools: ${tools}`;
 }
 
-function formatInstructions({ instructionNames }: EnvironmentFacts) {
-  return instructionNames.length
-    ? `- Instructions in use: ${instructionNames.join(', ')}`
+function formatInstructions({ instructionIds }: EnvironmentFacts) {
+  return instructionIds.length
+    ? `- Instructions in use: ${instructionIds.join(', ')}`
     : null;
 }
 

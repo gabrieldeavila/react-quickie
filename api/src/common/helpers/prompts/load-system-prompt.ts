@@ -21,6 +21,8 @@ export type SystemPromptInput = {
   toolsAvailable: boolean;
   /** The request's toolset; ignored when tools are unavailable. */
   toolNames: string[];
+  /** One message per instruction the user selected (Phase 2). */
+  selectedInstructions?: SystemModelMessage[];
   projectMemory?: Record<string, unknown>;
   /** The per-request environment block (always last). */
   environment: SystemModelMessage;
@@ -43,8 +45,8 @@ function projectMemoryMessage(
 /**
  * The system prompt of a request. Static parts first and per-request parts
  * last, so provider prompt caching keeps working: identity, behavior, tool
- * guide, project instructions (`AGENTS.md`, `.agents/`), mode skills, memory
- * rules, project memory, environment.
+ * guide, project instructions (`AGENTS.md`, `.agents/`), mode skills,
+ * selected instructions, memory rules, project memory, environment.
  */
 export async function loadSystemPrompt(
   input: SystemPromptInput,
@@ -68,6 +70,7 @@ export async function loadSystemPrompt(
       path.join(input.pluginSkillsDir, modeDir),
       input.specialty,
     ),
+    input.selectedInstructions ?? [],
     // The memory rules are about the `save_project_memory` tool.
     toolsAvailable
       ? await loadSkillFile(read, path.join(skillsDir, 'memory.md'))

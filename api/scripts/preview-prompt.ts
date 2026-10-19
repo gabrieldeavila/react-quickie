@@ -2,6 +2,7 @@
  * Prints the system prompt a chat request would get, for humans to read.
  *
  *   pnpm --dir api prompt:preview -- --root <dir> [--model <provider:model>]
+ *     [--instructions <id,id>]
  *
  * Boots the real Nest app (env files, providers, MCP servers of the root),
  * so the toolset and the prompt are exactly what a request would build.
@@ -27,7 +28,11 @@ async function main() {
   const context = app.get(ContextService);
 
   try {
-    await context.run({ root }, async () => {
+    const instructionIds = (readFlag('instructions') ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    await context.run({ root, instructionIds }, async () => {
       const model = app.get(ProviderRegistryService).select(readFlag('model'));
       context.get()!.modelRef = model.ref;
       const { tools } = await app.get(ChatService).getToolkit();

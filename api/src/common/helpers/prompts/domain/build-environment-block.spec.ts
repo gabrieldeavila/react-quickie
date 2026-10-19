@@ -14,7 +14,7 @@ const facts: EnvironmentFacts = {
   git: { isRepository: true, branch: 'feat/x', changedFiles: 3 },
   modelRef: 'anthropic:claude-sonnet-5-5',
   toolsAvailable: true,
-  instructionNames: ['landing-pages', 'forms'],
+  instructionIds: ['landing-pages', 'forms'],
 };
 
 const blockFor = (overrides: Partial<EnvironmentFacts>) =>
@@ -60,7 +60,7 @@ describe('buildEnvironmentBlock', () => {
   it('omits empty optional facts', () => {
     const block = blockFor({
       shell: undefined,
-      instructionNames: [],
+      instructionIds: [],
       activeRoot: undefined,
     });
 

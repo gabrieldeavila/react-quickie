@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { InstructionsModule } from 'src/instructions/instructions.module';
 import { ProjectService } from './project.service';
 import { StorageService } from './storage.service';
 import { FileReadService } from './storage/file-read.service';
@@ -12,6 +13,7 @@ import { MemoryService } from './memory.service';
 import { EnvironmentService } from './environment.service';
 
 @Module({
+  imports: [InstructionsModule],
   providers: [
     ProjectService,
     StorageService,

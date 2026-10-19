@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { SystemModelMessage } from 'ai';
 import { getAppPaths } from 'src/config/app-paths';
+import { InstructionSelectionService } from 'src/instructions/data/instruction-selection.service';
+import { formatInstructionMessage } from 'src/instructions/domain/format-instruction-message';
 import type { SelectedModel } from 'src/llm/domain/find-model';
 import { ContextService } from '../context/context.service';
 import { EnvironmentService } from './environment.service';
@@ -24,6 +26,7 @@ export class PromptsService {
     private readonly contextService: ContextService,
     private readonly memoryService: MemoryService,
     private readonly environmentService: EnvironmentService,
+    private readonly instructionSelection: InstructionSelectionService,
   ) {
     this.readMarkdown = async (file) =>
       (await markdownService.getMarkdownFile(file)?.html) ?? '';
@@ -37,6 +40,10 @@ export class PromptsService {
     const { skillsDir, pluginSkillsDir } = getAppPaths();
     const root = this.contextService.get('root');
     const toolsAvailable = model.model.supportsTools;
+    const selected = await this.instructionSelection.resolve(
+      this.contextService.get('instructionIds'),
+      root,
+    );
 
     return loadSystemPrompt({
       readMarkdown: this.readMarkdown,
@@ -47,10 +54,12 @@ export class PromptsService {
       specialty: this.contextService.get('specialty'),
       toolsAvailable,
       toolNames,
+      selectedInstructions: selected.map(formatInstructionMessage),
       projectMemory: await this.readProjectMemory(root),
       environment: await this.environmentService.describe({
         modelRef: model.ref,
         toolsAvailable,
+        instructionIds: selected.map(({ id }) => id),
       }),
     });
   }

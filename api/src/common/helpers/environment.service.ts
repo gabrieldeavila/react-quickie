@@ -10,7 +10,7 @@ import { resolveDotyClient } from './prompts/domain/resolve-doty-client';
 export type EnvironmentRequest = {
   modelRef?: string;
   toolsAvailable: boolean;
-  instructionNames?: string[];
+  instructionIds?: string[];
 };
 
 /** Collects the per-request facts of the environment block. */
@@ -24,7 +24,7 @@ export class EnvironmentService {
   async describe({
     modelRef,
     toolsAvailable,
-    instructionNames = [],
+    instructionIds = [],
   }: EnvironmentRequest): Promise<SystemModelMessage> {
     const root = this.contextService.get('root');
     return buildEnvironmentBlock({
@@ -39,7 +39,7 @@ export class EnvironmentService {
       git: await readGitSummary(root),
       modelRef,
       toolsAvailable,
-      instructionNames,
+      instructionIds,
     });
   }
 }

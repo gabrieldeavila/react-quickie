@@ -187,23 +187,73 @@ Guidance in plain Markdown…
 
 ### Checklist
 
-- [ ] `api/src/instructions/` module: `domain/parse-instruction.ts` (+ spec: frontmatter, missing name → id, invalid `starters` dropped), `domain/merge-instructions.ts` (+ spec: precedence, `source` per entry), `domain/validate-instruction-id.ts` (+ spec: `^[a-z0-9][a-z0-9-]{0,63}$`), `data/instructions.repository.ts` (reads all three scopes; project paths through `WorkspaceService`; mtime cache like `McpConfigRepository`).
-- [ ] Limits: a body over 20 KB is rejected on write and truncated with a notice on read; at most 8 instructions per request.
-- [ ] Endpoints (behind the existing auth guard): `GET /instructions?root=` (id, name, description, starters, source, editable), `GET /instructions/:id?root=` (with body), `PUT /instructions/:scope/:id` (`scope` = `global` | `project`; body: name, description, starters, content; atomic write), `DELETE /instructions/:scope/:id`. Built-ins can't be written or deleted; "edit" a built-in = save a copy in global or project scope with the same id.
-- [ ] Chat request field `instructions: string[]` → request context `instructionIds`. Unknown ids are ignored (logged once). `PromptsService` loads the selected bodies as one system message each, headed `Instruction "<name>" (selected by the user):`. Modes still work during the transition (removed in Phase 5).
-- [ ] Copy `instructions/builtin/*.md` into `dist` (`nest-cli.json` assets); the VS Code build already copies every `.md` under `api/dist` (check `vscode/scripts/build.mjs`).
-- [ ] Security note in the repository code: project instructions are prompt text from the repo, as trusted as `AGENTS.md`; they can't run anything by themselves. The UI shows their source (Phase 4).
+- [x] `api/src/instructions/` module: `domain/parse-instruction.ts` (+ spec: frontmatter, missing name → id, invalid `starters` dropped), `domain/merge-instructions.ts` (+ spec: precedence, `source` per entry), `domain/validate-instruction-id.ts` (+ spec: `^[a-z0-9][a-z0-9-]{0,63}$`), `data/instructions.repository.ts` (reads all three scopes; project paths through `WorkspaceService`; mtime cache like `McpConfigRepository`).
+- [x] Limits: a body over 20 KB is rejected on write and truncated with a notice on read; at most 8 instructions per request.
+- [x] Endpoints (behind the existing auth guard): `GET /instructions?root=` (id, name, description, starters, source, editable), `GET /instructions/:id?root=` (with body), `PUT /instructions/:scope/:id` (`scope` = `global` | `project`; body: name, description, starters, content; atomic write), `DELETE /instructions/:scope/:id`. Built-ins can't be written or deleted; "edit" a built-in = save a copy in global or project scope with the same id.
+- [x] Chat request field `instructions: string[]` → request context `instructionIds`. Unknown ids are ignored (logged once). `PromptsService` loads the selected bodies as one system message each, headed `Instruction "<name>" (selected by the user):`. Modes still work during the transition (removed in Phase 5).
+- [x] Copy `instructions/builtin/*.md` into `dist` (`nest-cli.json` assets); the VS Code build already copies every `.md` under `api/dist` (check `vscode/scripts/build.mjs`).
+- [x] Security note in the repository code: project instructions are prompt text from the repo, as trusted as `AGENTS.md`; they can't run anything by themselves. The UI shows their source (Phase 4).
 
 #### Progress
 
 ```
-Status: not started
-Last commit: —
-Done: —
+Status: done
+Last commit: see `git log` — "feat(api): user instructions replace specialties (Phase 2)"
+Done:
+- api/src/instructions/ (InstructionsModule, imported by AppModule and HelperModule):
+  - domain/: instruction.types, instruction-limits, validate-instruction-id,
+    parse-instruction (lenient: name → id, bad starters dropped, body capped),
+    cap-instruction-content (20 KB, UTF-8 safe, notice), merge-instructions
+    (project > global > built-in, sorted by name), validate-instruction-input
+    (zod; write-time limits incl. 20 KB → 400), serialize-instruction,
+    select-instructions (request order, dedupe, max 8, unknown ids),
+    format-instruction-message, to-instruction-view. All with specs.
+  - data/: instructions.repository (three scopes; project paths through
+    WorkspaceService.resolveIn; security note in its doc comment),
+    instruction-files (readdir + per-file mtime/size cache; invalid files are
+    skipped with a warning), write-file-atomic (temp + rename),
+    instruction-selection.service (logs each unknown id once).
+    Integration spec on temp dirs.
+  - delivery/instructions.controller.ts: GET /instructions?root=,
+    GET /instructions/:id?root=, PUT /instructions/:scope/:id (root in query or
+    body; returns the written entry with `source` = scope), DELETE
+    /instructions/:scope/:id?root= (204, 404 when that scope has no file).
+  - builtin/*.md: landing-pages, forms, refactoring, design-system,
+    react-architecture, backend-architecture, clean-architecture (39–54 lines
+    each, no pipelines). builtin-instructions.spec.ts checks they all parse and
+    stay short.
+- AppPaths: builtinInstructionsDir (`<baseDir>/instructions/builtin`),
+  globalInstructionsDir (`<DOTY_DATA_DIR>/instructions`). nest-cli.json copies
+  `instructions/builtin/*.md`; vscode/scripts/build.mjs already copies every .md
+  under api/dist (checked: dist/instructions/builtin/ has all 7).
+- Chat: body `instructions: string[]` → context `instructionIds`
+  (chat/domain/read-instruction-ids.ts). PromptsService adds one system message
+  per selected instruction (after project instructions and mode skills, before
+  memory) and their ids to the environment block ("Instructions in use").
+- prompt:preview takes `--instructions <id,id>`.
 Left: —
-Notes: —
+Notes:
+- Checks: api typecheck, lint:check, test (90 suites / 495 tests, 1 snapshot),
+  build. Manual HTTP check on the built API (temp DOTY_DATA_DIR/WORKSPACE_ROOTS,
+  auth token): list, get, PUT project/global, 400 for built-in scope, bad id and
+  missing content, 403 for a root outside the workspace, DELETE 204 then 404,
+  file written to <root>/.doty/instructions/forms.md. Preview with
+  `--instructions forms,nope` shows the instruction message, the environment
+  line, and one "Ignored unknown instructions: nope" warning.
+- Phase 1's manual model check is still open (Phase 1 Progress); it does not
+  block this phase's code.
+- Instruction bodies go to the model as plain Markdown (not through
+  MarkdownService's HTML rendering, unlike the skills).
+- YAML pitfall: frontmatter values containing ": " must be quoted (the built-in
+  descriptions are). serialize-instruction uses gray-matter's stringify, which
+  quotes as needed; the UI never writes YAML itself.
+- The old skills (skills/frontend|backend|agnostic|git) and modes still work;
+  Phase 5 deletes them. Mode skills and selected instructions can both be in a
+  prompt during the transition.
+- Phase 4 (UI): list entries carry `editable` (false for built-ins). "Edit" on a
+  built-in = PUT to global/project with the same id; that copy then shadows the
+  built-in (DELETE it to get the built-in back).
 ```
-
 ---
 
 ## Phase 3 — MCP config writes (API) (Session C)
