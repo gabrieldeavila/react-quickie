@@ -21,6 +21,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [isInstructionsDialogOpen, setIsInstructionsDialogOpen] =
     useState<boolean>(false);
+  const [isMcpDialogOpen, setIsMcpDialogOpen] = useState<boolean>(false);
 
   const [projectContext, setProjectContext] =
     useState<ProjectContext>(readProjectContext);
@@ -115,6 +116,8 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       setIsCreateModalOpen,
       isInstructionsDialogOpen,
       setIsInstructionsDialogOpen,
+      isMcpDialogOpen,
+      setIsMcpDialogOpen,
       projectContext,
       setProjectContext,
       draftContext,
@@ -137,6 +140,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       isRootModalOpen,
       isCreateModalOpen,
       isInstructionsDialogOpen,
+      isMcpDialogOpen,
       projectContext,
       draftContext,
       history,

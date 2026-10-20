@@ -27,6 +27,8 @@ type PoolEntry = {
 export type PoolSnapshot = {
   status: PoolStatus;
   toolCount?: number;
+  /** The server's own tool names (not namespaced), once connected. */
+  toolNames?: string[];
   error?: string;
 };
 
@@ -82,6 +84,7 @@ export class McpClientPoolService implements OnModuleDestroy {
     return {
       status: entry.status,
       toolCount: entry.tools ? Object.keys(entry.tools).length : undefined,
+      toolNames: entry.tools ? Object.keys(entry.tools).sort() : undefined,
       error: entry.error,
     };
   }

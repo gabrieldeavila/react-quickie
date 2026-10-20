@@ -59,6 +59,12 @@
         "icon": "$(gear)"
       },
       {
+        "command": "doty.openMcp",
+        "title": "MCP servers",
+        "category": "Doty",
+        "icon": "$(plug)"
+      },
+      {
         "command": "doty.setApiKey",
         "title": "Set API key",
         "category": "Doty"

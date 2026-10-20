@@ -14,6 +14,7 @@ export function useSlashCommandActions() {
     instructionSelection,
     setInput,
     setIsInstructionsDialogOpen,
+    setIsMcpDialogOpen,
   } = useChatBaseContext();
   const { handleCreateConversation } = useChatServicesContext();
   const openSettings = useOpenSettings();
@@ -36,8 +37,7 @@ export function useSlashCommandActions() {
       }
       switch (command.name) {
         case "mcp":
-          // Until the MCP dialog exists (Phase 7), MCP lives in settings.
-          openSettings();
+          setIsMcpDialogOpen(true);
           return;
         case "instructions":
           setIsInstructionsDialogOpen(true);
@@ -56,6 +56,7 @@ export function useSlashCommandActions() {
       openSettings,
       setInput,
       setIsInstructionsDialogOpen,
+      setIsMcpDialogOpen,
     ],
   );
 

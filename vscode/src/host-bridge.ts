@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import {
   parseWebviewMessage,
   type HostToWebviewMessage,
   type OpenFileMessage,
+  type OpenMcpConfigMessage,
 } from './domain/host-messages';
+import { resolveMcpConfigPath } from './domain/resolve-mcp-config-path';
 import { setChatFocusedContext } from './chat-focus-context';
 import { resolveOpenFilePath } from './domain/resolve-open-file-path';
 import { getWorkspaceRoots } from './workspace-roots';
@@ -17,6 +20,9 @@ export class HostBridge {
   private view: vscode.WebviewView | undefined;
   private ready = false;
   private pending: HostToWebviewMessage[] = [];
+
+  /** `dataDir`: the API's DOTY_DATA_DIR, where the global mcp.json lives. */
+  constructor(private readonly dataDir: string) {}
 
   attach(view: vscode.WebviewView): vscode.Disposable {
     this.view = view;
@@ -49,6 +55,7 @@ export class HostBridge {
     const message = parseWebviewMessage(data);
     if (message?.type === 'ready') this.flush();
     if (message?.type === 'openFile') void openFile(message);
+    if (message?.type === 'openMcpConfig') void openMcpConfig(message, this.dataDir);
     if (message?.type === 'setTitle' && this.view) this.view.description = message.title;
     if (message?.type === 'setFocus') setChatFocusedContext(message.focused);
   }
@@ -76,5 +83,27 @@ async function openFile({ path, line, root }: OpenFileMessage): Promise<void> {
     });
   } catch {
     void vscode.window.showWarningMessage(`Doty: couldn't open "${path}".`);
+  }
+}
+
+async function openMcpConfig(
+  { scope, root }: OpenMcpConfigMessage,
+  dataDir: string,
+): Promise<void> {
+  const file = resolveMcpConfigPath(scope, root, dataDir, getWorkspaceRoots());
+  if (!file) {
+    void vscode.window.showWarningMessage('Doty: the project folder is outside the workspace.');
+    return;
+  }
+  if (!fs.existsSync(file)) {
+    void vscode.window.showInformationMessage(
+      `Doty: ${file} doesn't exist yet. Add a server from the MCP dialog to create it.`,
+    );
+    return;
+  }
+  try {
+    await vscode.window.showTextDocument(vscode.Uri.file(file), { preview: false });
+  } catch {
+    void vscode.window.showWarningMessage(`Doty: couldn't open "${file}".`);
   }
 }

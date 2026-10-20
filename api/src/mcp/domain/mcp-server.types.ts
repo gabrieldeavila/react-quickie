@@ -33,6 +33,8 @@ export type McpServerView = {
   transport: 'stdio' | 'http' | 'sse' | 'unknown';
   status: McpServerStatus;
   toolCount?: number;
+  /** For per-tool approval in the UI; known once connected. */
+  toolNames?: string[];
   error?: string;
 };
 

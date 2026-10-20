@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { FiFolderPlus, FiSettings } from "react-icons/fi";
+import { FiFolderPlus, FiServer, FiSettings } from "react-icons/fi";
 import type { HeaderMenuItem } from "@/features/header-menu/components/HeaderOverflowMenu";
 import { getHostFeatures } from "@/host/domain/host-features";
 import { getRuntimeConfig } from "@/host/runtime-config";
@@ -8,9 +8,9 @@ import { useOpenSettings } from "./useOpenSettings";
 
 const HOST_FEATURES = getHostFeatures(getRuntimeConfig().host);
 
-/** Items of the header "⋯" menu: new project (when offered) and settings. */
+/** Items of the header "⋯" menu: new project (when offered), MCP servers, settings. */
 export function useHeaderMenuItems(): HeaderMenuItem[] {
-  const { setIsCreateModalOpen } = useChatBaseContext();
+  const { setIsCreateModalOpen, setIsMcpDialogOpen } = useChatBaseContext();
   const openSettings = useOpenSettings();
 
   return useMemo(() => {
@@ -20,7 +20,13 @@ export function useHeaderMenuItems(): HeaderMenuItem[] {
       icon: FiSettings,
       onSelect: openSettings,
     };
-    if (!HOST_FEATURES.canCreateProjects) return [settings];
+    const mcp: HeaderMenuItem = {
+      key: "mcp",
+      label: "MCP servers",
+      icon: FiServer,
+      onSelect: () => setIsMcpDialogOpen(true),
+    };
+    if (!HOST_FEATURES.canCreateProjects) return [mcp, settings];
 
     const newProject: HeaderMenuItem = {
       key: "new-project",
@@ -28,6 +34,6 @@ export function useHeaderMenuItems(): HeaderMenuItem[] {
       icon: FiFolderPlus,
       onSelect: () => setIsCreateModalOpen(true),
     };
-    return [newProject, settings];
-  }, [openSettings, setIsCreateModalOpen]);
+    return [newProject, mcp, settings];
+  }, [openSettings, setIsCreateModalOpen, setIsMcpDialogOpen]);
 }

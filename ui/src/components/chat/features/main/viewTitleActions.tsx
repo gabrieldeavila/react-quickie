@@ -17,7 +17,7 @@ const getMessageBox = () => document.getElementById(CHAT_INPUT_ID);
  * title-bar buttons. Only the history panel renders here, under the title bar.
  */
 const ViewTitleActions = memo(() => {
-  const { history } = useChatBaseContext();
+  const { history, setIsMcpDialogOpen } = useChatBaseContext();
   const { handleCreateConversation } = useChatServicesContext();
   const openSettings = useOpenSettings();
   const switcher = useConversationSwitcher({
@@ -33,8 +33,9 @@ const ViewTitleActions = memo(() => {
       newChat: () => void handleCreateConversation(),
       showHistory: switcher.toggleOpen,
       openSettings,
+      openMcp: () => setIsMcpDialogOpen(true),
     }),
-    [handleCreateConversation, switcher.toggleOpen, openSettings],
+    [handleCreateConversation, switcher.toggleOpen, openSettings, setIsMcpDialogOpen],
   );
   useHostCommands(handlers);
   useHostFocus();

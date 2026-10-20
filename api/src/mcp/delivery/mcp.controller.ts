@@ -4,6 +4,7 @@ import {
   ConflictException,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -18,6 +19,7 @@ import { BuildContextInterceptor } from 'src/common/context/context.interceptor'
 import { ContextService } from 'src/common/context/context.service';
 import { buildServerViews } from '../domain/build-server-views';
 import { McpConfigConflictError } from '../domain/mcp-config-conflict.error';
+import { McpConfigUntrustedError } from '../domain/mcp-config-untrusted.error';
 import { McpConfigEditError } from '../domain/mcp-config-text';
 import {
   isUsableServer,
@@ -177,6 +179,9 @@ export class McpController {
           message: error.message,
           ...(await this.list()),
         });
+      }
+      if (error instanceof McpConfigUntrustedError) {
+        throw new ForbiddenException(error.message);
       }
       if (error instanceof McpConfigEditError) {
         throw error.kind === 'not-found'

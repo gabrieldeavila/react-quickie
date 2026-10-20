@@ -17,11 +17,22 @@ export type SetTitleMessage = { type: "setTitle"; title: string };
 /** Whether focus is inside the webview; backs the editor's `doty.chatFocused` keybinding context. */
 export type SetFocusMessage = { type: "setFocus"; focused: boolean };
 
+/**
+ * Opens a scope's mcp.json. The extension resolves the path itself (data dir
+ * or `<root>/.doty/`), so the webview can't point it at an arbitrary file.
+ */
+export type OpenMcpConfigMessage = {
+  type: "openMcpConfig";
+  scope: "global" | "project";
+  root?: string;
+};
+
 export type WebviewToHostMessage =
   | OpenFileMessage
   | ReadyMessage
   | SetTitleMessage
-  | SetFocusMessage;
+  | SetFocusMessage
+  | OpenMcpConfigMessage;
 
 export type InsertSelectionMessage = {
   type: "insertSelection";
@@ -32,8 +43,13 @@ export type InsertSelectionMessage = {
   text: string;
 };
 
-/** View title-bar buttons ("New chat", "History", "Settings"). */
-export const HOST_COMMANDS = ["newChat", "showHistory", "openSettings"] as const;
+/** View title-bar buttons ("New chat", "History", "Settings") and palette commands. */
+export const HOST_COMMANDS = [
+  "newChat",
+  "showHistory",
+  "openSettings",
+  "openMcp",
+] as const;
 export type HostCommand = (typeof HOST_COMMANDS)[number];
 
 export type RunCommandMessage = { type: "runCommand"; command: HostCommand };

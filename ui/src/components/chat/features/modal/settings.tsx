@@ -2,7 +2,6 @@ import { useChatBaseContext } from "../../context/context";
 import { useCallback } from "react";
 import type { ProjectContext } from "~types/interface/chat.interface";
 import { DEFAULT_PROJECT_CONTEXT } from "~types/consts/chat.const";
-import { McpServersSection } from "@/features/mcp/components/McpServersSection";
 import { getHostFeatures } from "@/host/domain/host-features";
 import { getRuntimeConfig } from "@/host/runtime-config";
 import { WorkspaceRootSelect } from "@/host/components/WorkspaceRootSelect";
@@ -17,6 +16,7 @@ export function ChatModalSettings() {
     setDraftContext,
     setProjectContext,
     setIsRootModalOpen,
+    setIsMcpDialogOpen,
   } = useChatBaseContext();
 
   const handleChangeDraft = useCallback(
@@ -100,7 +100,25 @@ export function ChatModalSettings() {
         </div>
 
         {projectContext.reference ? (
-          <McpServersSection root={projectContext.reference} />
+          <section className="mcp-section" aria-labelledby="mcp-link-title">
+            <div className="mcp-section__header">
+              <h3 id="mcp-link-title">MCP servers</h3>
+              <button
+                type="button"
+                className="chat-button chat-button--ghost"
+                onClick={() => {
+                  setIsRootModalOpen(false);
+                  setIsMcpDialogOpen(true);
+                }}
+              >
+                Manage MCP servers…
+              </button>
+            </div>
+            <p className="mcp-section__empty">
+              Add, edit, enable and trust servers. Also: type /mcp in the
+              message box.
+            </p>
+          </section>
         ) : null}
 
         <div className="chat-modal__actions">

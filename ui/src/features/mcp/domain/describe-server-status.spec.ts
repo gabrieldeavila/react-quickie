@@ -8,8 +8,10 @@ import type { McpServerView } from "./mcp-server.types";
 const server = (overrides: Partial<McpServerView>): McpServerView => ({
   name: "gh",
   source: "global",
+  scope: "global",
   transport: "http",
   status: "idle",
+  disabled: false,
   ...overrides,
 });
 

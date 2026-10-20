@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { hashText } from '../domain/hash-config';
 import { McpConfigConflictError } from '../domain/mcp-config-conflict.error';
+import { McpConfigUntrustedError } from '../domain/mcp-config-untrusted.error';
 import { readRawServers } from '../domain/read-raw-servers';
 import { mergeMaskedSecrets } from '../domain/merge-masked-secrets';
 import {
@@ -94,6 +95,13 @@ export class McpConfigEditsService {
     const current = await this.configRepository.read(filePath);
     if (baseHash !== undefined && (current?.hash ?? null) !== baseHash) {
       throw new McpConfigConflictError();
+    }
+    if (
+      scope === 'project' &&
+      current &&
+      !(await this.trustRepository.isTrusted(filePath, current.hash))
+    ) {
+      throw new McpConfigUntrustedError();
     }
 
     const next = edit(current?.text ?? null);

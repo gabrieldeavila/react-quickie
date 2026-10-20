@@ -9,6 +9,7 @@ import {
 export type ConnectionSnapshot = {
   status: Exclude<McpServerStatus, 'idle' | 'untrusted' | 'disabled'>;
   toolCount?: number;
+  toolNames?: string[];
   error?: string;
 };
 

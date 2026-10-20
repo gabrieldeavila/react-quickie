@@ -21,6 +21,8 @@ export type HostBridge = {
   setTitle(title: string): void;
   /** Tells the editor whether focus is inside the chat, for its keybindings. */
   setFocused(focused: boolean): void;
+  /** Opens a scope's mcp.json in the editor (VSCode only, like openFile). */
+  openMcpConfig(scope: "global" | "project", root?: string): void;
 };
 
 const browserHost: HostBridge = {
@@ -30,6 +32,7 @@ const browserHost: HostBridge = {
   notifyReady: () => {},
   setTitle: () => {},
   setFocused: () => {},
+  openMcpConfig: () => {},
 };
 
 function createVscodeHost(): HostBridge {
@@ -51,6 +54,8 @@ function createVscodeHost(): HostBridge {
     notifyReady: () => vscode.postMessage({ type: "ready" }),
     setTitle: (title) => vscode.postMessage({ type: "setTitle", title }),
     setFocused: (focused) => vscode.postMessage({ type: "setFocus", focused }),
+    openMcpConfig: (scope, root) =>
+      vscode.postMessage({ type: "openMcpConfig", scope, root }),
   };
 }
 
