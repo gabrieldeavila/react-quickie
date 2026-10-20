@@ -84,6 +84,11 @@ export const TOOL_UI_MAPPING: Record<string, ToolUiMeta> = {
     label: "Checking TypeScript across projects...",
     description: "Checking TypeScript consistency in the projects found.",
   },
+  "tool-install_dependency": {
+    label: "Installing dependency...",
+    description: "Adding a new dependency to the project.",
+  },
+  // Removed or renamed tools: kept so older conversations still read well.
   "tool-create_component_blueprint": {
     label: "Generating component blueprint...",
     description: "Building the base structure of a new React component.",

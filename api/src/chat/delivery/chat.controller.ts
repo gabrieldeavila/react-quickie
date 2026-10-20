@@ -37,8 +37,6 @@ function toBadRequest(error: unknown): unknown {
 
     return {
       root: body.root as string | undefined,
-      mode: body.chatMode as string | undefined,
-      specialty: body.chatSpecialty as string | undefined,
       instructionIds: readInstructionIds(body.instructions),
     };
   }),

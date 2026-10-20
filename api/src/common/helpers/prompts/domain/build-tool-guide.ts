@@ -45,7 +45,6 @@ const TOOL_GROUPS: ToolGroup[] = [
     title: 'Shell',
     matches: named(
       'run_bash_command',
-      'install_depency',
       'install_dependency',
       'check_typescript',
       'get_lint_errors',

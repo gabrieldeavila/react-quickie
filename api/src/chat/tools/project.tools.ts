@@ -70,22 +70,23 @@ export function createProjectTools(projectService: ProjectService) {
         }
       },
     }),
-    install_depency: tool({
-      description: 'Installs a new dependency',
+    install_dependency: tool({
+      description:
+        "Installs a package with the project's package manager (dev dependency when isDev is true).",
       inputSchema: z.object({
-        dependecyName: z.string(),
+        dependencyName: z.string(),
         isDev: z.boolean(),
       }),
       execute: async ({
-        dependecyName,
+        dependencyName,
         isDev,
       }: {
-        dependecyName: string;
+        dependencyName: string;
         isDev: boolean;
       }) => {
         try {
           const result = await projectService.installDependency(
-            dependecyName,
+            dependencyName,
             isDev,
           );
           return toolSuccess('Dependency installed.', [

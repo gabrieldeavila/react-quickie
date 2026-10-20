@@ -39,9 +39,7 @@ describe('loadSystemPrompt', () => {
     loadSystemPrompt({
       readMarkdown,
       skillsDir: SKILLS_DIR,
-      pluginSkillsDir: path.join(root, 'no-plugins'),
       root,
-      mode: 'none',
       toolsAvailable: true,
       toolNames: ['read_file', 'edit_file', 'run_bash_command', 'run_subagent'],
       projectMemory: { stack: 'nest' },

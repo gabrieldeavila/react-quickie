@@ -364,22 +364,52 @@ Notes:
 
 ### Checklist
 
-- [ ] Remove `mode` / `specialty` from the request context, the controller and `PromptsService`; delete `skills/frontend|backend|agnostic|git/` (now built-in instructions or tool guide) and `pluginSkillsDir` from `app-paths`.
-- [ ] Remove Agent Builder: `common/agents/plugin/` (tools, skills, module). Instructions replace it, and it edited Doty's own source tree.
-- [ ] Tools no longer depend on a mode: git tools are always included (when the root is a git repository); `create_commit` gets approval `ask` through the approval map. Remove `create_component_blueprint` and its `templates/componentBlueprint` (recommended: it encoded the old frontend mode's folder structure; the `react-architecture` instruction covers the guidance). Delete `getCustomTools`.
-- [ ] Rename the misspelled `install_depency` tool to `install_dependency` (update the UI tool label mapping).
-- [ ] Update subagent toolkit comments ("of the chat mode") and any spec still mentioning modes. `grep -rn "mode\b\|specialty\|agent_builder" api/src` comes back clean apart from unrelated meanings.
+- [x] Remove `mode` / `specialty` from the request context, the controller and `PromptsService`; delete `skills/frontend|backend|agnostic|git/` (now built-in instructions or tool guide) and `pluginSkillsDir` from `app-paths`.
+- [x] Remove Agent Builder: `common/agents/plugin/` (tools, skills, module). Instructions replace it, and it edited Doty's own source tree.
+- [x] Tools no longer depend on a mode: git tools are always included (when the root is a git repository); `create_commit` gets approval `ask` through the approval map. Remove `create_component_blueprint` and its `templates/componentBlueprint` (recommended: it encoded the old frontend mode's folder structure; the `react-architecture` instruction covers the guidance). Delete `getCustomTools`.
+- [x] Rename the misspelled `install_depency` tool to `install_dependency` (update the UI tool label mapping).
+- [x] Update subagent toolkit comments ("of the chat mode") and any spec still mentioning modes. `grep -rn "mode\b\|specialty\|agent_builder" api/src` comes back clean apart from unrelated meanings.
 
 #### Progress
 
 ```
-Status: not started
-Last commit: —
-Done: —
+Status: done
+Last commit: see `git log` — "refactor(api): remove modes, Agent Builder and mode-gated tools (Phase 5)"
+Done:
+- Request context, chat controller, PromptsService and loadSystemPrompt no
+  longer know `mode` / `specialty`; loadSkillDirectory (mode folders) and
+  AppPaths.pluginSkillsDir removed. Deleted skills/frontend|backend|agnostic|git
+  (now built-in instructions and the tool guide's Git group).
+- Agent Builder removed: common/agents/plugin/ (module, tools, skill).
+- create_component_blueprint and tools/frontend/ (FrontendToolsService,
+  templates/componentBlueprint) removed; ChatService.getCustomTools deleted.
+- Git tools are always offered when the root is a git repository:
+  GitToolsService.createToolkit(root) (is-git-repository.ts:
+  `git rev-parse --is-inside-work-tree`, 1 s timeout). create_commit asks for
+  approval through the approval map (domain/git-approval-policies.ts, + spec);
+  subagents get the same policy (held back as "needs approval" when nested).
+- install_depency → install_dependency, input `dependecyName` → `dependencyName`
+  (API tool, TOOL_UI_MAPPING, WRITE_TOOL_NAMES, tool guide). UI label mapping
+  has the new name and keeps the old names (and create_component_blueprint) so
+  older conversations still render labels.
+- Subagent toolkit comment updated.
 Left: —
-Notes: —
+Notes:
+- Checks: api typecheck, lint:check, test (89 suites / 479 tests, 1 snapshot),
+  build (dist/common/agents has no plugin/); ui lint, typecheck, test (170);
+  vscode typecheck, test (20).
+- `grep -rnE "\bmode\b|specialty|agent_builder" api/src` only finds unrelated
+  meanings (file permission `mode`, "agent mode" in available-providers, MCP
+  approval modes).
+- Checked before renaming: the AI SDK's safeValidateUIMessages /
+  convertToModelMessages accept history tool parts whose tool no longer exists,
+  so old conversations with install_depency, create_component_blueprint or Agent
+  Builder calls still load and send.
+- prompt:preview on this repo shows the Git group in the tool guide; on a
+  non-git folder the group is absent and the environment says "not a git
+  repository".
+- Phase 8 (docs) should drop any README mention of modes / Agent Builder.
 ```
-
 ---
 
 ## Phase 6 — Slash commands in the message box (Session F)

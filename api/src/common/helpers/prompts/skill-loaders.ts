@@ -38,31 +38,6 @@ export async function loadSkillFile(
   return toInstruction(readMarkdown, file);
 }
 
-/**
- * A skills folder: `index.md`, every file in `default/`, then
- * `specialty/<specialty>.md` when a specialty is chosen.
- */
-export async function loadSkillDirectory(
-  readMarkdown: ReadMarkdown,
-  dir: string,
-  specialty: string | undefined,
-): Promise<SystemModelMessage[]> {
-  if (!(await fs.pathExists(dir))) return [];
-
-  const index = path.join(dir, 'index.md');
-  const instructions = await loadEach(readMarkdown, [
-    ...((await fs.pathExists(index)) ? [index] : []),
-    ...(await listFiles(path.join(dir, 'default'))),
-  ]);
-
-  if (!specialty || specialty === 'none') return instructions;
-  const specialtyFile = path.join(dir, 'specialty', `${specialty}.md`);
-  return [
-    ...instructions,
-    ...(await loadSkillFile(readMarkdown, specialtyFile)),
-  ];
-}
-
 /** `AGENTS.md` at the project root (the cross-tool convention). */
 export async function loadAgentsFile(
   readMarkdown: ReadMarkdown,

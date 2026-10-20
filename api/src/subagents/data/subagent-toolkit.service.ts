@@ -38,8 +38,8 @@ function pickPolicies(
 }
 
 /**
- * The tools a subagent may use. The pool is every built-in tool regardless
- * of the chat mode, plus MCP tools; the agent's allowlist narrows it.
+ * The tools a subagent may use. The pool is every built-in tool plus MCP
+ * tools; the agent's allowlist narrows it.
  */
 @Injectable()
 export class SubagentToolkitService {
@@ -68,6 +68,7 @@ export class SubagentToolkitService {
     const policies = {
       ...mcp.approvalPolicies,
       ...this.bashToolsService.createApprovalPolicies(root),
+      ...this.gitToolsService.createApprovalPolicies(),
     };
 
     const names = resolveAgentTools(Object.keys(pool), definition);

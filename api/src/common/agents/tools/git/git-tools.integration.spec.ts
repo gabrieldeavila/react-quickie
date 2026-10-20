@@ -101,3 +101,50 @@ describe('git tools (integration)', () => {
     expect(fs.existsSync(output)).toBe(false);
   });
 });
+
+describe('GitToolsService.createToolkit', () => {
+  const service = new GitToolsService({
+    get: () => undefined,
+  } as unknown as ContextService);
+  let dir: string;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'doty-git-kit-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('includes the git tools and asks before commits in a repository', async () => {
+    execFileSync('git', ['init', '-q'], { cwd: dir });
+
+    const toolkit = await service.createToolkit(dir);
+
+    expect(Object.keys(toolkit.tools)).toEqual(
+      expect.arrayContaining(['get_uncommitted_changes', 'create_commit']),
+    );
+    expect(toolkit.approvalPolicies.create_commit({})).toEqual({
+      decision: 'ask',
+    });
+  });
+
+  it('leaves them out outside a repository and without a root', async () => {
+    // GIT_CEILING_DIRECTORIES keeps git from finding a repo above the tmp dir.
+    const previous = process.env.GIT_CEILING_DIRECTORIES;
+    process.env.GIT_CEILING_DIRECTORIES = path.dirname(dir);
+    try {
+      expect(await service.createToolkit(dir)).toEqual({
+        tools: {},
+        approvalPolicies: {},
+      });
+    } finally {
+      if (previous === undefined) delete process.env.GIT_CEILING_DIRECTORIES;
+      else process.env.GIT_CEILING_DIRECTORIES = previous;
+    }
+    expect(await service.createToolkit(undefined)).toEqual({
+      tools: {},
+      approvalPolicies: {},
+    });
+  });
+});

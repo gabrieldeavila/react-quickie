@@ -6,7 +6,6 @@ import { formatProjectMemory } from './domain/format-project-memory';
 import {
   loadAgentsFile,
   loadProjectAgents,
-  loadSkillDirectory,
   loadSkillFile,
   type ReadMarkdown,
 } from './skill-loaders';
@@ -14,14 +13,11 @@ import {
 export type SystemPromptInput = {
   readMarkdown: ReadMarkdown;
   skillsDir: string;
-  pluginSkillsDir: string;
   root?: string;
-  mode?: string;
-  specialty?: string;
   toolsAvailable: boolean;
   /** The request's toolset; ignored when tools are unavailable. */
   toolNames: string[];
-  /** One message per instruction the user selected (Phase 2). */
+  /** One message per instruction the user selected. */
   selectedInstructions?: SystemModelMessage[];
   projectMemory?: Record<string, unknown>;
   /** The per-request environment block (always last). */
@@ -45,14 +41,13 @@ function projectMemoryMessage(
 /**
  * The system prompt of a request. Static parts first and per-request parts
  * last, so provider prompt caching keeps working: identity, behavior, tool
- * guide, project instructions (`AGENTS.md`, `.agents/`), mode skills,
- * selected instructions, memory rules, project memory, environment.
+ * guide, project instructions (`AGENTS.md`, `.agents/`), selected
+ * instructions, memory rules, project memory, environment.
  */
 export async function loadSystemPrompt(
   input: SystemPromptInput,
 ): Promise<SystemModelMessage[]> {
   const { readMarkdown: read, skillsDir, root, toolsAvailable } = input;
-  const modeDir = `${input.mode}`;
 
   const groups: SystemModelMessage[][] = [
     [buildAgentIdentity({ toolsAvailable })],
@@ -60,16 +55,6 @@ export async function loadSystemPrompt(
     buildToolGuide(toolsAvailable ? input.toolNames : []),
     await loadAgentsFile(read, root),
     await loadProjectAgents(read, root),
-    await loadSkillDirectory(
-      read,
-      path.join(skillsDir, modeDir),
-      input.specialty,
-    ),
-    await loadSkillDirectory(
-      read,
-      path.join(input.pluginSkillsDir, modeDir),
-      input.specialty,
-    ),
     input.selectedInstructions ?? [],
     // The memory rules are about the `save_project_memory` tool.
     toolsAvailable

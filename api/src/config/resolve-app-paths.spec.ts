@@ -11,9 +11,6 @@ describe('resolveAppPaths', () => {
     expect(paths.uiDir).toBe('/repo/ui');
     expect(paths.repoParentDir).toBe('/');
     expect(paths.skillsDir).toBe('/repo/api/dist/common/agents/skills');
-    expect(paths.pluginSkillsDir).toBe(
-      '/repo/api/dist/common/agents/plugin/skills',
-    );
     expect(paths.agentDefinitionsDir).toBe(
       '/repo/api/dist/subagents/definitions',
     );

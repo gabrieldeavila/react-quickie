@@ -37,7 +37,7 @@ export class PromptsService {
     model,
     toolNames,
   }: InstructionsRequest): Promise<SystemModelMessage[]> {
-    const { skillsDir, pluginSkillsDir } = getAppPaths();
+    const { skillsDir } = getAppPaths();
     const root = this.contextService.get('root');
     const toolsAvailable = model.model.supportsTools;
     const selected = await this.instructionSelection.resolve(
@@ -48,10 +48,7 @@ export class PromptsService {
     return loadSystemPrompt({
       readMarkdown: this.readMarkdown,
       skillsDir,
-      pluginSkillsDir,
       root,
-      mode: this.contextService.get('mode'),
-      specialty: this.contextService.get('specialty'),
       toolsAvailable,
       toolNames,
       selectedInstructions: selected.map(formatInstructionMessage),
