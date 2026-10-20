@@ -470,22 +470,54 @@ Typing `/` as the first character of the message opens a command menu above the 
 
 ### Checklist
 
-- [ ] `features/slash-commands/domain/parse-slash-input.ts` (+ spec): a query only when the whole input is `/` + letters, digits or dashes (no spaces or newlines), so `/usr/bin is…` or a pasted path doesn't trigger it.
-- [ ] `domain/match-slash-commands.ts` (+ spec): prefix matches first, then substring; built-in commands before instruction ids; stable order.
-- [ ] `hooks/useSlashCommands.ts`: open state, active index; ArrowUp/ArrowDown, Enter or Tab runs, Esc closes (with `preventDefault`, so it doesn't also stop a response; see `match-chat-shortcut.ts`). Running a command clears the input. When nothing matches, Enter sends the text as a normal message.
-- [ ] `components/SlashCommandMenu.tsx`: `role="listbox"`, `aria-activedescendant` on the textarea, theme tokens only, opens upwards like the pickers.
-- [ ] The placeholder hints at it: "Ask Doty… (/ for commands)".
+- [x] `features/slash-commands/domain/parse-slash-input.ts` (+ spec): a query only when the whole input is `/` + letters, digits or dashes (no spaces or newlines), so `/usr/bin is…` or a pasted path doesn't trigger it.
+- [x] `domain/match-slash-commands.ts` (+ spec): prefix matches first, then substring; built-in commands before instruction ids; stable order.
+- [x] `hooks/useSlashCommands.ts`: open state, active index; ArrowUp/ArrowDown, Enter or Tab runs, Esc closes (with `preventDefault`, so it doesn't also stop a response; see `match-chat-shortcut.ts`). Running a command clears the input. When nothing matches, Enter sends the text as a normal message.
+- [x] `components/SlashCommandMenu.tsx`: `role="listbox"`, `aria-activedescendant` on the textarea, theme tokens only, opens upwards like the pickers.
+- [x] The placeholder hints at it: "Ask Doty… (/ for commands)".
 
 #### Progress
 
 ```
-Status: not started
-Last commit: —
-Done: —
+Status: done
+Last commit: see `git log` — "feat(ui): slash commands in the message box (Phase 6)"
+Done:
+- ui/src/features/slash-commands/:
+  - domain/ (all with specs): parse-slash-input (whole input = `/` +
+    [A-Za-z0-9-]*, lowercased; "" for a lone slash), slash-command.types,
+    build-slash-commands (built-ins mcp, instructions, new, settings, then one
+    toggle per instruction with `isActive`; unique keys even when an
+    instruction id equals a built-in name), match-slash-commands (prefix before
+    substring, built-ins before instructions, stable), move-active-index
+    (wraps), slash-menu-key (arrows/Enter/Tab/Escape; Shift+Enter, modifiers and
+    IME composition go to the textarea), slash-menu-ids.
+  - hooks/useSlashCommands.ts: open while the input is a slash query with
+    matches; Escape (preventDefault, so it doesn't stop a response) hides it
+    until the input changes; active index resets per query.
+  - components/SlashCommandMenu.tsx: role="listbox", options with ids, mousedown
+    runs (focus stays in the textarea), active option scrolled into view, theme
+    tokens only (styles/chat/chat-slash-menu.css), opens upwards.
+- components/chat/hooks/events/useSlashCommandActions.ts: the commands (from the
+  instruction list and selection) and what they do; running one clears the
+  input. `/mcp` opens the settings dialog until Phase 7, `/instructions` opens
+  the manage dialog, `/new`, `/settings`, `/<instruction-id>` toggles it.
+- Composer: slash keys handled before Enter-to-send; textarea has
+  aria-autocomplete="list", aria-expanded, aria-controls and
+  aria-activedescendant; placeholder "Ask Doty… (/ for commands, paste images
+  too)" (or "Ask Doty… (/ for commands)" when the model takes no images).
 Left: —
-Notes: —
+Notes:
+- Checks: ui lint, typecheck, test (49 files / 184 tests), build; vscode test.
+- Browser check (Playwright, built API + vite on 5299, temp workspace): menu
+  lists 4 built-ins + 7 instructions, filtering, arrows + wrap, Escape keeps the
+  text and typing reopens, Enter and Tab toggle an instruction (chip updates,
+  input cleared), /instructions and /mcp open their dialogs, `/usr/bin is
+  missing` doesn't open the menu, `/zzz` + Enter is sent as a message, clicking
+  /new starts a new conversation, active option stays in view after 10
+  ArrowDowns, 380px layout. No page errors.
+- Phase 7: change the `mcp` case in useSlashCommandActions to open the new MCP
+  dialog (state like isInstructionsDialogOpen in ChatBaseContext).
 ```
-
 ---
 
 ## Phase 7 — MCP dialog (UI) + `/mcp` (Session G)
