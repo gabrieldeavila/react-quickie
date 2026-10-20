@@ -9,6 +9,8 @@ const approvalSchema = z.union([
 ]);
 
 const toolFilterFields = {
+  /** Kept in the file but not connected; listed with status `disabled`. */
+  disabled: z.boolean().optional(),
   approval: approvalSchema.optional(),
   enabledTools: z.array(z.string()).optional(),
   disabledTools: z.array(z.string()).optional(),

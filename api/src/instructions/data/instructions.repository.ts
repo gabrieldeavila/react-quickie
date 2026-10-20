@@ -12,7 +12,7 @@ import { mergeInstructions } from '../domain/merge-instructions';
 import { serializeInstruction } from '../domain/serialize-instruction';
 import { isValidInstructionId } from '../domain/validate-instruction-id';
 import { InstructionFiles } from './instruction-files';
-import { writeFileAtomic } from './write-file-atomic';
+import { writeFileAtomic } from 'src/common/fs/write-file-atomic';
 
 export const PROJECT_INSTRUCTIONS_DIR = path.join('.doty', 'instructions');
 

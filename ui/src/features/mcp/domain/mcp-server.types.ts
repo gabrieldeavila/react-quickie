@@ -1,6 +1,11 @@
 /** Mirrors `GET /mcp/servers` in the API (`api/src/mcp`). */
 export type McpServerStatus =
-  "idle" | "connecting" | "connected" | "error" | "untrusted";
+  | "idle"
+  | "connecting"
+  | "connected"
+  | "error"
+  | "untrusted"
+  | "disabled";
 
 export type McpServerView = {
   name: string;

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { mergeMcpConfigs } from '../domain/merge-mcp-configs';
+import { readRawServers } from '../domain/read-raw-servers';
 import type { ParsedMcpServer } from '../domain/mcp-server.types';
 import {
   parseMcpConfig,
@@ -15,6 +16,8 @@ export type McpConfigFileView = {
   path: string;
   exists: boolean;
   error?: string;
+  /** Content hash; clients send it back as `baseHash` with an edit. */
+  hash?: string;
 };
 
 export type ResolvedMcpServers = {
@@ -23,7 +26,9 @@ export type ResolvedMcpServers = {
   /** Project servers waiting for trust. Never connected. */
   untrusted: ParsedMcpServer[];
   globalConfig: McpConfigFileView;
-  projectConfig: McpConfigFileView & { trusted: boolean; hash?: string };
+  projectConfig: McpConfigFileView & { trusted: boolean };
+  /** Entries as written in each file (before `${VAR}`), for editing. */
+  raw: Record<'global' | 'project', Record<string, unknown>>;
 };
 
 const EMPTY: ParsedMcpConfig = { servers: [] };
@@ -56,6 +61,7 @@ export class McpServersService {
         path: globalPath,
         exists: !!globalFile,
         error: global.error,
+        hash: globalFile?.hash,
       },
       projectConfig: {
         path: projectPath,
@@ -63,6 +69,10 @@ export class McpServersService {
         error: project.error,
         trusted,
         hash: projectFile?.hash,
+      },
+      raw: {
+        global: readRawServers(globalFile?.text ?? null),
+        project: readRawServers(projectFile?.text ?? null),
       },
     };
   }

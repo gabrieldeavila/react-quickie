@@ -260,26 +260,70 @@ Notes:
 
 ### Checklist
 
-- [ ] Schema: add `disabled?: boolean` to both server shapes; `parse-mcp-config` skips disabled servers but still lists them (status `disabled`).
-- [ ] Pure edits on the file text, each with a spec: `domain/upsert-mcp-server.ts`, `remove-mcp-server.ts`, `set-mcp-server-disabled.ts`, `set-mcp-tool-approval.ts`. They keep the other servers and unknown top-level keys, write 2-space JSON, and validate the new server against `mcpServerSchema` before returning.
-- [ ] Secrets: `domain/mask-mcp-secrets.ts` (+ spec) replaces literal values in `env` and `headers` with `"••••"` in responses (`${VAR}` references are shown as-is); `merge-masked-secrets.ts` (+ spec) keeps the stored value when an update sends the mask back unchanged.
-- [ ] Endpoints: `GET /mcp/servers` gains `scope`, `disabled`, masked `config`, and the file `hash` per scope. `PUT /mcp/servers/:name` `{ scope, config, baseHash }`, `DELETE /mcp/servers/:name?scope=&baseHash=`, `PATCH /mcp/servers/:name` `{ scope, disabled?, toolApproval? }`.
-- [ ] Concurrency: `baseHash` must match the file's current hash, or the answer is `409` with the fresh list (the file was edited elsewhere).
-- [ ] Writes are atomic (temp file + rename). The global file is written with mode `0o600` (it may hold tokens). The project file goes through the workspace sandbox and creates `.doty/` if needed.
-- [ ] A project write by the user through the UI is consent: re-trust the new content hash right after writing, so the server doesn't switch off.
-- [ ] After a write, the client pool reconnects only the changed server, or closes it when removed or disabled.
-- [ ] Integration spec on a temp dir: add → list → edit (with masked secret kept) → disable → remove, plus a 409 case.
+- [x] Schema: add `disabled?: boolean` to both server shapes; `parse-mcp-config` skips disabled servers but still lists them (status `disabled`).
+- [x] Pure edits on the file text, each with a spec: `domain/upsert-mcp-server.ts`, `remove-mcp-server.ts`, `set-mcp-server-disabled.ts`, `set-mcp-tool-approval.ts`. They keep the other servers and unknown top-level keys, write 2-space JSON, and validate the new server against `mcpServerSchema` before returning.
+- [x] Secrets: `domain/mask-mcp-secrets.ts` (+ spec) replaces literal values in `env` and `headers` with `"••••"` in responses (`${VAR}` references are shown as-is); `merge-masked-secrets.ts` (+ spec) keeps the stored value when an update sends the mask back unchanged.
+- [x] Endpoints: `GET /mcp/servers` gains `scope`, `disabled`, masked `config`, and the file `hash` per scope. `PUT /mcp/servers/:name` `{ scope, config, baseHash }`, `DELETE /mcp/servers/:name?scope=&baseHash=`, `PATCH /mcp/servers/:name` `{ scope, disabled?, toolApproval? }`.
+- [x] Concurrency: `baseHash` must match the file's current hash, or the answer is `409` with the fresh list (the file was edited elsewhere).
+- [x] Writes are atomic (temp file + rename). The global file is written with mode `0o600` (it may hold tokens). The project file goes through the workspace sandbox and creates `.doty/` if needed.
+- [x] A project write by the user through the UI is consent: re-trust the new content hash right after writing, so the server doesn't switch off.
+- [x] After a write, the client pool reconnects only the changed server, or closes it when removed or disabled.
+- [x] Integration spec on a temp dir: add → list → edit (with masked secret kept) → disable → remove, plus a 409 case.
 
 #### Progress
 
 ```
-Status: not started
-Last commit: —
-Done: —
+Status: done
+Last commit: see `git log` — "feat(api): write MCP config from the API (Phase 3)"
+Done:
+- Schema: `disabled?: boolean` on both server shapes. parse-mcp-config keeps a
+  disabled server (not interpolated, so missing env vars don't error it) with
+  `disabled: true`; isUsableServer excludes it; views show status `disabled`.
+- Pure edits on file text (api/src/mcp/domain, each with a spec):
+  mcp-config-text (read/write document, keeps unknown top-level keys, 2-space
+  JSON + newline, McpConfigEditError kinds, server-name rule
+  `^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$`), upsert-mcp-server (validated with
+  mcpServerSchema, stored as sent so unknown fields survive), remove-mcp-server,
+  set-mcp-server-disabled (false removes the key), set-mcp-tool-approval
+  ("ask" removes the key; "never" or a per-tool map), read-raw-servers.
+- Secrets: mask-mcp-secrets (literal env/headers values → "••••"; values with
+  `${VAR}` shown as is), merge-masked-secrets (mask → stored value of the same
+  key; a mask with nothing stored is a 400).
+- data/mcp-config-edits.service.ts: base-hash check (McpConfigConflictError),
+  atomic write via McpConfigRepository.write (global 0o600; project through
+  WorkspaceService.resolveIn, `.doty/` created), re-trust after a project write,
+  pool.disconnect(root, name) then background reconnect only when the server is
+  still active and usable (removed/disabled → closed).
+- common/fs/write-file-atomic.ts (moved from instructions/data, gained `mode`;
+  + spec). Instructions repository uses it.
+- Endpoints (mcp.controller.ts): GET /mcp/servers adds per server `scope`,
+  `disabled`, masked `config` (raw entry, before interpolation) and
+  `globalConfig.hash` (projectConfig already had it). PUT /mcp/servers/:name
+  `{ scope, config, baseHash }`, DELETE /mcp/servers/:name?scope=&baseHash=,
+  PATCH /mcp/servers/:name `{ scope, disabled?, toolApproval?, baseHash? }`
+  (400 when neither field). All answer with the refreshed list; 409 bodies carry
+  the fresh list too. baseHash: omitted = no check; null or "" = "the file must
+  not exist yet".
+- Integration spec (data/mcp-config-edits.integration.spec.ts, temp dirs, real
+  repositories, fake pool): add → list → edit with masked secret kept →
+  disable → per-tool approval → remove; 409; global file 0o600 + unknown keys
+  kept; outside edit still revokes trust; 400/404 cases.
+- UI (small, to avoid a crash): McpServerStatus gains "disabled" and
+  describeServerStatus handles it (+ spec). The rest of the UI is Phase 7.
 Left: —
-Notes: —
+Notes:
+- Checks: api typecheck, lint:check, test (100 suites / 517 tests), build; ui
+  lint, typecheck, test (171). HTTP smoke on the built API with a temp
+  DOTY_DATA_DIR and auth token: PUT global (token masked in the response,
+  stored in the file, mode 600, status `connecting` right after), PATCH disable,
+  PATCH with a stale hash → 409 + list, PUT project → trusted, DELETE, DELETE
+  unknown → 404.
+- The list still shows only the effective servers: a global server overridden
+  by a project server of the same name isn't listed, so it can't be edited from
+  the UI while overridden. Phase 7 may want the API to list both; it would need
+  an extra `overridden` entry in the response.
+- PATCH accepts an optional baseHash; the UI should send it.
 ```
-
 ---
 
 ## Phase 4 — Instructions replace modes (UI) (Session D)

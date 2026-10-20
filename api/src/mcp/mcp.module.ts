@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { McpClientPoolService } from './data/mcp-client-pool.service';
+import { McpConfigEditsService } from './data/mcp-config-edits.service';
 import { McpConfigRepository } from './data/mcp-config.repository';
 import { McpServersService } from './data/mcp-servers.service';
 import { McpToolsService } from './data/mcp-tools.service';
@@ -14,6 +15,7 @@ import { McpController } from './delivery/mcp.controller';
     McpServersService,
     McpClientPoolService,
     McpToolsService,
+    McpConfigEditsService,
   ],
   exports: [McpToolsService],
 })

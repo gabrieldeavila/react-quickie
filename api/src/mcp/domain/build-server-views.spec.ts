@@ -48,4 +48,25 @@ describe('buildServerViews', () => {
       },
     ]);
   });
+
+  it('lists disabled servers without asking the pool', () => {
+    const snapshotOf = jest.fn();
+    const views = buildServerViews(
+      [
+        {
+          name: 'off',
+          source: 'global',
+          config: { command: 'x', disabled: true },
+          disabled: true,
+        },
+      ],
+      [],
+      snapshotOf,
+    );
+
+    expect(views).toEqual([
+      { name: 'off', source: 'global', transport: 'stdio', status: 'disabled' },
+    ]);
+    expect(snapshotOf).not.toHaveBeenCalled();
+  });
 });

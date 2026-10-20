@@ -39,6 +39,12 @@ function parseServer(
     };
   }
 
+  // Not interpolated: a disabled server never connects, so missing env vars
+  // shouldn't turn it into an error.
+  if (shape.data.disabled) {
+    return { name, source, config: shape.data, disabled: true };
+  }
+
   const { value, missing } = interpolateEnv(shape.data, env);
   if (missing.length > 0) {
     return {

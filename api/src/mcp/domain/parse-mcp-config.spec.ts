@@ -108,6 +108,29 @@ describe('parseMcpConfig', () => {
     ]);
   });
 
+  it('keeps a disabled server without connecting or interpolating it', () => {
+    const result = parse({
+      mcpServers: {
+        off: { command: 'run', args: ['${NOT_SET}'], disabled: true },
+        on: { command: 'run', disabled: false },
+      },
+    });
+
+    expect(result.servers).toEqual([
+      {
+        name: 'off',
+        source: 'global',
+        config: { command: 'run', args: ['${NOT_SET}'], disabled: true },
+        disabled: true,
+      },
+      {
+        name: 'on',
+        source: 'global',
+        config: { command: 'run', disabled: false },
+      },
+    ]);
+  });
+
   it('reports a file-level error for bad JSON or a missing mcpServers object', () => {
     expect(parseMcpConfig('{', { source: 'global', env }).error).toBe(
       'Invalid JSON.',

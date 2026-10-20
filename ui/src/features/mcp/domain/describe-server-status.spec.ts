@@ -42,6 +42,14 @@ describe("describeServerStatus", () => {
       canReconnect: true,
     });
   });
+
+  it("shows disabled servers as muted, without reconnect", () => {
+    expect(describeServerStatus(server({ status: "disabled" }))).toEqual({
+      label: "Disabled",
+      tone: "muted",
+      canReconnect: false,
+    });
+  });
 });
 
 describe("needsProjectTrust", () => {
