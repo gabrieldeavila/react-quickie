@@ -15,6 +15,8 @@ export type ChatBaseContextValue = {
   setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
   isInstructionsDialogOpen: boolean;
   setIsInstructionsDialogOpen: Dispatch<SetStateAction<boolean>>;
+  isMcpDialogOpen: boolean;
+  setIsMcpDialogOpen: Dispatch<SetStateAction<boolean>>;
   projectContext: ProjectContext;
   setProjectContext: Dispatch<SetStateAction<ProjectContext>>;
   draftContext: ProjectContext;
