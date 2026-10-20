@@ -49,22 +49,3 @@
 .chat-mode-popover__option-label {
   font-size: 0.88rem;
 }
-
-.chat-mode-popover__option--nested {
-  padding-left: 28px;
-}
-
-.chat-mode-popover__option--nested .chat-mode-popover__option-label {
-  font-size: 0.84rem;
-  color: var(--chat-text-muted);
-}
-
-.chat-agent-picker__group {
-  display: grid;
-  gap: 2px;
-}
-
-.chat-agent-picker__group + .chat-agent-picker__group {
-  padding-top: 4px;
-  border-top: 1px solid color-mix(in srgb, var(--chat-tint) 6%, transparent);
-}

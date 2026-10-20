@@ -37,14 +37,10 @@ export function ChatModalSettings() {
     setProjectContext({
       reference:
         draftContext.reference.trim() || DEFAULT_PROJECT_CONTEXT.reference,
-      focus: draftContext.focus,
-      specialty: draftContext.specialty,
     });
     setIsRootModalOpen(false);
   }, [
-    draftContext.focus,
     draftContext.reference,
-    draftContext.specialty,
     setIsRootModalOpen,
     setProjectContext,
   ]);

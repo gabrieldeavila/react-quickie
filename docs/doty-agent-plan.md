@@ -292,23 +292,72 @@ Notes: —
 
 ### Checklist
 
-- [ ] `features/instructions/`: `api/instructions.api.ts`, `domain/` (selection rules, chip label, id-from-name, form validation; all with specs), `hooks/useInstructions.ts` (list, cache, refetch on root change), `hooks/useInstructionSelection.ts`, `components/InstructionsPicker.tsx`, `InstructionsDialog.tsx`, `InstructionForm.tsx`.
-- [ ] Transport sends `instructions` and no longer sends `chatMode` / `chatSpecialty`.
-- [ ] Starter prompts come from the selected instructions' `starters`, falling back to a default set; one empty-state heading ("What do you want to build?").
-- [ ] New-project dialog: an explicit template choice (`vite-base`, `next-base`, `nest-base` from `templates/`) instead of deriving it from the mode.
-- [ ] Remove: `features/agent-picker/`, `useAgentChoice`, `agent.enum.ts`, `CHAT_MODE_OPTIONS`, `CHAT_SPECIALTY_OPTIONS`, `types/plugin/specialty.plugin.ts`, `focus` / `specialty` in `ProjectContext` (keep `reference`), `filterModeOptions` and `canBuildAgents` in host features, mode-based `new-project-label` and `empty-state-heading`. Saved `project-context` values with `focus` / `specialty` are read and ignored (no migration needed).
-- [ ] Settings dialog: drop the mode fields; keep the project root.
+- [x] `features/instructions/`: `api/instructions.api.ts`, `domain/` (selection rules, chip label, id-from-name, form validation; all with specs), `hooks/useInstructions.ts` (list, cache, refetch on root change), `hooks/useInstructionSelection.ts`, `components/InstructionsPicker.tsx`, `InstructionsDialog.tsx`, `InstructionForm.tsx`.
+- [x] Transport sends `instructions` and no longer sends `chatMode` / `chatSpecialty`.
+- [x] Starter prompts come from the selected instructions' `starters`, falling back to a default set; one empty-state heading ("What do you want to build?").
+- [x] New-project dialog: an explicit template choice (`vite-base`, `next-base`, `nest-base` from `templates/`) instead of deriving it from the mode.
+- [x] Remove: `features/agent-picker/`, `useAgentChoice`, `agent.enum.ts`, `CHAT_MODE_OPTIONS`, `CHAT_SPECIALTY_OPTIONS`, `types/plugin/specialty.plugin.ts`, `focus` / `specialty` in `ProjectContext` (keep `reference`), `filterModeOptions` and `canBuildAgents` in host features, mode-based `new-project-label` and `empty-state-heading`. Saved `project-context` values with `focus` / `specialty` are read and ignored (no migration needed).
+- [x] Settings dialog: drop the mode fields; keep the project root.
 
 #### Progress
 
 ```
-Status: not started
-Last commit: —
-Done: —
+Status: done
+Last commit: see `git log` — "feat(ui): instructions replace modes in the message box (Phase 4)"
+Done:
+- ui/src/features/instructions/:
+  - domain/ (all with specs): instruction.types, toggle-instruction (max 8),
+    resolve-selection, instructions-chip-label, instruction-id (idFromName,
+    isValidInstructionId), filter-instructions, pick-conversation-instructions,
+    instruction-form (empty/edit/duplicate, validation mirroring the API,
+    formToInput), group-by-source.
+  - api/: one file per endpoint (fetch-instructions, fetch-instruction,
+    save-instruction, delete-instruction over request-instructions),
+    last-instructions.storage (localStorage `doty:last-instructions:<root>`),
+    save-conversation-instructions. The plan's single `instructions.api.ts`
+    was split per endpoint, like features/mcp/api.
+  - hooks/: useInstructions (list per root + save/remove), useInstructionSelection
+    (per conversation, like useConversationModel), useInstructionEditor (dialog
+    flow: create/edit/duplicate/delete, id follows the name until edited).
+  - components/: InstructionsPicker (+Row, SourceBadge), InstructionsDialog,
+    InstructionList, InstructionForm.
+- chatDb v5: conversations.instructionIds (non-indexed). A conversation without
+  it adopts the current selection; new conversations start from the project's
+  last selection.
+- ChatBaseContext exposes `instructions`, `instructionSelection` and
+  `isInstructionsDialogOpen` / `setIsInstructionsDialogOpen` (Phase 6 can open
+  the dialog with the setter). Dialog mounted in features/modal/instructions.tsx.
+- Transport sends `instructions` (ids), no `chatMode` / `chatSpecialty`.
+- Empty state: one heading; starters from the selected instructions (deduped,
+  max 4, long labels shortened), default set otherwise.
+- New project: "New project" menu item (browser only), explicit template select
+  over all PROJECT_TEMPLATE_OPTIONS (vite-base default; nest-vite-base kept: the
+  API composes it).
+- Removed: features/agent-picker/, useAgentChoice, agent.enum.ts,
+  CHAT_MODE_OPTIONS / CHAT_SPECIALTY_OPTIONS, types/plugin/specialty.plugin.ts,
+  focus/specialty in ProjectContext (old saved values are read and dropped),
+  isFrontend/Backend/AgnosticMode, canBuildAgents / filterModeOptions /
+  AGENT_BUILDER_MODE, new-project-label, empty-state-heading, agent-picker CSS.
+- components/primitives/useEscapeKey.ts: document-level Escape for dialogs
+  (focus can be on <body> after a button unmounts).
 Left: —
-Notes: —
+Notes:
+- Checks: ui lint, typecheck, test (43 files / 170 tests), build; vscode
+  typecheck, test (20).
+- Browser check (Playwright + cached headless Chromium against the built API and
+  `vite --port 5299`, temp data dir and workspace): chip label and search,
+  multi-select, starters follow the selection, manage dialog groups, form
+  validation (errors clear as fields change), create project instruction (file
+  written), edit built-in → global copy (Global group appears), Escape closes
+  the dialog, chat request body = root/model/messages/instructions without
+  chatMode, old `project-context` with focus/specialty rewritten without them,
+  per-conversation selection kept in IndexedDB while a new conversation
+  diverges, 380px layout. Scripts stayed in the session scratchpad, not the repo.
+- The API still accepts chatMode/chatSpecialty until Phase 5; the UI no longer
+  sends them, so mode skills and mode-gated tools are now off for UI requests
+  (git tools and create_component_blueprint only come back with Phase 5).
+- Deleting an instruction uses window.confirm (fine in the VS Code webview).
 ```
-
 ---
 
 ## Phase 5 — Remove modes (API cleanup) (Session E)

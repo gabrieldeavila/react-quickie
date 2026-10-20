@@ -1,28 +1,38 @@
 import type { ReactNode } from "react";
-import { AgentPicker } from "@/features/agent-picker/components/AgentPicker";
+import { InstructionsPicker } from "@/features/instructions/components/InstructionsPicker";
 import { ModelPicker } from "@/features/models/components/ModelPicker";
 import { UsageBadges } from "@/features/usage/components/UsageBadges";
 import {
   useChatBaseContext,
   useChatServicesContext,
 } from "../../../context/context";
-import { useAgentChoice } from "../../../hooks/events/useAgentChoice";
 
 type ComposerToolbarProps = {
   /** The send/stop button, pinned to the right edge. */
   children: ReactNode;
 };
 
-/** Bottom row of the message box: agent and model pickers, usage, send. */
+/** Bottom row of the message box: instructions and model pickers, usage, send. */
 export function ComposerToolbar({ children }: ComposerToolbarProps) {
-  const { conversationModel } = useChatBaseContext();
+  const {
+    conversationModel,
+    instructions,
+    instructionSelection,
+    setIsInstructionsDialogOpen,
+  } = useChatBaseContext();
   const { renderedMessages } = useChatServicesContext();
-  const { groups, value, selectAgent } = useAgentChoice();
 
   return (
     <div className="chat-composer__toolbar">
       <div className="chat-composer__pickers">
-        <AgentPicker groups={groups} value={value} onChange={selectAgent} />
+        <InstructionsPicker
+          instructions={instructions.instructions}
+          selected={instructionSelection.selected}
+          selectedIds={instructionSelection.selectedIds}
+          onToggle={instructionSelection.toggle}
+          onManage={() => setIsInstructionsDialogOpen(true)}
+          error={instructions.error}
+        />
         <ModelPicker
           modelRef={conversationModel.modelRef}
           options={conversationModel.options}

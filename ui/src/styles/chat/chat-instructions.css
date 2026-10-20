@@ -1,0 +1,178 @@
+/* Instructions chip panel (message box) and manage dialog. Theme tokens only. */
+
+.instructions-panel {
+  width: min(340px, calc(100vw - 32px));
+}
+
+.instructions-panel__search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 8px;
+  background: var(--chat-search-bg);
+  color: var(--chat-input-text);
+  font: inherit;
+  font-size: 0.86rem;
+  outline: none;
+}
+
+.instructions-panel__search:focus-visible {
+  border-color: var(--chat-focus);
+}
+
+.instructions-panel__list {
+  display: grid;
+  gap: 2px;
+  max-height: min(260px, 45vh);
+  overflow-y: auto;
+}
+
+.instructions-panel__empty {
+  margin: 0;
+  padding: 6px 10px;
+  color: var(--chat-text-muted);
+  font-size: 0.86rem;
+}
+
+.instructions-panel__manage {
+  border-top: 1px solid var(--chat-border);
+  border-radius: 0 0 10px 10px;
+}
+
+.instruction-option {
+  align-items: flex-start;
+}
+
+.instruction-option__check {
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 4px;
+  color: var(--chat-accent);
+}
+
+.instruction-option__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.instruction-option__description {
+  overflow: hidden;
+  color: var(--chat-text-muted);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.instruction-badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 999px;
+  color: var(--chat-text-muted);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.instruction-badge--project {
+  border-color: color-mix(in srgb, var(--chat-accent) 55%, transparent);
+  color: var(--chat-accent);
+}
+
+.instructions-dialog {
+  width: min(640px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.instruction-list {
+  display: grid;
+  gap: 14px;
+}
+
+.instruction-list__heading {
+  margin: 0 0 6px;
+  color: var(--chat-text-subtle);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.instruction-list__items {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.instruction-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--chat-tint) 3%, transparent);
+}
+
+.instruction-list__main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.instruction-list__name {
+  font-size: 0.92rem;
+}
+
+.instruction-list__meta {
+  overflow: hidden;
+  color: var(--chat-text-muted);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.instruction-list__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.instruction-form__input {
+  min-height: 0;
+  padding: 10px 12px;
+}
+
+.instruction-form__textarea {
+  min-height: 180px;
+  padding: 10px 12px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.instruction-form__textarea--short {
+  min-height: 72px;
+  font-family: inherit;
+}
+
+@media (max-width: 560px) {
+  .instruction-list__row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

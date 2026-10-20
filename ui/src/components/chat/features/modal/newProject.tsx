@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import Toggle from "../../../primitives/toggle";
 import {
   getCreateProjectUrl,
@@ -10,52 +10,27 @@ import type {
   CreateProjectPayload,
   ProjectTemplate,
 } from "~types/interface/project.interface";
-import {
-  useChatBaseContext,
-  useChatServicesContext,
-} from "../../context/context";
+import { useChatBaseContext } from "../../context/context";
+
+const DEFAULT_TEMPLATE: ProjectTemplate = "vite-base";
 
 export function ChatModalNewProject() {
   const { isCreateModalOpen, setIsCreateModalOpen } = useChatBaseContext();
-  const { isBackendMode, isAgnosticMode } = useChatServicesContext();
-
-  const defaultTemplate: ProjectTemplate = isBackendMode
-    ? "nest-base"
-    : isAgnosticMode
-      ? "nest-vite-base"
-      : "vite-base";
-
   const [projectName, setProjectName] = useState("");
   const [selectedPath, setSelectedPath] = useState("");
   const [projectTemplate, setProjectTemplate] =
-    useState<ProjectTemplate>("vite-base");
+    useState<ProjectTemplate>(DEFAULT_TEMPLATE);
   const [initializeGit, setInitializeGit] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const availableTemplateOptions = useMemo(
-    () =>
-      PROJECT_TEMPLATE_OPTIONS.filter((option) =>
-        isBackendMode
-          ? option.value === "nest-base"
-          : isAgnosticMode
-            ? option.value === "nest-vite-base"
-            : option.value !== "nest-base" && option.value !== "nest-vite-base",
-      ),
-    [isAgnosticMode, isBackendMode],
-  );
-
-  useEffect(() => {
-    setProjectTemplate(defaultTemplate);
-  }, [defaultTemplate]);
-
   const resetForm = useCallback(() => {
     setProjectName("");
     setSelectedPath("");
-    setProjectTemplate(defaultTemplate);
+    setProjectTemplate(DEFAULT_TEMPLATE);
     setInitializeGit(true);
     setError(null);
-  }, [defaultTemplate]);
+  }, []);
 
   const onClose = useCallback(() => {
     resetForm();
@@ -113,13 +88,7 @@ export function ChatModalNewProject() {
       >
         <div className="chat-modal__header">
           <div>
-            <h2 id="project-create-title">
-              {isBackendMode
-                ? "New backend project"
-                : isAgnosticMode
-                  ? "New full-stack server"
-                  : "New frontend project"}
-            </h2>
+            <h2 id="project-create-title">New project</h2>
             <p>Choose the folder, the template and whether to initialize git.</p>
           </div>
           <button
@@ -144,7 +113,7 @@ export function ChatModalNewProject() {
           </label>
 
           <label className="chat-control chat-control--full">
-            <span className="chat-control__label">Project type</span>
+            <span className="chat-control__label">Template</span>
             <select
               className="chat-input chat-input--modal"
               value={projectTemplate}
@@ -152,7 +121,7 @@ export function ChatModalNewProject() {
                 setProjectTemplate(event.target.value as ProjectTemplate)
               }
             >
-              {availableTemplateOptions.map((option) => (
+              {PROJECT_TEMPLATE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

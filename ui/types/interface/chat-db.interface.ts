@@ -10,6 +10,8 @@ export interface ChatConversation {
   lastMessageAt: number;
   /** `provider:model` this conversation runs on (Dexie v4). */
   model?: string;
+  /** Instruction ids selected for this conversation (Dexie v5). */
+  instructionIds?: string[];
   metadata?: Record<string, unknown>;
   attachments?: unknown[];
 }

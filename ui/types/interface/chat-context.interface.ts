@@ -5,12 +5,16 @@ import type { useChat } from "@ai-sdk/react";
 import type { useChatComposer } from "@/components/chat/hooks/start/useChatComposer";
 import type { ProjectContext } from "./chat.interface";
 import type { ConversationModel } from "@/features/models/hooks/useConversationModel";
+import type { InstructionsState } from "@/features/instructions/hooks/useInstructions";
+import type { InstructionSelection } from "@/features/instructions/hooks/useInstructionSelection";
 
 export type ChatBaseContextValue = {
   isRootModalOpen: boolean;
   setIsRootModalOpen: Dispatch<SetStateAction<boolean>>;
   isCreateModalOpen: boolean;
   setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
+  isInstructionsDialogOpen: boolean;
+  setIsInstructionsDialogOpen: Dispatch<SetStateAction<boolean>>;
   projectContext: ProjectContext;
   setProjectContext: Dispatch<SetStateAction<ProjectContext>>;
   draftContext: ProjectContext;
@@ -26,6 +30,8 @@ export type ChatBaseContextValue = {
   activeChatKey: string;
   activeConversationId: string | null;
   conversationModel: ConversationModel;
+  instructions: InstructionsState;
+  instructionSelection: InstructionSelection;
 } & ReturnType<typeof useChat> &
   ReturnType<typeof useChatComposer>;
 
@@ -33,8 +39,5 @@ export type ChatServicesContextValue = {
   renderedMessages: UIMessage[];
   isChatPending: boolean;
   chatStatusLabel: string;
-  isFrontendMode: boolean;
-  isBackendMode: boolean;
-  isAgnosticMode: boolean;
   handleCreateConversation: () => Promise<void>;
 };
