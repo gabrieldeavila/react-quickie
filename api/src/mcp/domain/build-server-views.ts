@@ -7,8 +7,9 @@ import {
 } from './mcp-server.types';
 
 export type ConnectionSnapshot = {
-  status: Exclude<McpServerStatus, 'idle' | 'untrusted'>;
+  status: Exclude<McpServerStatus, 'idle' | 'untrusted' | 'disabled'>;
   toolCount?: number;
+  toolNames?: string[];
   error?: string;
 };
 
@@ -26,6 +27,7 @@ function activeView(
     source: server.source,
     transport: transportOf(server),
   };
+  if (server.disabled) return { ...base, status: 'disabled' };
   if (!isUsableServer(server)) {
     return { ...base, status: 'error', error: server.error };
   }

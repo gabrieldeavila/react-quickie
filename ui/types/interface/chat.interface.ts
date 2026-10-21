@@ -1,5 +1,4 @@
 import type { UIMessage } from "@ai-sdk/react";
-import type { CombinedAgentEnum } from "../enum/agent.enum";
 
 export interface ChatRequestMessagePart {
   type: string;
@@ -54,6 +53,4 @@ export type AssistantMarkdownProps = {
 
 export type ProjectContext = {
   reference: string;
-  focus: CombinedAgentEnum;
-  specialty: string;
 };

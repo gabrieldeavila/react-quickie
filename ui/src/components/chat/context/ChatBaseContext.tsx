@@ -7,6 +7,8 @@ import {
 import { createChatTransport } from "@/helpers/chat.transport.helper";
 import { shouldPersistAssistantMessage } from "@/features/chat/domain/to-assistant-record";
 import { useConversationModel } from "@/features/models/hooks/useConversationModel";
+import { useInstructions } from "@/features/instructions/hooks/useInstructions";
+import { useInstructionSelection } from "@/features/instructions/hooks/useInstructionSelection";
 import { useHostSelection } from "@/host/hooks/useHostSelection";
 import { readProjectContext } from "../../../helpers/chat.helper";
 import { useChatComposer } from "../hooks/start/useChatComposer";
@@ -17,6 +19,9 @@ import { ChatBaseContext } from "./context";
 export function ChatBaseProvider({ children }: { children: ReactNode }) {
   const [isRootModalOpen, setIsRootModalOpen] = useState<boolean>(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [isInstructionsDialogOpen, setIsInstructionsDialogOpen] =
+    useState<boolean>(false);
+  const [isMcpDialogOpen, setIsMcpDialogOpen] = useState<boolean>(false);
 
   const [projectContext, setProjectContext] =
     useState<ProjectContext>(readProjectContext);
@@ -36,6 +41,13 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
   useHostSelection(chatComposer.setInput);
   const conversationModel = useConversationModel({
     conversation: history.activeConversation,
+    reloadConversations: history.reloadConversations,
+  });
+  const instructions = useInstructions(projectContext.reference);
+  const instructionSelection = useInstructionSelection({
+    root: projectContext.reference,
+    conversation: history.activeConversation,
+    available: instructions.instructions,
     reloadConversations: history.reloadConversations,
   });
 
@@ -58,15 +70,13 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
     () =>
       createChatTransport({
         projectRoot: projectContext.reference,
-        focus: projectContext.focus,
-        specialty: projectContext.specialty,
+        instructionIds: instructionSelection.selectedIds,
         model: conversationModel.modelRef,
         modelTarget: conversationModel.target,
       }),
     [
-      projectContext.focus,
       projectContext.reference,
-      projectContext.specialty,
+      instructionSelection.selectedIds,
       conversationModel.modelRef,
       conversationModel.target,
     ],
@@ -104,6 +114,10 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       setIsRootModalOpen,
       isCreateModalOpen,
       setIsCreateModalOpen,
+      isInstructionsDialogOpen,
+      setIsInstructionsDialogOpen,
+      isMcpDialogOpen,
+      setIsMcpDialogOpen,
       projectContext,
       setProjectContext,
       draftContext,
@@ -117,12 +131,16 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       activeChatKey,
       activeConversationId,
       conversationModel,
+      instructions,
+      instructionSelection,
       ...chat,
       ...chatComposer,
     }),
     [
       isRootModalOpen,
       isCreateModalOpen,
+      isInstructionsDialogOpen,
+      isMcpDialogOpen,
       projectContext,
       draftContext,
       history,
@@ -130,6 +148,8 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       activeChatKey,
       activeConversationId,
       conversationModel,
+      instructions,
+      instructionSelection,
       chat,
       chatComposer,
     ],

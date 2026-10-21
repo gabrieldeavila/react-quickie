@@ -1,7 +1,6 @@
 import { useMemo } from "react";
-import { FiFolderPlus, FiSettings } from "react-icons/fi";
+import { FiFolderPlus, FiServer, FiSettings } from "react-icons/fi";
 import type { HeaderMenuItem } from "@/features/header-menu/components/HeaderOverflowMenu";
-import { newProjectLabel } from "@/features/header-menu/domain/new-project-label";
 import { getHostFeatures } from "@/host/domain/host-features";
 import { getRuntimeConfig } from "@/host/runtime-config";
 import { useChatBaseContext } from "../../context/context";
@@ -9,27 +8,32 @@ import { useOpenSettings } from "./useOpenSettings";
 
 const HOST_FEATURES = getHostFeatures(getRuntimeConfig().host);
 
-/** Items of the header "⋯" menu: new project (when offered) and settings. */
+/** Items of the header "⋯" menu: new project (when offered), MCP servers, settings. */
 export function useHeaderMenuItems(): HeaderMenuItem[] {
-  const { projectContext, setIsCreateModalOpen } = useChatBaseContext();
+  const { setIsCreateModalOpen, setIsMcpDialogOpen } = useChatBaseContext();
   const openSettings = useOpenSettings();
 
   return useMemo(() => {
-    const projectLabel = newProjectLabel(projectContext.focus, HOST_FEATURES);
     const settings: HeaderMenuItem = {
       key: "settings",
       label: "Settings",
       icon: FiSettings,
       onSelect: openSettings,
     };
-    if (!projectLabel) return [settings];
+    const mcp: HeaderMenuItem = {
+      key: "mcp",
+      label: "MCP servers",
+      icon: FiServer,
+      onSelect: () => setIsMcpDialogOpen(true),
+    };
+    if (!HOST_FEATURES.canCreateProjects) return [mcp, settings];
 
     const newProject: HeaderMenuItem = {
       key: "new-project",
-      label: projectLabel,
+      label: "New project",
       icon: FiFolderPlus,
       onSelect: () => setIsCreateModalOpen(true),
     };
-    return [newProject, settings];
-  }, [projectContext.focus, openSettings, setIsCreateModalOpen]);
+    return [newProject, mcp, settings];
+  }, [openSettings, setIsCreateModalOpen, setIsMcpDialogOpen]);
 }

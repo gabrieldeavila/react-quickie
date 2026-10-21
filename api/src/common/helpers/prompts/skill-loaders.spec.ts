@@ -3,8 +3,8 @@ import * as os from 'os';
 import * as path from 'path';
 import { formatProjectMemory } from './domain/format-project-memory';
 import {
+  loadAgentsFile,
   loadProjectAgents,
-  loadSkillDirectory,
   loadSkillFile,
 } from './skill-loaders';
 
@@ -31,34 +31,7 @@ describe('skill loaders', () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
-  it('loads index, defaults and the chosen specialty in order', async () => {
-    write('frontend/index.md', 'index');
-    write('frontend/default/design.md', 'design');
-    write('frontend/specialty/forms.md', 'forms');
-    write('frontend/specialty/other.md', 'other');
-
-    const skills = await loadSkillDirectory(
-      readMarkdown,
-      path.join(dir, 'frontend'),
-      'forms',
-    );
-
-    expect(contents(skills)).toEqual(['index', 'design', 'forms']);
-  });
-
-  it('skips the specialty when none is chosen and empty files always', async () => {
-    write('mode/index.md', '');
-    write('mode/specialty/forms.md', 'forms');
-
-    expect(
-      await loadSkillDirectory(readMarkdown, path.join(dir, 'mode'), 'none'),
-    ).toEqual([]);
-  });
-
-  it('is empty for a missing folder or file', async () => {
-    expect(
-      await loadSkillDirectory(readMarkdown, path.join(dir, 'x'), 'forms'),
-    ).toEqual([]);
+  it('is empty for a missing file', async () => {
     expect(await loadSkillFile(readMarkdown, path.join(dir, 'x.md'))).toEqual(
       [],
     );
@@ -73,6 +46,17 @@ describe('skill loaders', () => {
       'agent b',
     ]);
     expect(await loadProjectAgents(readMarkdown, undefined)).toEqual([]);
+  });
+
+  it('loads AGENTS.md from the project root when present', async () => {
+    expect(await loadAgentsFile(readMarkdown, dir)).toEqual([]);
+
+    write('AGENTS.md', 'use pnpm');
+
+    expect(contents(await loadAgentsFile(readMarkdown, dir))).toEqual([
+      'use pnpm',
+    ]);
+    expect(await loadAgentsFile(readMarkdown, undefined)).toEqual([]);
   });
 });
 

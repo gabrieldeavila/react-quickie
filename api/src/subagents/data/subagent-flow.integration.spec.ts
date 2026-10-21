@@ -12,6 +12,7 @@ import { buildToolApprovalMap } from 'src/chat/domain/approval-policy';
 import { createBashApprovalPolicy } from 'src/common/agents/tools/bash/domain/bash-approval-policy';
 import { assessCommand } from 'src/common/agents/tools/bash/domain/command-policy';
 import type { ContextService } from 'src/common/context/context.service';
+import type { EnvironmentService } from 'src/common/helpers/environment.service';
 import type { ProviderRegistryService } from 'src/llm/data/provider-registry.service';
 import type { AgentDefinition } from '../domain/agent-definition.types';
 import { buildNestedApprovalPolicies } from '../domain/nested-approval-policies';
@@ -104,6 +105,10 @@ function setup(subagentModel: MockLanguageModelV4) {
     {
       forAgent: () => Promise.resolve({ tools, approvalPolicies }),
     } as unknown as SubagentToolkitService,
+    {
+      describe: () =>
+        Promise.resolve({ role: 'system' as const, content: 'Environment' }),
+    } as unknown as EnvironmentService,
   );
   return { execute, runner };
 }

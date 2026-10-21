@@ -9,18 +9,23 @@ export type ParsedMcpServer =
       source: McpConfigSource;
       config: McpServerConfig;
       error?: undefined;
+      /** Set (true) only for `"disabled": true` servers, which never connect. */
+      disabled?: true;
     }
   | {
       name: string;
       source: McpConfigSource;
       config?: undefined;
       error: string;
+      disabled?: undefined;
     };
 
-export type UsableMcpServer = Extract<ParsedMcpServer, { config: object }>;
+export type UsableMcpServer = Extract<ParsedMcpServer, { config: object }> & {
+  disabled?: undefined;
+};
 
 export type McpServerStatus =
-  'idle' | 'connecting' | 'connected' | 'error' | 'untrusted';
+  'idle' | 'connecting' | 'connected' | 'error' | 'untrusted' | 'disabled';
 
 export type McpServerView = {
   name: string;
@@ -28,11 +33,13 @@ export type McpServerView = {
   transport: 'stdio' | 'http' | 'sse' | 'unknown';
   status: McpServerStatus;
   toolCount?: number;
+  /** For per-tool approval in the UI; known once connected. */
+  toolNames?: string[];
   error?: string;
 };
 
 export function isUsableServer(
   server: ParsedMcpServer,
 ): server is UsableMcpServer {
-  return server.config !== undefined;
+  return server.config !== undefined && !server.disabled;
 }

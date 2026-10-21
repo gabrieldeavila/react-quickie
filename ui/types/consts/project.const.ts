@@ -6,6 +6,7 @@ export const getCreateProjectUrl = () => `${getApiUrl()}/project/create`;
 export const getChatApiUrl = () => `${getApiUrl()}/chat`;
 export const getModelsApiUrl = () => `${getApiUrl()}/models`;
 export const getMcpApiUrl = () => `${getApiUrl()}/mcp`;
+export const getInstructionsApiUrl = () => `${getApiUrl()}/instructions`;
 
 export const PROJECT_TEMPLATE_OPTIONS: Array<{
   label: string;

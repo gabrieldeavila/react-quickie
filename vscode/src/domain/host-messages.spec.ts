@@ -41,6 +41,20 @@ describe('parseWebviewMessage', () => {
     });
   });
 
+  it('reads openMcpConfig with a known scope only', () => {
+    expect(parseWebviewMessage({ type: 'openMcpConfig', scope: 'project', root: '/w' })).toEqual({
+      type: 'openMcpConfig',
+      scope: 'project',
+      root: '/w',
+    });
+    expect(parseWebviewMessage({ type: 'openMcpConfig', scope: 'global', root: 3 })).toEqual({
+      type: 'openMcpConfig',
+      scope: 'global',
+      root: undefined,
+    });
+    expect(parseWebviewMessage({ type: 'openMcpConfig', scope: '/etc/passwd' })).toBeNull();
+  });
+
   it('rejects unknown or malformed messages', () => {
     expect(parseWebviewMessage(null)).toBeNull();
     expect(parseWebviewMessage({ type: 'runBash', command: 'rm -rf /' })).toBeNull();

@@ -58,7 +58,10 @@ export class ChatStreamService {
     // Models without tool support run as plain chat: no tools, no approvals.
     const agentTools = selected.model.supportsTools ? tools : {};
     const agentToolApproval = selected.model.supportsTools ? toolApproval : {};
-    const instructions = await this.promptsService.getInstructions();
+    const instructions = await this.promptsService.getInstructions({
+      model: selected,
+      toolNames: Object.keys(agentTools),
+    });
     const approvalSecret = await this.approvalSecretService.get();
     const onError = (error: unknown) => {
       this.logger.error(`Stream failed (${selected.ref})`, error);

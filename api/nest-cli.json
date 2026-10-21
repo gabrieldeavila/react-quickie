@@ -12,6 +12,10 @@
       {
         "include": "subagents/definitions/*.md",
         "watchAssets": true
+      },
+      {
+        "include": "instructions/builtin/*.md",
+        "watchAssets": true
       }
     ]
   }

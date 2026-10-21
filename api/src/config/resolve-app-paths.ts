@@ -9,9 +9,12 @@ export type AppPaths = {
   /** Parent folder of this repo; last-resort workspace root. */
   repoParentDir: string;
   skillsDir: string;
-  pluginSkillsDir: string;
   /** Built-in subagent definitions (`*.md`). */
   agentDefinitionsDir: string;
+  /** Built-in instructions (`*.md`, read-only). */
+  builtinInstructionsDir: string;
+  /** User instructions shared by every project. */
+  globalInstructionsDir: string;
   storageDir: string;
   memoryDir: string;
   legacyMemoryDir: string;
@@ -47,8 +50,9 @@ export function resolveAppPaths({
     uiDir: path.join(repoDir, 'ui'),
     repoParentDir: path.resolve(repoDir, '..'),
     skillsDir: path.join(baseDir, 'common', 'agents', 'skills'),
-    pluginSkillsDir: path.join(baseDir, 'common', 'agents', 'plugin', 'skills'),
     agentDefinitionsDir: path.join(baseDir, 'subagents', 'definitions'),
+    builtinInstructionsDir: path.join(baseDir, 'instructions', 'builtin'),
+    globalInstructionsDir: path.join(storageDir, 'instructions'),
     storageDir,
     memoryDir: path.join(storageDir, 'memory'),
     legacyMemoryDir: path.join(apiDir, 'storage', 'memory'),

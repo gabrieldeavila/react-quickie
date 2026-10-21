@@ -8,8 +8,10 @@ import type { McpServerView } from "./mcp-server.types";
 const server = (overrides: Partial<McpServerView>): McpServerView => ({
   name: "gh",
   source: "global",
+  scope: "global",
   transport: "http",
   status: "idle",
+  disabled: false,
   ...overrides,
 });
 
@@ -40,6 +42,14 @@ describe("describeServerStatus", () => {
     expect(describeServerStatus(server({ status: "error" }))).toMatchObject({
       tone: "error",
       canReconnect: true,
+    });
+  });
+
+  it("shows disabled servers as muted, without reconnect", () => {
+    expect(describeServerStatus(server({ status: "disabled" }))).toEqual({
+      label: "Disabled",
+      tone: "muted",
+      canReconnect: false,
     });
   });
 });

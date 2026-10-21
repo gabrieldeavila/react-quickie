@@ -58,6 +58,42 @@
   gap: 6px;
 }
 
+/* Narrow views (the VS Code sidebar): the chips shrink to a readable minimum
+   and ellipsize, the usage badge ellipsizes, and below 360px the badge is
+   hidden (each reply still shows its own usage). Full values stay in the
+   titles. */
+.chat-composer__toolbar {
+  container-type: inline-size;
+}
+
+.chat-composer__pickers .chat-mode-popover {
+  flex: 0 1 auto;
+  min-width: 72px;
+}
+
+.chat-composer__pickers .chat-mode-popover__trigger--chip {
+  max-width: 100%;
+}
+
+.chat-composer__trailing {
+  flex-shrink: 1;
+  min-width: 30px;
+}
+
+.chat-composer__trailing .chat-usage-badge {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 24px;
+}
+
+@container (max-width: 360px) {
+  .chat-composer__trailing .chat-usage-badge {
+    display: none;
+  }
+}
+
 .chat-composer__trailing .chat-usage-badge {
   height: 24px;
   padding: 0 4px;

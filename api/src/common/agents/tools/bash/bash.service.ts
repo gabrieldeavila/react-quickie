@@ -5,6 +5,10 @@ import { tool } from 'ai';
 import { z } from 'zod/v4';
 import { ContextService } from 'src/common/context/context.service';
 import { formatToolError, toolSuccess } from '../shared/format-tool-error';
+import {
+  describeCommandFailure,
+  type CommandFailure,
+} from './domain/describe-command-failure';
 import type { ToolApprovalPolicy } from 'src/chat/domain/approval-policy';
 import { CommandPolicyService } from './command-policy.service';
 import { createBashApprovalPolicy } from './domain/bash-approval-policy';
@@ -92,7 +96,10 @@ export class BashToolsService {
 
       return toolSuccess('Bash command finished.', [output || '(no output)']);
     } catch (error) {
-      return formatToolError('run the Bash command', error);
+      return formatToolError(
+        'run the Bash command',
+        describeCommandFailure(error as CommandFailure),
+      );
     }
   }
 }

@@ -43,6 +43,11 @@ export class WorkspaceService implements OnModuleInit {
     );
   }
 
+  /** The configured workspace roots (DOTY_WORKSPACE_ROOTS and fallbacks). */
+  get roots(): string[] {
+    return [...this.workspaceRoots.roots];
+  }
+
   isAllowedRoot(root: string): boolean {
     const allowedRoots = this.workspaceRoots.roots.flatMap((allowed) => [
       allowed,

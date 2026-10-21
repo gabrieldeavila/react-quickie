@@ -1,40 +1,49 @@
 import { describeServerStatus } from "../domain/describe-server-status";
+import { describeServerSummary } from "../domain/describe-server-summary";
 import type { McpServerView } from "../domain/mcp-server.types";
+import { McpRowMenu, type McpRowAction } from "./McpRowMenu";
 
 type Props = {
   server: McpServerView;
   isBusy: boolean;
-  onReconnect: (name: string) => void;
+  actions: McpRowAction[];
 };
 
-const SOURCE_LABEL = { global: "global", project: "project" } as const;
+const DOT: Record<McpServerView["status"], string> = {
+  connected: "●",
+  connecting: "●",
+  idle: "●",
+  error: "●",
+  disabled: "○",
+  untrusted: "⚠",
+};
 
-export function McpServerRow({ server, isBusy, onReconnect }: Props) {
+/** One server: status dot, name, "http · global · 12 tools", status, actions. */
+export function McpServerRow({ server, isBusy, actions }: Props) {
   const status = describeServerStatus(server);
 
   return (
     <li className="mcp-server-row">
+      <span
+        className={`mcp-server-row__dot mcp-tone--${status.tone}`}
+        aria-hidden="true"
+      >
+        {DOT[server.status]}
+      </span>
       <div className="mcp-server-row__main">
         <strong>{server.name}</strong>
         <span className="mcp-server-row__meta">
-          {SOURCE_LABEL[server.source]} · {server.transport}
+          {describeServerSummary(server)}
         </span>
         <span className={`mcp-server-row__status mcp-tone--${status.tone}`}>
-          {status.label}
+          {isBusy ? "Working…" : status.label}
         </span>
         {server.error ? (
           <small className="mcp-server-row__error">{server.error}</small>
         ) : null}
       </div>
-      {status.canReconnect ? (
-        <button
-          type="button"
-          className="chat-button chat-button--ghost mcp-server-row__action"
-          disabled={isBusy}
-          onClick={() => onReconnect(server.name)}
-        >
-          {isBusy ? "Connecting…" : "Reconnect"}
-        </button>
+      {actions.length ? (
+        <McpRowMenu serverName={server.name} actions={actions} />
       ) : null}
     </li>
   );

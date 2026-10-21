@@ -1,41 +1,62 @@
 import { describe, expect, it } from "vitest";
-import { AgentFocusEnum, type CombinedAgentEnum } from "~types/enum/agent.enum";
-import { AgentFocusPluginEnum } from "~types/plugin/specialty.plugin";
-import { starterPromptsFor } from "./starter-prompts";
-
-const ALL_MODES: CombinedAgentEnum[] = [
-  ...Object.values(AgentFocusEnum),
-  ...Object.values(AgentFocusPluginEnum),
-];
+import {
+  DEFAULT_STARTER_PROMPTS,
+  MAX_STARTER_PROMPTS,
+  starterPromptsFor,
+  toStarterPrompt,
+} from "./starter-prompts";
 
 describe("starterPromptsFor", () => {
-  it.each(ALL_MODES)("gives 3 or 4 prompts for %s", (mode) => {
-    const prompts = starterPromptsFor(mode);
-
-    expect(prompts.length).toBeGreaterThanOrEqual(3);
-    expect(prompts.length).toBeLessThanOrEqual(4);
+  it("falls back to the default prompts without selected starters", () => {
+    expect(starterPromptsFor([])).toBe(DEFAULT_STARTER_PROMPTS);
+    expect(starterPromptsFor([{ starters: [] }])).toBe(DEFAULT_STARTER_PROMPTS);
   });
 
-  it.each(ALL_MODES)("gives %s prompts with unique labels and text", (mode) => {
-    const prompts = starterPromptsFor(mode);
-    const labels = new Set(prompts.map((prompt) => prompt.label));
+  it("uses the selected instructions' starters in order, deduplicated", () => {
+    const prompts = starterPromptsFor([
+      { starters: ["Build a form", "Add validation"] },
+      { starters: ["Add validation", "Write an endpoint"] },
+    ]);
 
-    expect(labels.size).toBe(prompts.length);
-    for (const prompt of prompts) {
+    expect(prompts.map(({ text }) => text)).toEqual([
+      "Build a form",
+      "Add validation",
+      "Write an endpoint",
+    ]);
+  });
+
+  it("caps the number of prompts", () => {
+    const starters = Array.from({ length: 9 }, (_, index) => `Prompt ${index}`);
+
+    expect(starterPromptsFor([{ starters }])).toHaveLength(MAX_STARTER_PROMPTS);
+  });
+
+  it("has unique, non-empty default labels", () => {
+    const labels = new Set(DEFAULT_STARTER_PROMPTS.map(({ label }) => label));
+
+    expect(labels.size).toBe(DEFAULT_STARTER_PROMPTS.length);
+    for (const prompt of DEFAULT_STARTER_PROMPTS) {
       expect(prompt.label.trim()).not.toBe("");
       expect(prompt.text.trim()).not.toBe("");
     }
   });
+});
 
-  it("gives frontend prompts for the frontend mode", () => {
-    expect(starterPromptsFor(AgentFocusEnum.FRONTEND)[0].label).toBe(
-      "Landing page",
-    );
+describe("toStarterPrompt", () => {
+  it("keeps short text as its own label", () => {
+    expect(toStarterPrompt("Build a form")).toEqual({
+      label: "Build a form",
+      text: "Build a form",
+    });
   });
 
-  it("falls back to the agnostic prompts for an unknown mode", () => {
-    expect(starterPromptsFor("unknown" as CombinedAgentEnum)).toEqual(
-      starterPromptsFor(AgentFocusEnum.AGNOSTIC),
-    );
+  it("shortens long labels but keeps the full text", () => {
+    const text =
+      "Build a landing page for a SaaS product with pricing and FAQ";
+    const prompt = toStarterPrompt(text);
+
+    expect(prompt.text).toBe(text);
+    expect(prompt.label.endsWith("…")).toBe(true);
+    expect(prompt.label.length).toBeLessThanOrEqual(40);
   });
 });

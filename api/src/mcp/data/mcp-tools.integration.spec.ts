@@ -91,6 +91,7 @@ describe('McpToolsService (stdio integration)', () => {
     expect(pool.snapshot(ROOT, server)).toEqual({
       status: 'connected',
       toolCount: 2,
+      toolNames: ['big.output', 'echo'],
       error: undefined,
     });
   });

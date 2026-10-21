@@ -60,7 +60,7 @@ export const TOOL_UI_MAPPING: Record<string, ToolUiMetadata> = {
     uiLabel: 'Checking TypeScript...',
     uiDescription: 'Checking the project for type errors.',
   },
-  install_depency: {
+  install_dependency: {
     uiLabel: 'Installing dependency...',
     uiDescription: 'Adding a new dependency to the project.',
   },

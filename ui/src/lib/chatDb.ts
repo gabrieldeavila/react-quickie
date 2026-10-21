@@ -27,6 +27,11 @@ class ChatDatabase extends Dexie {
       conversations: "id, updatedAt, lastMessageAt, createdAt",
       messages: "id, conversationId, createdAt, role",
     });
+    // v5: conversations gain an optional, non-indexed `instructionIds`.
+    this.version(5).stores({
+      conversations: "id, updatedAt, lastMessageAt, createdAt",
+      messages: "id, conversationId, createdAt, role",
+    });
   }
 }
 

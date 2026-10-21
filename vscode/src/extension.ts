@@ -29,7 +29,7 @@ export function activate(context: vscode.ExtensionContext): void {
     log,
   });
 
-  const bridge = new HostBridge();
+  const bridge = new HostBridge(context.globalStorageUri.fsPath);
   const view = new DotyViewProvider(vscode.Uri.joinPath(distDir, 'ui'), api, bridge);
   // Explicit restarts reload the UI too (new keys → new model list).
   const restartApi = async () => {
@@ -52,6 +52,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('doty.openSettings', () =>
       runViewCommand(bridge, 'openSettings'),
     ),
+    vscode.commands.registerCommand('doty.openMcp', () => runViewCommand(bridge, 'openMcp')),
     vscode.commands.registerCommand('doty.restartApi', restartApi),
     vscode.commands.registerCommand('doty.showLogs', () => log.show()),
     secrets.onDidChange(() => void restartApi()),

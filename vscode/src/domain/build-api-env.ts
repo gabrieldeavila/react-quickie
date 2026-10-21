@@ -41,5 +41,7 @@ export function buildApiEnv(input: ApiEnvInput): Record<string, string> {
     DOTY_WORKSPACE_ROOTS: input.workspaceRoots.join(','),
     DOTY_DATA_DIR: input.dataDir,
     DOTY_API_BASE_DIR: input.apiBaseDir,
+    // Tells the agent prompt it runs inside VS Code (default: web).
+    DOTY_CLIENT: 'vscode',
   };
 }

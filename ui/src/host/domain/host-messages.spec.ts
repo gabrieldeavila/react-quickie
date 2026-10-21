@@ -27,6 +27,9 @@ describe("parseHostMessage", () => {
   it("rejects unknown commands and malformed messages", () => {
     expect(parseHostMessage(null)).toBeNull();
     expect(parseHostMessage({ type: "runCommand", command: "rm" })).toBeNull();
+    expect(parseHostMessage({ type: "runCommand", command: "openMcp" })).toEqual(
+      { type: "runCommand", command: "openMcp" },
+    );
     expect(parseHostMessage({ type: "insertSelection", file: "a.ts" })).toBeNull();
     expect(parseHostMessage({ type: "other" })).toBeNull();
   });

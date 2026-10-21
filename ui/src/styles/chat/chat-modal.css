@@ -46,3 +46,27 @@
   color: var(--chat-error);
   font-size: 0.92rem;
 }
+
+.chat-confirmation {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--chat-error) 45%, transparent);
+  border-radius: 10px;
+}
+
+.chat-confirmation p {
+  margin: 0 0 10px;
+}
+
+.chat-confirmation__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.chat-button--danger {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--chat-error) 60%, transparent);
+  color: var(--chat-error);
+}

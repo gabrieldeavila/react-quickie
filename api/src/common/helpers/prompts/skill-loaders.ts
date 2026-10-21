@@ -2,7 +2,7 @@ import type { SystemModelMessage } from 'ai';
 import * as fs from 'fs-extra';
 import path from 'path';
 
-/** Markdown file → rendered text, '' when missing or unreadable. */
+/** Markdown file → prompt text, '' when missing or unreadable. */
 export type ReadMarkdown = (file: string) => Promise<string>;
 
 async function toInstruction(
@@ -38,32 +38,16 @@ export async function loadSkillFile(
   return toInstruction(readMarkdown, file);
 }
 
-/**
- * A skills folder: `index.md`, every file in `default/`, then
- * `specialty/<specialty>.md` when a specialty is chosen.
- */
-export async function loadSkillDirectory(
+/** `AGENTS.md` at the project root (the cross-tool convention). */
+export async function loadAgentsFile(
   readMarkdown: ReadMarkdown,
-  dir: string,
-  specialty: string | undefined,
+  root: string | undefined,
 ): Promise<SystemModelMessage[]> {
-  if (!(await fs.pathExists(dir))) return [];
-
-  const index = path.join(dir, 'index.md');
-  const instructions = await loadEach(readMarkdown, [
-    ...((await fs.pathExists(index)) ? [index] : []),
-    ...(await listFiles(path.join(dir, 'default'))),
-  ]);
-
-  if (!specialty || specialty === 'none') return instructions;
-  const specialtyFile = path.join(dir, 'specialty', `${specialty}.md`);
-  return [
-    ...instructions,
-    ...(await loadSkillFile(readMarkdown, specialtyFile)),
-  ];
+  if (!root) return [];
+  return loadSkillFile(readMarkdown, path.join(root, 'AGENTS.md'));
 }
 
-/** The project's own `.agents/*.md` instructions. */
+/** The project's own `.agents/*.md` instructions (legacy). */
 export async function loadProjectAgents(
   readMarkdown: ReadMarkdown,
   root: string | undefined,

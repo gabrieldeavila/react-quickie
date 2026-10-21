@@ -22,6 +22,7 @@ import { ChatStreamService } from '../data/chat-stream.service';
 import { InvalidChatMessagesError } from '../domain/invalid-chat-messages.error';
 import { parseCompaction } from '../domain/parse-compaction';
 import { prepareChatMessages } from '../domain/prepare-chat-messages';
+import { readInstructionIds } from '../domain/read-instruction-ids';
 
 /** Doty's request validation errors become 400; anything else is rethrown. */
 function toBadRequest(error: unknown): unknown {
@@ -36,8 +37,7 @@ function toBadRequest(error: unknown): unknown {
 
     return {
       root: body.root as string | undefined,
-      mode: body.chatMode as string | undefined,
-      specialty: body.chatSpecialty as string | undefined,
+      instructionIds: readInstructionIds(body.instructions),
     };
   }),
 )

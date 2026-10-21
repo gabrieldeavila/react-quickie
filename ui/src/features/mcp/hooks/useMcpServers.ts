@@ -1,18 +1,30 @@
 import { useCallback, useEffect, useState } from "react";
+import { deleteMcpServer } from "../api/delete-mcp-server";
 import { fetchMcpServers } from "../api/fetch-mcp-servers";
+import { McpConflictError } from "../api/mcp-conflict.error";
+import { patchMcpServer } from "../api/patch-mcp-server";
 import { reconnectMcpServer } from "../api/reconnect-mcp-server";
+import { saveMcpServer } from "../api/save-mcp-server";
 import { trustMcpConfig } from "../api/trust-mcp-config";
-import type { McpServersResponse } from "../domain/mcp-server.types";
+import type {
+  McpApprovalSetting,
+  McpScope,
+  McpServersResponse,
+  McpServerView,
+} from "../domain/mcp-server.types";
+
+const CHANGED_ELSEWHERE =
+  "The MCP config changed outside this dialog. The list is up to date now; review it and try again.";
 
 function messageOf(reason: unknown): string {
   return reason instanceof Error ? reason.message : String(reason);
 }
 
-/** MCP server list for `root`, plus the trust and reconnect actions. */
+/** MCP server list for `root`, plus every action the dialog offers. */
 export function useMcpServers(root: string) {
   const [data, setData] = useState<McpServersResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  /** The action in flight: "trust" or a server name. */
+  /** The action in flight: "trust", "save" or a server name. */
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(
@@ -34,15 +46,36 @@ export function useMcpServers(root: string) {
     return () => controller.abort();
   }, [load]);
 
+  /** The hash of the file an edit goes to; null when it doesn't exist yet. */
+  const baseHashFor = useCallback(
+    (scope: McpScope): string | null => {
+      const file = scope === "global" ? data?.globalConfig : data?.projectConfig;
+      return file?.hash ?? null;
+    },
+    [data],
+  );
+
+  /** Runs an action; returns its error message (null on success). */
   const run = useCallback(
-    async (key: string, action: () => Promise<McpServersResponse>) => {
+    async (
+      key: string,
+      action: () => Promise<McpServersResponse>,
+    ): Promise<string | null> => {
       setBusy(key);
       setError(null);
       try {
         setData(await action());
+        return null;
       } catch (reason) {
-        setError(messageOf(reason));
+        if (reason instanceof McpConflictError) {
+          setData(reason.latest);
+          setError(CHANGED_ELSEWHERE);
+          return CHANGED_ELSEWHERE;
+        }
+        const message = messageOf(reason);
+        setError(message);
         load();
+        return message;
       } finally {
         setBusy(null);
       }
@@ -61,5 +94,58 @@ export function useMcpServers(root: string) {
     [root, run],
   );
 
-  return { data, error, busy, refresh: () => load(), trust, reconnect };
+  const save = useCallback(
+    (scope: McpScope, name: string, config: unknown) =>
+      run("save", () =>
+        saveMcpServer(root, name, { scope, config, baseHash: baseHashFor(scope) }),
+      ),
+    [baseHashFor, root, run],
+  );
+
+  const remove = useCallback(
+    (server: McpServerView) =>
+      void run(server.name, () =>
+        deleteMcpServer(root, server.name, server.scope, baseHashFor(server.scope)),
+      ),
+    [baseHashFor, root, run],
+  );
+
+  const setDisabled = useCallback(
+    (server: McpServerView, disabled: boolean) =>
+      void run(server.name, () =>
+        patchMcpServer(root, server.name, {
+          scope: server.scope,
+          baseHash: baseHashFor(server.scope),
+          disabled,
+        }),
+      ),
+    [baseHashFor, root, run],
+  );
+
+  const setToolApproval = useCallback(
+    (server: McpServerView, toolApproval: McpApprovalSetting) =>
+      run(server.name, () =>
+        patchMcpServer(root, server.name, {
+          scope: server.scope,
+          baseHash: baseHashFor(server.scope),
+          toolApproval,
+        }),
+      ),
+    [baseHashFor, root, run],
+  );
+
+  return {
+    data,
+    error,
+    busy,
+    refresh: () => load(),
+    trust,
+    reconnect,
+    save,
+    remove,
+    setDisabled,
+    setToolApproval,
+  };
 }
+
+export type McpServersState = ReturnType<typeof useMcpServers>;

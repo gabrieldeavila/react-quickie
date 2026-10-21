@@ -1,0 +1,183 @@
+/* MCP dialog: server rows, row menu, form rows, tool list. Theme tokens only. */
+
+.mcp-dialog {
+  width: min(640px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.mcp-server-list--dialog {
+  max-height: none;
+}
+
+.mcp-server-row__dot {
+  flex-shrink: 0;
+  align-self: flex-start;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.mcp-server-row__main {
+  flex: 1;
+}
+
+.mcp-row-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+}
+
+.mcp-row-menu__panel {
+  min-width: 160px;
+}
+
+.mcp-row-menu__panel .chat-mode-popover__option:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.mcp-trust-notice__servers {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.86rem;
+}
+
+.mcp-config-files__link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--chat-link);
+  cursor: pointer;
+  text-align: left;
+}
+
+.mcp-config-files__link:hover {
+  color: var(--chat-link-hover);
+  text-decoration: underline;
+}
+
+.mcp-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mcp-form__input {
+  min-height: 0;
+  padding: 10px 12px;
+}
+
+.mcp-form__json-toggle {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mcp-form__json {
+  min-height: 220px;
+  padding: 10px 12px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.mcp-rows {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.mcp-rows legend {
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.mcp-rows__row {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.mcp-rows__row--single {
+  grid-template-columns: 1fr auto;
+}
+
+.mcp-rows__input {
+  min-height: 0;
+  padding: 8px 10px;
+}
+
+.mcp-rows__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+}
+
+.mcp-rows__hint {
+  grid-column: 1 / -1;
+  color: var(--chat-text-muted);
+  font-size: 0.78rem;
+}
+
+.mcp-rows__add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+}
+
+.mcp-tool-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mcp-tool-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 10px;
+}
+
+.mcp-tool-list__name {
+  overflow-wrap: anywhere;
+}
+
+.mcp-tool-list__select {
+  flex-shrink: 0;
+  min-height: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 8px;
+  background: var(--chat-input-bg);
+  color: var(--chat-input-text);
+}
+
+@media (max-width: 560px) {
+  .mcp-form__row,
+  .mcp-rows__row {
+    grid-template-columns: 1fr;
+  }
+
+  .mcp-tool-list__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.mcp-trust-notice code {
+  font-size: 0.82rem;
+}

@@ -42,6 +42,8 @@ export function describeServerStatus(
       };
     case "error":
       return { label: "Error", tone: "error", canReconnect: true };
+    case "disabled":
+      return { label: "Disabled", tone: "muted", canReconnect: false };
   }
 }
 

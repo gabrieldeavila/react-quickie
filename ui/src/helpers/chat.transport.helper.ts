@@ -1,5 +1,4 @@
 import { DefaultChatTransport } from "ai";
-import type { CombinedAgentEnum } from "../../types/enum/agent.enum";
 import type { ChatRequestBody } from "../../types/interface/chat.interface";
 import type { CreateChatTransportParams } from "../../types/interface/transport.interface";
 import { getChatApiUrl } from "~types/consts/project.const";
@@ -11,8 +10,7 @@ import { filterPartsByCapabilities } from "@/features/models/domain/filter-parts
 
 export function createChatTransport({
   projectRoot,
-  focus,
-  specialty,
+  instructionIds,
   model,
   modelTarget,
 }: CreateChatTransportParams) {
@@ -22,8 +20,7 @@ export function createChatTransport({
       if (options?.body) {
         const body = JSON.parse(options.body as string) as ChatRequestBody & {
           root?: string;
-          chatMode?: CombinedAgentEnum;
-          chatSpecialty?: string;
+          instructions?: string[];
           model?: string;
           compaction?: unknown;
         };
@@ -40,8 +37,7 @@ export function createChatTransport({
         }
         if (model) body.model = model;
         body.root = projectRoot;
-        body.chatMode = focus;
-        body.chatSpecialty = specialty;
+        body.instructions = instructionIds;
         options.body = JSON.stringify(body);
       }
       return authFetch(url, options);

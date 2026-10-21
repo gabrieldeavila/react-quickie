@@ -21,6 +21,7 @@ describe('buildApiEnv', () => {
       DOTY_WORKSPACE_ROOTS: '/work/a,/work/b',
       DOTY_DATA_DIR: '/storage',
       DOTY_API_BASE_DIR: '/ext/dist/api',
+      DOTY_CLIENT: 'vscode',
     });
   });
 

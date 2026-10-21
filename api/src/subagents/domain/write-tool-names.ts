@@ -15,6 +15,5 @@ export const WRITE_TOOL_NAMES: ReadonlySet<string> = new Set([
   'run_bash_command',
   'create_commit',
   'save_project_memory',
-  'install_depency',
-  'create_component_blueprint',
+  'install_dependency',
 ]);
