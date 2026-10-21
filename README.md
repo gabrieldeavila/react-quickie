@@ -6,11 +6,12 @@
 
 - Chat com streaming de respostas e contexto do projeto selecionado.
 - Seletor de provedor/modelo por conversa (veja [Provedores e modelos](#provedores-e-modelos)).
-- Modos especializados para tarefas de frontend e Git, além das ferramentas gerais do agente.
-- Ferramentas para consultar e alterar arquivos, trabalhar com projetos e executar comandos Bash.
-- Aprovação explícita para comandos Bash que exigem confirmação; comandos considerados arriscados não são executados silenciosamente.
+- Agente de código: lê, busca e edita arquivos, roda comandos Bash e usa Git no projeto real (veja [Prompt do agente](#prompt-do-agente)).
+- [Instruções](#instruções): orientações em Markdown que você escreve (landing pages, formulários, convenções da sua API…) e seleciona por conversa.
+- Comandos com `/` na caixa de mensagem: `/mcp`, `/instructions`, `/new`, `/settings` e `/<id-da-instrução>`.
+- Aprovação explícita para comandos Bash arriscados, para `create_commit` e para ferramentas MCP; nada disso roda silenciosamente.
 - Criação de projetos com os templates `vite-base`, `next-base`, `nest-base` e `nest-vite-base` (NestJS + Vite).
-- Execução de tarefas delegadas a subagentes e suporte a modo de planejamento.
+- Tarefas delegadas a subagentes e [servidores MCP](#servidores-mcp) configurados pela interface.
 
 > **Segurança:** doty foi projetado para uso local e não substitui o isolamento de um sandbox. Configure o workspace para uma pasta confiável e revise os comandos antes de aprová-los. Não exponha a API publicamente sem adicionar os controles de autenticação e segurança adequados.
 
@@ -91,7 +92,7 @@ docker compose down
 
 ## Provedores e modelos
 
-A API só oferece os provedores que têm chave configurada em `api/.env`. Cada conversa guarda seu modelo; o seletor fica no cabeçalho do chat, ao lado do modo. Uma conversa nova começa com o último modelo escolhido.
+A API só oferece os provedores que têm chave configurada em `api/.env`. Cada conversa guarda seu modelo; o seletor fica na caixa de mensagem, ao lado das instruções. Uma conversa nova começa com o último modelo escolhido.
 
 | Variável                     | Uso                                                                                          |
 | ---------------------------- | -------------------------------------------------------------------------------------------- |
@@ -120,9 +121,50 @@ O catálogo ([provider-catalog.ts](api/src/llm/domain/provider-catalog.ts)) list
 - Nos modelos da Anthropic, as instruções e a conversa usam cache de prompt, o que reduz o custo das chamadas seguidas de ferramentas.
 - O botão de parar interrompe a resposta, os comandos de terminal, os subagentes e as chamadas MCP em andamento. Uma resposta interrompida não registra uso.
 
+## Prompt do agente
+
+O prompt de sistema é montado nesta ordem (partes fixas primeiro, para o cache de prompt funcionar):
+
+1. identidade do agente (Doty, agente de código, ferramentas reais) e regras de [behavior.md](api/src/common/agents/skills/behavior.md);
+2. guia das ferramentas que a requisição realmente tem (arquivos, Bash, Git, subagentes, MCP);
+3. instruções do projeto: `AGENTS.md` na raiz (a convenção usada por outras ferramentas) e depois `.agents/*.md` (legado);
+4. instruções selecionadas na conversa;
+5. regras e conteúdo da memória do projeto ([memory.md](api/src/common/agents/skills/memory.md));
+6. ambiente: interface (VS Code ou web), pastas do workspace, sistema, data, branch Git, modelo e instruções em uso.
+
+Um modelo sem suporte a ferramentas é avisado de que não pode ler nem alterar arquivos. Para ver o prompt que uma requisição receberia:
+
+```bash
+pnpm --dir api prompt:preview -- --root /caminho/do/projeto --model anthropic:claude-sonnet-5-5 --instructions forms,landing-pages
+```
+
+`DOTY_CLIENT` (`vscode` ou `web`, padrão `web`) diz ao agente em qual interface ele roda; a extensão VSCode define `vscode`.
+
+## Instruções
+
+Instruções são arquivos Markdown com frontmatter. O nome do arquivo é o id (`a-z`, `0-9` e `-`):
+
+```md
+---
+name: Landing pages
+description: Landing pages focadas em conversão.
+starters:
+  - Crie uma landing page para um SaaS com preços e FAQ
+---
+Orientações em Markdown…
+```
+
+- embutidas: [api/src/instructions/builtin](api/src/instructions/builtin) — `landing-pages`, `forms`, `refactoring`, `design-system`, `react-architecture`, `backend-architecture`, `clean-architecture` (somente leitura);
+- globais: `$DOTY_DATA_DIR/instructions/*.md` (padrão `~/.doty/instructions/`);
+- por projeto: `<raiz do projeto>/.doty/instructions/*.md` (podem ir para o Git e ser compartilhadas com o time).
+
+Um id do projeto substitui o global, e o global substitui o embutido. Na caixa de mensagem, o botão **Instruções** seleciona até 8 por conversa e abre **Gerenciar instruções…** para criar, editar, duplicar e apagar. Editar uma embutida salva uma cópia global ou do projeto com o mesmo id. `/<id>` liga ou desliga uma instrução na conversa; os `starters` das selecionadas viram as sugestões da tela inicial. Uma conversa nova começa com a última seleção usada no projeto. O corpo é limitado a 20 KB.
+
+Os antigos modos (Frontend, Backend, Agnóstico, Git, Agent Builder) e especialidades foram removidos: as orientações deles viraram as instruções embutidas, e as ferramentas de Git estão sempre disponíveis quando a raiz é um repositório Git.
+
 ## Servidores MCP
 
-O Doty usa ferramentas de servidores [MCP](https://modelcontextprotocol.io) (GitHub, bancos de dados, navegadores, documentação…). A configuração segue o formato do Claude/Cursor e vem de dois arquivos:
+O Doty usa ferramentas de servidores [MCP](https://modelcontextprotocol.io) (GitHub, bancos de dados, navegadores, documentação…). Configure-os no diálogo **Servidores MCP**, aberto com `/mcp`, pelo menu "⋯", pelo link em Configurações ou, no VS Code, pelo comando **Doty: MCP servers**. Lá você adiciona, edita, ativa/desativa, reconecta e remove servidores, define a aprovação por ferramenta e confia no arquivo do projeto. Valores literais de `env` e `headers` aparecem como `••••`; prefira referências `${VAR}` para tokens. A configuração segue o formato do Claude/Cursor e fica em dois arquivos, que também podem ser editados à mão:
 
 - global: `$DOTY_DATA_DIR/mcp.json` (padrão `~/.doty/mcp.json`);
 - por projeto: `<raiz do projeto>/.doty/mcp.json`. Um servidor do projeto substitui o global de mesmo nome.
@@ -150,8 +192,10 @@ O Doty usa ferramentas de servidores [MCP](https://modelcontextprotocol.io) (Git
 - `${VAR}` é lido do ambiente da API. Se uma variável não existir, o servidor fica com erro em vez de enviar um valor vazio.
 - `approval`: `ask` (padrão; o chat pede permissão a cada chamada), `never`, ou um objeto por ferramenta (`{ "query": "never" }`; ferramentas fora dele pedem permissão).
 - `enabledTools` / `disabledTools` filtram as ferramentas expostas.
-- As ferramentas aparecem para o modelo como `mcp__<servidor>__<ferramenta>`, valem em todos os modos e cada resultado é limitado a ~50 mil caracteres.
-- **Confiança:** um `mcp.json` de projeto pode executar qualquer comando, então ele fica desativado até você confiar nele em *Configurações → Servidores MCP*. Editar o arquivo revoga a confiança.
+- `disabled: true` desliga o servidor sem apagá-lo.
+- As ferramentas aparecem para o modelo como `mcp__<servidor>__<ferramenta>`, e cada resultado é limitado a ~50 mil caracteres.
+- **Confiança:** um `mcp.json` de projeto pode executar qualquer comando, então ele fica desativado até você confiar nele no diálogo **Servidores MCP**, que mostra o que cada servidor executaria. Editar o arquivo fora do Doty revoga a confiança; uma alteração feita pelo diálogo é tratada como consentimento. O arquivo do projeto só pode ser alterado pelo diálogo depois de confiável.
+- Um servidor global com o mesmo nome de um servidor do projeto não aparece no diálogo enquanto estiver substituído; edite o arquivo global diretamente.
 - Os servidores conectam na primeira mensagem do projeto, ficam conectados e fecham depois de ociosos. Um servidor com erro não impede o chat.
 
 | Variável                      | Descrição                                                     |
@@ -196,7 +240,7 @@ O agente só lê e escreve dentro das pastas permitidas. A raiz do projeto envia
 | Variável               | Descrição                                                                                                                                                                  |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `DOTY_WORKSPACE_ROOTS` | Pastas permitidas, separadas por vírgula. Sem ela, a API usa `BASE_CODE_PATH`, depois `/workspace` (Docker) e, por último, a pasta-pai deste repositório (com um aviso no log). |
-| `DOTY_DATA_DIR`        | Dados do Doty, como a memória dos projetos. Padrão: `~/.doty`. Essa pasta nunca é acessível pelo agente, mesmo dentro de uma pasta permitida.                                |
+| `DOTY_DATA_DIR`        | Dados do Doty: memória dos projetos, instruções globais, `mcp.json` global e confiança MCP. Padrão: `~/.doty`. Essa pasta nunca é acessível pelo agente, mesmo dentro de uma pasta permitida.                                |
 | `DOTY_TEMPLATES_DIR`   | Pasta dos templates de projeto. Padrão: `templates/` na raiz do repositório.                                                                                               |
 
 A memória dos projetos ficava em `api/storage/memory`. Na primeira inicialização ela é copiada para `$DOTY_DATA_DIR/memory`; a pasta antiga não é removida.
@@ -208,7 +252,8 @@ A memória dos projetos ficava em `api/storage/memory`. Na primeira inicializaç
 | `DOTY_AUTH_TOKEN`      | Quando definida, toda requisição precisa de `Authorization: Bearer <token>` (senão `401`). A extensão VSCode gera um token aleatório a cada sessão. |
 | `DOTY_ALLOWED_ORIGINS` | Origens CORS permitidas, separadas por vírgula. Padrão: `http://localhost:5173,http://localhost:4173`. `UI_URL` é sempre adicionada; `vscode-webview://` só é aceita com `DOTY_AUTH_TOKEN`. |
 | `DOTY_HOST`            | Interface onde a API escuta (ex.: `127.0.0.1`). Padrão: todas. |
-| `DOTY_API_BASE_DIR`    | Pasta das skills e definições de subagentes quando a API roda empacotada (usada pela extensão VSCode). |
+| `DOTY_API_BASE_DIR`    | Pasta das skills, instruções embutidas e definições de subagentes quando a API roda empacotada (usada pela extensão VSCode). |
+| `DOTY_CLIENT`          | Interface que usa a API (`vscode` ou `web`); entra no bloco de ambiente do prompt. Padrão: `web`. |
 
 ## Extensão VSCode
 
@@ -248,8 +293,11 @@ code --install-extension vscode/doty.vsix
 
 - `GET /` — endpoint simples de disponibilidade.
 - `GET /models` — provedores disponíveis (com chave configurada), seus modelos e o modelo padrão.
-- `POST /chat` — recebe mensagens e transmite a resposta do agente. O campo opcional `model` (`provedor:modelo`) escolhe o modelo; um modelo indisponível responde `400`.
-- `GET /mcp/servers?root=` — servidores MCP do projeto: estado, número de ferramentas e confiança.
+- `POST /chat` — recebe mensagens e transmite a resposta do agente. O campo opcional `model` (`provedor:modelo`) escolhe o modelo (um modelo indisponível responde `400`), e `instructions` (ids) as instruções selecionadas.
+- `GET /instructions?root=` / `GET /instructions/:id?root=` — instruções disponíveis (embutidas, globais e do projeto) e o conteúdo de uma.
+- `PUT /instructions/:scope/:id` / `DELETE /instructions/:scope/:id?root=` — grava ou apaga uma instrução global ou do projeto (`scope` = `global` | `project`).
+- `GET /mcp/servers?root=` — servidores MCP do projeto: escopo, estado, ferramentas, confiança, configuração com segredos mascarados e o hash de cada arquivo.
+- `PUT /mcp/servers/:name` / `PATCH /mcp/servers/:name` / `DELETE /mcp/servers/:name?scope=&baseHash=` — adiciona/edita, ativa/desativa ou define aprovação, e remove um servidor. Com um `baseHash` desatualizado a resposta é `409` com a lista atual.
 - `POST /mcp/trust` — confia no `.doty/mcp.json` do projeto (`{ root, hash }`; responde `409` se o arquivo mudou).
 - `POST /mcp/:name/reconnect` — reconecta um servidor MCP (`{ root }`).
 - `POST /project/create` — cria um projeto a partir de um template permitido.

@@ -3,7 +3,7 @@
   "displayName": "Doty",
   "description": "Doty AI assistant in the editor: chat, tools and approvals on the open workspace.",
   "icon": "media/doty-icon.png",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "geavila",
   "private": true,
   "license": "UNLICENSED",
