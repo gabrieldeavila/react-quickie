@@ -1,6 +1,6 @@
 # Doty — instructions, coding-agent prompt and MCP setup
 
-Status: proposed · Date: 2026-10-18 · Base: `feat/ui-a-english-ui` @ `d04be85` · Branch: `feat/instructions-and-mcp`
+Status: done (Phases 1–8; how the branch lands is still open, see Phase 8) · Date: 2026-10-18 · Base: `feat/ui-a-english-ui` @ `d04be85` · Branch: `feat/instructions-and-mcp`
 
 Doty picks its behaviour from a fixed list of **modes** (Frontend, Backend, Agnostic, Git, Agent Builder) and **specialties** (Landing Pages, Forms, Refactoring). The list is hard-coded in the UI and the API, a new entry means editing Doty's source (that is what Agent Builder does), and the mode also decides which tools the model gets. This plan:
 
@@ -105,12 +105,12 @@ Environment
 - [x] `PromptsService.getInstructions` takes the toolset/model info it needs and assembles the new order. `buildBaseInstruction` merges into identity + environment (keep `REPLY_LANGUAGE_RULE` in code).
 - [x] Subagents get the environment block too (their definitions already describe their role).
 - [x] `api/scripts/preview-prompt.ts` (`pnpm --dir api prompt:preview -- --root <dir> --model <ref>`): prints the assembled system prompt, for humans to read. Add a snapshot spec of the assembled prompt for a fixture setup, so accidental prompt changes show up in review.
-- [ ] Manual check with one strong model and one small OpenAI-compatible model (record the results in Notes): "Who are you and what can you do here?" (says coding agent + workspace + tools); "What scripts does package.json have?" (calls `read_file`, doesn't ask for a paste); "Fix the failing test in <file>" (reads, edits, runs the test, reports); the same question on a no-tools model (says it can't access files).
+- [x] Manual check with one strong model and one small OpenAI-compatible model (record the results in Notes): "Who are you and what can you do here?" (says coding agent + workspace + tools); "What scripts does package.json have?" (calls `read_file`, doesn't ask for a paste); "Fix the failing test in <file>" (reads, edits, runs the test, reports); the same question on a no-tools model (says it can't access files).
 
 #### Progress
 
 ```
-Status: in progress (code done; manual model check left)
+Status: done (manual model check done in Phase 8)
 Last commit: see `git log` — "feat(api): coding-agent system prompt (Phase 1)"
 Done:
 - Identity, tool guide, environment block as pure builders with specs in
@@ -137,11 +137,19 @@ Done:
   (scripts/preview-prompt.ts, ts-node; boots the real Nest app, so it also
   connects the root's MCP servers). `scripts/` is excluded in tsconfig.build.json
   so dist keeps its layout.
-Left:
-- Manual check with a strong model and a small OpenAI-compatible model (last
-  checklist item). Not run in this session: it needs real model calls through
-  the UI; do it before Phase 8 at the latest and record the results here.
+Left: —
 Notes:
+- Manual model check (run in Phase 8, built API, temp git project with a
+  failing node:test): openai:gpt-6.1-sol and gpt-4.1-nano through the
+  OpenAI-compatible provider (api.openai.com, no local server available).
+  "Who are you…": both say Doty, coding agent, workspace, tools. "What scripts
+  does package.json have?": both call read_file (sol also list_folders), no
+  paste asked. "Fix the failing test": both read, edit sum.js, run npm test,
+  report (sol cites sum.js:3 and the result; nano also tried check_typescript
+  on a .js file). No-tools: no shipped model has supportsTools false, so the
+  no-tools prompt was sent directly to gpt-4.1-nano: "I can't access your
+  files directly with this model. Please paste…". Found and fixed in Phase 8:
+  a failing command's stdout/stderr never reached the model.
 - Checks: api typecheck, lint:check, test (78 suites / 450 tests, 1 snapshot);
   vscode typecheck, test (20). All pass.
 - Shell in the environment block is always `bash`: run_bash_command runs
@@ -614,28 +622,71 @@ Notes:
 
 ## Phase 8 — Wrap-up (Session H)
 
-- [ ] Bump `vscode/package.json` `version` (VS Code caches icons and the manifest by version), rebuild everything and the VSIX (`pnpm --dir api build && pnpm --dir ui build && pnpm --dir vscode build && pnpm --dir vscode package`).
-- [ ] README (root and `vscode/`): instructions (files, scopes, slash commands), MCP dialog, removed modes, `DOTY_CLIENT`.
-- [ ] End-to-end check in the real VS Code with a light and a dark theme: pick and create instructions, `/landing-pages`, `/mcp` add → edit → disable → remove a stdio server, trust a project server, the prompt preview for the same setup. How to drive VS Code: Playwright `_electron.launch` with VS Code's binary, `--extensionDevelopmentPath=vscode`, a throwaway short `--user-data-dir`, `ELECTRON_RUN_AS_NODE` and `VSCODE_*` unset, and a mock OpenAI-compatible server for streaming (`doty.openaiCompatible.*` settings). Optionally commit that driver as `vscode/scripts/smoke.mjs` with `playwright-core` as a dev dependency.
-- [ ] Carry-over from the previous UI plan (Phase 5): click the view title-bar buttons (＋, History, Settings) in VS Code; until now they were only run through the command palette.
+- [x] Bump `vscode/package.json` `version` (VS Code caches icons and the manifest by version), rebuild everything and the VSIX (`pnpm --dir api build && pnpm --dir ui build && pnpm --dir vscode build && pnpm --dir vscode package`).
+- [x] README (root and `vscode/`): instructions (files, scopes, slash commands), MCP dialog, removed modes, `DOTY_CLIENT`.
+- [x] End-to-end check in the real VS Code with a light and a dark theme: pick and create instructions, `/landing-pages`, `/mcp` add → edit → disable → remove a stdio server, trust a project server, the prompt preview for the same setup. How to drive VS Code: Playwright `_electron.launch` with VS Code's binary, `--extensionDevelopmentPath=vscode`, a throwaway short `--user-data-dir`, `ELECTRON_RUN_AS_NODE` and `VSCODE_*` unset, and a mock OpenAI-compatible server for streaming (`doty.openaiCompatible.*` settings). Optionally commit that driver as `vscode/scripts/smoke.mjs` with `playwright-core` as a dev dependency.
+- [x] Carry-over from the previous UI plan (Phase 5): click the view title-bar buttons (＋, History, Settings) in VS Code; until now they were only run through the command palette.
 
 Carried over from earlier phases' Notes (no phase owned them):
 
-- [ ] Phase 1's manual model check (strong model + small OpenAI-compatible model + no-tools model); record the results in Phase 1's Progress.
-- [ ] Shorten `memory.md` to short guidance (no pipeline or quality gates), like the built-in instructions.
-- [ ] Send `behavior.md`, `memory.md`, `AGENTS.md` and `.agents/*.md` to the model as plain Markdown (frontmatter stripped), not HTML; drop `MarkdownService` / `marked` if nothing else uses them. The snapshot spec then tests the prompt that is actually sent.
-- [ ] README (root, Portuguese) and `vscode/README.md`: no mention of modes / Agent Builder left; document `AGENTS.md` and `prompt:preview` too.
+- [x] Phase 1's manual model check (strong model + small OpenAI-compatible model + no-tools model); record the results in Phase 1's Progress.
+- [x] Shorten `memory.md` to short guidance (no pipeline or quality gates), like the built-in instructions.
+- [x] Send `behavior.md`, `memory.md`, `AGENTS.md` and `.agents/*.md` to the model as plain Markdown (frontmatter stripped), not HTML; drop `MarkdownService` / `marked` if nothing else uses them. The snapshot spec then tests the prompt that is actually sent.
+- [x] README (root, Portuguese) and `vscode/README.md`: no mention of modes / Agent Builder left; document `AGENTS.md` and `prompt:preview` too.
 - [ ] How the branch lands: `feat/instructions-and-mcp` is based on `feat/ui-a-english-ui`, which isn't merged into `main`. Record whether that branch's PR goes first or both ship in one PR.
-- [ ] Set the plan header's `Status` when done.
+- [x] Set the plan header's `Status` when done.
 
 #### Progress
 
 ```
-Status: not started
-Last commit: —
-Done: —
-Left: —
-Notes: —
+Status: done (one open decision: how the branch lands)
+Last commit: see `git log` — "docs: Phase 8 progress" (after the Phase 8 fixes)
+Done:
+- Prompt: behavior.md / memory.md / AGENTS.md / .agents go to the model as
+  plain Markdown (prompts/data/read-markdown-body, + spec); MarkdownService,
+  marked and @types/marked removed; the chat-stream integration spec no longer
+  mocks PromptsService. memory.md rewritten as short guidance (~30 lines).
+- README (pt) and vscode/README: instructions, slash commands, agent prompt
+  order, AGENTS.md, prompt:preview, DOTY_CLIENT, MCP dialog and endpoints;
+  modes, Agent Builder and plan mode removed. vscode 0.0.3, doty.vsix rebuilt
+  (checked: 7 built-in instructions and the new memory.md inside).
+- Fixes found by the checks:
+  - api: a failing command returned only "Command failed: bash -lc …"; now
+    exit code / stop cause + stdout + stderr (describe-command-failure, + spec).
+  - ui: window.confirm is blocked in VS Code webviews (sandbox without
+    allow-modals: returns false at once), so MCP "Remove" and instruction
+    "Delete" did nothing there. useConfirmation + ConfirmationBar ask inside
+    the dialog (removal-prompt / deletion-prompt, + specs).
+  - ui: in the ~300px sidebar the model chip ran under the usage badge. Chips
+    keep a 72px minimum and ellipsize; the badge ellipsizes and is hidden
+    below a 360px toolbar.
+- Plan: loose ends from earlier phases' Notes added to this checklist; the
+  shadowed global MCP server and a total prompt budget moved to Out of scope.
+Left:
+- Decide how the branch lands (last unchecked item): open a PR for
+  feat/ui-a-english-ui first and then this one on top, or one PR to main with
+  both plans.
+Notes:
+- Checks: api typecheck, lint:check, test (102 suites / 526 tests, 1
+  snapshot), build; ui lint, typecheck, test (59 files / 213 tests), build;
+  vscode typecheck, test (24), build, package.
+- End-to-end in VS Code (Extension Development Host, throwaway profile, mock
+  OpenAI-compatible server, Playwright): light and dark themes; Doty view;
+  picker lists 7 built-ins with badges; create a project instruction (file
+  written, id derived); `/landing` menu → Enter toggles it; message sent: the
+  mock got both instructions and "Interface: VS Code extension"; `/mcp` trust
+  notice shows what `docs` would run → trust; add global stdio server, edit
+  (env added), disable, remove (after the confirm fix), Escape cancels the
+  confirmation, focus back in the message box; instruction delete; title-bar
+  ＋ / History / Settings clicked; "Doty: MCP servers" palette command; Open
+  file opens mcp.json in an editor; prompt:preview for the same setup.
+- Driver not committed: attaching over CDP (`--remote-debugging-port`) only
+  sees webview iframes on the first connection, and after a window reload it
+  saw no pages at all. `_electron.launch` in one long-lived process that runs
+  step files works. Don't send Cmd+W with no editor open: it closes the window.
+- Opening "Doty: MCP servers" from the palette while the Settings dialog is
+  open stacks both dialogs (Escape pressed in the workbench doesn't reach the
+  webview). Minor; not changed.
 ```
 
 ---
