@@ -17,7 +17,6 @@ import {
 } from '@nestjs/common';
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { ContextService } from 'src/common/context/context.service';
-import { buildServerViews } from '../domain/build-server-views';
 import { McpConfigConflictError } from '../domain/mcp-config-conflict.error';
 import { McpConfigUntrustedError } from '../domain/mcp-config-untrusted.error';
 import { McpConfigEditError } from '../domain/mcp-config-text';
@@ -25,10 +24,10 @@ import {
   isUsableServer,
   type McpConfigSource,
 } from '../domain/mcp-server.types';
-import { toEditableViews } from '../domain/to-editable-views';
 import { McpClientPoolService } from '../data/mcp-client-pool.service';
 import { McpConfigEditsService } from '../data/mcp-config-edits.service';
 import { McpServersService } from '../data/mcp-servers.service';
+import { McpServerCatalogService } from '../data/mcp-server-catalog.service';
 
 type EditBody = {
   scope?: unknown;
@@ -52,6 +51,7 @@ export class McpController {
     private readonly serversService: McpServersService,
     private readonly pool: McpClientPoolService,
     private readonly edits: McpConfigEditsService,
+    private readonly catalog: McpServerCatalogService,
     private readonly contextService: ContextService,
   ) {}
 
@@ -61,18 +61,7 @@ export class McpController {
    */
   @Get('servers')
   async list() {
-    const root = this.requireRoot();
-    const { active, untrusted, globalConfig, projectConfig, raw } =
-      await this.serversService.resolve(root);
-    const views = buildServerViews(active, untrusted, (server) =>
-      this.pool.snapshot(root, server),
-    );
-
-    return {
-      globalConfig,
-      projectConfig,
-      servers: toEditableViews(views, raw),
-    };
+    return this.catalog.list(this.requireRoot());
   }
 
   /** `PUT /mcp/servers/:name` `{ scope, config, baseHash }`: add or replace. */

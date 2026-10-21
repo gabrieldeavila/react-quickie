@@ -51,6 +51,14 @@ describe('buildToolGuide', () => {
     expect(guide).toMatch(/`replace: true`/);
   });
 
+  it('explains MCP setup apart from calling MCP tools', () => {
+    const guide = guideFor(['save_mcp_server']);
+
+    expect(guide).toContain('MCP setup:');
+    expect(guide).not.toContain('MCP servers:');
+    expect(guide).toMatch(/Never write a secret literally/);
+  });
+
   it('keeps a stable group order whatever the tool order', () => {
     expect(guideFor(['run_subagent', 'read_file'])).toBe(
       guideFor(['read_file', 'run_subagent']),

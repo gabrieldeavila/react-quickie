@@ -95,6 +95,15 @@ const TOOL_GROUPS: ToolGroup[] = [
     ],
   },
   {
+    title: 'MCP setup',
+    matches: named('list_mcp_servers', 'save_mcp_server', 'remove_mcp_server'),
+    guidance: [
+      'Add or change MCP servers only when the user asks. List them first, and say what the server will run (command or URL) before saving.',
+      'Save to the global scope unless the user wants the server shared with the project. Never write a secret literally: use "${ENV_VAR}" and tell the user which variable to set.',
+      "You can't change which MCP tools need approval; point the user to the /mcp dialog for that.",
+    ],
+  },
+  {
     title: 'MCP servers',
     matches: (toolName) => toolName.startsWith('mcp__'),
     guidance: [
