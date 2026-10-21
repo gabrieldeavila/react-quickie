@@ -13,6 +13,7 @@ import { GitToolsService } from 'src/common/agents/tools/git/git.service';
 import { MemoryService } from 'src/common/helpers/memory.service';
 import { SubagentToolService } from 'src/subagents/data/subagent-tool.service';
 import { McpToolsService } from 'src/mcp/data/mcp-tools.service';
+import { InstructionToolsService } from 'src/instructions/data/instruction-tools.service';
 import {
   buildToolApprovalMap,
   type ToolApprovalMap,
@@ -29,6 +30,7 @@ export class ChatService {
     private readonly gitToolsService: GitToolsService,
     private readonly subagentToolService: SubagentToolService,
     private readonly mcpToolsService: McpToolsService,
+    private readonly instructionToolsService: InstructionToolsService,
   ) {}
 
   /**
@@ -48,6 +50,7 @@ export class ChatService {
       this.gitToolsService.createToolkit(root),
       this.subagentToolService.createToolkit(root),
     ]);
+    const instructions = this.instructionToolsService.createToolkit(root);
 
     return {
       tools: {
@@ -55,6 +58,7 @@ export class ChatService {
         ...this.getBuiltInTools(),
         ...git.tools,
         ...subagents.tools,
+        ...instructions.tools,
       },
       // The subagent policy applies even without a root: a write-capable
       // agent must never run unasked.
@@ -63,6 +67,7 @@ export class ChatService {
         ...(root ? this.bashToolsService.createApprovalPolicies(root) : {}),
         ...git.approvalPolicies,
         ...subagents.approvalPolicies,
+        ...instructions.approvalPolicies,
       }),
     };
   }

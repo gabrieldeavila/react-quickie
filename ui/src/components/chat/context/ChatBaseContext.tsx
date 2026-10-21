@@ -9,6 +9,7 @@ import { shouldPersistAssistantMessage } from "@/features/chat/domain/to-assista
 import { useConversationModel } from "@/features/models/hooks/useConversationModel";
 import { useInstructions } from "@/features/instructions/hooks/useInstructions";
 import { useInstructionSelection } from "@/features/instructions/hooks/useInstructionSelection";
+import { savedAnInstruction } from "@/features/instructions/domain/saved-an-instruction";
 import { useHostSelection } from "@/host/hooks/useHostSelection";
 import { readProjectContext } from "../../../helpers/chat.helper";
 import { useChatComposer } from "../hooks/start/useChatComposer";
@@ -91,12 +92,13 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
   // approved/denied turn continues; the upsert keeps one record per message.
   const handleFinish = useCallback(
     ({ message }: { message: UIMessage }) => {
+      if (savedAnInstruction(message)) instructions.refresh();
       if (!activeConversationId || !shouldPersistAssistantMessage(message)) {
         return;
       }
       void history.persistAssistantMessage(activeConversationId, message);
     },
-    [activeConversationId, history],
+    [activeConversationId, history, instructions],
   );
 
   const chat = useChat({

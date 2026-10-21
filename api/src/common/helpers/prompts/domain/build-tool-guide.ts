@@ -79,6 +79,14 @@ const TOOL_GROUPS: ToolGroup[] = [
     ],
   },
   {
+    title: 'Instructions',
+    matches: named('list_instructions', 'read_instruction', 'save_instruction'),
+    guidance: [
+      'Instructions are reusable Markdown guidance the user attaches to conversations. When asked to save something as an instruction, write focused, imperative guidance (not a transcript), with a short name and a one-line description of when to use it.',
+      'To change an existing instruction, read it first and save it with `replace: true`. Never overwrite one the user did not ask you to change.',
+    ],
+  },
+  {
     title: 'Subagents',
     matches: named('run_subagent'),
     guidance: [

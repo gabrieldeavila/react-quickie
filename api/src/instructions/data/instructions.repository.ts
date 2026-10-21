@@ -48,6 +48,21 @@ export class InstructionsRepository {
     return (await this.list(root)).find((item) => item.id === id);
   }
 
+  /** Whether `<scope folder>/<id>.md` exists (a project file doesn't hide a global one here). */
+  async exists(
+    scope: InstructionScope,
+    id: string,
+    root?: string,
+  ): Promise<boolean> {
+    try {
+      await fs.access(this.filePath(scope, id, root));
+      return true;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
+      throw error;
+    }
+  }
+
   /** Creates or replaces `<scope folder>/<id>.md`; returns what was written. */
   async write(
     scope: InstructionScope,

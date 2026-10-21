@@ -72,6 +72,18 @@ export const TOOL_UI_MAPPING: Record<string, ToolUiMetadata> = {
     uiLabel: 'Saving project memory...',
     uiDescription: 'Saving the project memory by topic.',
   },
+  list_instructions: {
+    uiLabel: 'Listing instructions...',
+    uiDescription: 'Looking at the instructions you can attach.',
+  },
+  read_instruction: {
+    uiLabel: 'Reading instruction...',
+    uiDescription: 'Opening an instruction to read its guidance.',
+  },
+  save_instruction: {
+    uiLabel: 'Saving instruction...',
+    uiDescription: 'Creating or updating an instruction.',
+  },
   get_recent_commits: {
     uiLabel: 'Reading recent commits...',
     uiDescription: 'Reading the recent Git history.',
