@@ -44,6 +44,13 @@ describe('buildToolGuide', () => {
     expect(guide).toMatch(/do not see this conversation/);
   });
 
+  it('explains instructions when the instruction tools are present', () => {
+    const guide = guideFor(['save_instruction']);
+
+    expect(guide).toContain('Instructions:');
+    expect(guide).toMatch(/`replace: true`/);
+  });
+
   it('keeps a stable group order whatever the tool order', () => {
     expect(guideFor(['run_subagent', 'read_file'])).toBe(
       guideFor(['read_file', 'run_subagent']),

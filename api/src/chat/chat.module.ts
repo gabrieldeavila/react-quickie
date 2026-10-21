@@ -9,9 +9,17 @@ import { ContextCompactionService } from './data/context-compaction.service';
 import { LlmModule } from 'src/llm/llm.module';
 import { McpModule } from 'src/mcp/mcp.module';
 import { SubagentsModule } from 'src/subagents/subagents.module';
+import { InstructionsModule } from 'src/instructions/instructions.module';
 
 @Module({
-  imports: [HelperModule, AgentsModule, LlmModule, McpModule, SubagentsModule],
+  imports: [
+    HelperModule,
+    AgentsModule,
+    LlmModule,
+    McpModule,
+    SubagentsModule,
+    InstructionsModule,
+  ],
   controllers: [ChatController],
   providers: [
     ChatService,
