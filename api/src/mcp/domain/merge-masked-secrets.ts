@@ -5,6 +5,28 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** A masked `oauth.clientSecret` takes the stored one. */
+function mergeOAuthSecret(
+  incoming: Record<string, unknown>,
+  stored: unknown,
+): unknown {
+  const oauth = incoming.oauth;
+  if (!isPlainObject(oauth) || oauth.clientSecret !== SECRET_MASK) {
+    return oauth;
+  }
+  const storedOAuth = isPlainObject(stored) ? stored.oauth : undefined;
+  const previous = isPlainObject(storedOAuth)
+    ? storedOAuth.clientSecret
+    : undefined;
+  if (typeof previous !== 'string') {
+    throw new McpConfigEditError(
+      'invalid-server',
+      '"oauth.clientSecret" has no stored value; type the value again.',
+    );
+  }
+  return { ...oauth, clientSecret: previous };
+}
+
 /**
  * An update sends back `••••` for secrets the user didn't touch: those take
  * the stored value of the same key. A mask with nothing stored behind it is
@@ -37,6 +59,9 @@ export function mergeMaskedSecrets(
         return [key, previous];
       }),
     );
+  }
+  if (incoming.oauth !== undefined) {
+    merged.oauth = mergeOAuthSecret(incoming, stored);
   }
   return merged;
 }

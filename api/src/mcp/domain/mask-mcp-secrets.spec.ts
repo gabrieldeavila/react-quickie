@@ -23,6 +23,17 @@ describe('maskMcpSecrets', () => {
     });
   });
 
+  it('masks a literal oauth client secret and keeps a ${VAR} one', () => {
+    const entry = (clientSecret: string) => ({
+      type: 'http',
+      url: 'https://x',
+      oauth: { clientId: 'id', clientSecret },
+    });
+
+    expect(maskMcpSecrets(entry('s3cret'))).toEqual(entry(SECRET_MASK));
+    expect(maskMcpSecrets(entry('${SECRET}'))).toEqual(entry('${SECRET}'));
+  });
+
   it('leaves command, args and other fields alone', () => {
     const entry = { command: 'npx', args: ['-y', 'secretless'] };
 

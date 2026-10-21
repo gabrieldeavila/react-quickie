@@ -2,6 +2,8 @@ import { describeServerStatus } from "./describe-server-status";
 import type { McpServerView } from "./mcp-server.types";
 
 export type ServerActionKey =
+  | "signIn"
+  | "signOut"
   | "edit"
   | "enable"
   | "disable"
@@ -23,9 +25,11 @@ export function serverActions(
   { canEdit, canOpenFile }: Context,
 ): ServerActionKey[] {
   const actions: ServerActionKey[] = [];
+  if (server.status === "needs-auth") actions.push("signIn");
   if (canEdit) actions.push("edit", server.disabled ? "enable" : "disable");
   if (describeServerStatus(server).canReconnect) actions.push("reconnect");
   if (canEdit && !server.disabled) actions.push("tools");
+  if (server.signedIn) actions.push("signOut");
   if (canEdit) actions.push("remove");
   if (canOpenFile) actions.push("openFile");
   return actions;

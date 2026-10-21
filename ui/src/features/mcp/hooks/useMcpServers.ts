@@ -5,6 +5,8 @@ import { McpConflictError } from "../api/mcp-conflict.error";
 import { patchMcpServer } from "../api/patch-mcp-server";
 import { reconnectMcpServer } from "../api/reconnect-mcp-server";
 import { saveMcpServer } from "../api/save-mcp-server";
+import { signOutMcpServer } from "../api/sign-out-mcp-server";
+import { startMcpSignIn } from "../api/start-mcp-sign-in";
 import { trustMcpConfig } from "../api/trust-mcp-config";
 import type {
   McpApprovalSetting,
@@ -134,17 +136,43 @@ export function useMcpServers(root: string) {
     [baseHashFor, root, run],
   );
 
+  /**
+   * Starts an OAuth sign-in. Resolves with the page to open (none when the
+   * stored tokens could be refreshed), or null when it failed.
+   */
+  const startSignIn = useCallback(
+    async (name: string): Promise<{ authorizationUrl?: string } | null> => {
+      let authorizationUrl: string | undefined;
+      const failure = await run(name, async () => {
+        const response = await startMcpSignIn(root, name);
+        authorizationUrl = response.authorizationUrl;
+        return response;
+      });
+      return failure ? null : { authorizationUrl };
+    },
+    [root, run],
+  );
+
+  const signOut = useCallback(
+    (name: string) => void run(name, () => signOutMcpServer(root, name)),
+    [root, run],
+  );
+
+  const refresh = useCallback(() => load(), [load]);
+
   return {
     data,
     error,
     busy,
-    refresh: () => load(),
+    refresh,
     trust,
     reconnect,
     save,
     remove,
     setDisabled,
     setToolApproval,
+    startSignIn,
+    signOut,
   };
 }
 

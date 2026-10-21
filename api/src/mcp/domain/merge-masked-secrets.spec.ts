@@ -54,4 +54,31 @@ describe('mergeMaskedSecrets', () => {
       ),
     ).toThrow(/type the value again/);
   });
+
+  it('keeps the stored oauth client secret when it comes back masked', () => {
+    const storedHttp = {
+      type: 'http',
+      url: 'https://x',
+      oauth: { clientId: 'id', clientSecret: 'real' },
+    };
+
+    expect(
+      mergeMaskedSecrets(
+        {
+          ...storedHttp,
+          oauth: { clientId: 'id2', clientSecret: SECRET_MASK },
+        },
+        storedHttp,
+      ),
+    ).toEqual({
+      ...storedHttp,
+      oauth: { clientId: 'id2', clientSecret: 'real' },
+    });
+    expect(() =>
+      mergeMaskedSecrets(
+        { ...storedHttp, oauth: { clientSecret: SECRET_MASK } },
+        undefined,
+      ),
+    ).toThrow(/oauth.clientSecret/);
+  });
 });

@@ -24,12 +24,16 @@ export type OpenMcpConfigMessage = {
   root?: string;
 };
 
+/** Opens an http(s) page in the user's browser (MCP OAuth sign-in). */
+export type OpenExternalMessage = { type: 'openExternal'; url: string };
+
 export type WebviewToHostMessage =
   | OpenFileMessage
   | ReadyMessage
   | SetTitleMessage
   | SetFocusMessage
-  | OpenMcpConfigMessage;
+  | OpenMcpConfigMessage
+  | OpenExternalMessage;
 
 export type InsertSelectionMessage = {
   type: 'insertSelection';
@@ -50,6 +54,17 @@ export type HostToWebviewMessage = InsertSelectionMessage | RunCommandMessage;
 /** Longest title shown next to the view name; the UI has no limit of its own. */
 const MAX_TITLE_LENGTH = 80;
 
+/** Only web pages: never `file:`, `command:` or other schemes VS Code would act on. */
+function readWebUrl(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export function parseWebviewMessage(data: unknown): WebviewToHostMessage | null {
   if (!data || typeof data !== 'object') return null;
   const message = data as Record<string, unknown>;
@@ -60,6 +75,10 @@ export function parseWebviewMessage(data: unknown): WebviewToHostMessage | null 
   }
   if (message.type === 'setFocus' && typeof message.focused === 'boolean') {
     return { type: 'setFocus', focused: message.focused };
+  }
+  if (message.type === 'openExternal') {
+    const url = readWebUrl(message.url);
+    return url ? { type: 'openExternal', url } : null;
   }
   if (
     message.type === 'openMcpConfig' &&

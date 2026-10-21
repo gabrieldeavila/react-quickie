@@ -34,7 +34,7 @@ const saveInputSchema = z.object({
   config: z
     .record(z.string(), z.unknown())
     .describe(
-      'The mcp.json entry. stdio: { command, args?, env? }. http/sse: { type: "http" | "sse", url, headers? }. Optional: disabled, enabledTools, disabledTools. Write secrets as "${ENV_VAR}", never literally. "approval" is ignored: only the user sets it.',
+      'The mcp.json entry. stdio: { command, args?, env? }. http/sse: { type: "http" | "sse", url, headers?, oauth? } where oauth is { clientId?, clientSecret?, scope? } for providers without dynamic client registration (e.g. Google); servers with OAuth need the user to click "Sign in" in /mcp. Optional: disabled, enabledTools, disabledTools. Write secrets as "${ENV_VAR}", never literally. "approval" is ignored: only the user sets it.',
     ),
   replace: z
     .boolean()

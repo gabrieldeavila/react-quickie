@@ -1,4 +1,6 @@
 import * as os from 'os';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as path from 'path';
 import { isStepCount, streamText } from 'ai';
 import { MockLanguageModelV4, simulateReadableStream } from 'ai/test';
@@ -40,7 +42,9 @@ const callTool = (toolName: string, input: object) =>
   });
 
 describe('MCP tools + native approval', () => {
-  const pool = new McpClientPoolService();
+  const pool = new McpClientPoolService(
+    new McpOAuthProviderFactory(new McpOAuthRepository()),
+  );
   const service = new McpToolsService(
     {
       resolve: () =>

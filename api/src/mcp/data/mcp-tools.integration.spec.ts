@@ -1,4 +1,6 @@
 import * as os from 'os';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as path from 'path';
 import type { McpStdioServerConfig } from '../domain/mcp-config.schema';
 import type { UsableMcpServer } from '../domain/mcp-server.types';
@@ -34,7 +36,9 @@ describe('McpToolsService (stdio integration)', () => {
 
   beforeEach(() => {
     process.env.DOTY_MCP_CONNECT_TIMEOUT_MS = String(TIMEOUT_MS);
-    pool = new McpClientPoolService();
+    pool = new McpClientPoolService(
+      new McpOAuthProviderFactory(new McpOAuthRepository()),
+    );
   });
 
   afterEach(async () => {

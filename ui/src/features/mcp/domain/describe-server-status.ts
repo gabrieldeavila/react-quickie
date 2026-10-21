@@ -40,6 +40,8 @@ export function describeServerStatus(
         tone: "warning",
         canReconnect: false,
       };
+    case "needs-auth":
+      return { label: "Sign-in needed", tone: "warning", canReconnect: false };
     case "error":
       return { label: "Error", tone: "error", canReconnect: true };
     case "disabled":

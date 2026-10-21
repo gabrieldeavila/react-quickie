@@ -8,10 +8,12 @@ import { needsProjectTrust } from "../domain/describe-server-status";
 import { useMcpRowActions } from "../hooks/useMcpRowActions";
 import { useMcpServerEditor } from "../hooks/useMcpServerEditor";
 import { useMcpServers } from "../hooks/useMcpServers";
+import { useMcpSignIn } from "../hooks/useMcpSignIn";
 import { McpConfigFiles } from "./McpConfigFiles";
 import { McpDialogActions } from "./McpDialogActions";
 import { McpServerForm } from "./McpServerForm";
 import { McpServerRow } from "./McpServerRow";
+import { McpSignInNotice } from "./McpSignInNotice";
 import { McpToolList } from "./McpToolList";
 import { McpTrustNotice } from "./McpTrustNotice";
 
@@ -23,12 +25,15 @@ export function McpDialog({ root, onClose }: Props) {
   const editor = useMcpServerEditor(state);
   const [toolsFor, setToolsFor] = useState<string | null>(null);
   const confirmation = useConfirmation();
+  const signIn = useMcpSignIn(state);
+  const startSignIn = (name: string) => void signIn.signIn(name);
   const actionsFor = useMcpRowActions({
     root,
     state,
     editor,
     showTools: setToolsFor,
     askConfirmation: confirmation.ask,
+    signIn: startSignIn,
   });
   const { data } = state;
   const toolsServer = data?.servers.find((server) => server.name === toolsFor);
@@ -100,6 +105,13 @@ export function McpDialog({ root, onClose }: Props) {
                 onTrust={state.trust}
               />
             ) : null}
+            {signIn.waiting ? (
+              <McpSignInNotice
+                pending={signIn.waiting}
+                onReopen={signIn.reopen}
+                onCancel={signIn.cancel}
+              />
+            ) : null}
             {data.servers.length === 0 ? (
               <p className="mcp-section__empty">No servers configured yet.</p>
             ) : (
@@ -110,6 +122,11 @@ export function McpDialog({ root, onClose }: Props) {
                     server={server}
                     isBusy={state.busy === server.name}
                     actions={actionsFor(server)}
+                    onSignIn={
+                      server.status === "needs-auth"
+                        ? () => startSignIn(server.name)
+                        : undefined
+                    }
                   />
                 ))}
               </ul>

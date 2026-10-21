@@ -202,8 +202,32 @@ O Doty usa ferramentas de servidores [MCP](https://modelcontextprotocol.io) (Git
 | ----------------------------- | ------------------------------------------------------------- |
 | `DOTY_MCP_CONNECT_TIMEOUT_MS` | Tempo máximo para conectar e listar ferramentas. Padrão: `10000`. |
 | `DOTY_MCP_IDLE_TIMEOUT_MS`    | Fecha servidores sem uso após esse tempo. Padrão: `600000`.    |
+| `DOTY_OAUTH_CALLBACK_URL`     | URL de retorno do login OAuth. Padrão: `http://127.0.0.1:<PORT>/mcp/oauth/callback`. |
 
-Recursos, prompts, sampling e OAuth do MCP ainda não são suportados; use tokens em `headers`.
+### Login OAuth
+
+Servidores `http`/`sse` que pedem login (respondem 401) aparecem como **Login necessário** no diálogo. Clique em **Sign in**: o navegador abre a página do provedor e, ao terminar, volta para a API, que guarda os tokens e reconecta o servidor. Os tokens ficam em `$DOTY_DATA_DIR/mcp-oauth.json` (somente o dono lê) e são renovados sozinhos; **Sign out** no menu "⋯" os apaga.
+
+- Provedores com registro dinâmico de cliente não precisam de configuração.
+- Provedores sem registro dinâmico (como o Google) precisam de um cliente OAuth próprio, do tipo **Desktop app**, em `oauth`:
+
+  ```json
+  "drive": {
+    "type": "http",
+    "url": "https://<servidor-mcp>/mcp",
+    "oauth": {
+      "clientId": "${GOOGLE_OAUTH_CLIENT_ID}",
+      "clientSecret": "${GOOGLE_OAUTH_CLIENT_SECRET}",
+      "scope": "https://www.googleapis.com/auth/drive.readonly"
+    }
+  }
+  ```
+
+- O endereço de retorno é a própria API no loopback. No VS Code a porta muda a cada sessão, por isso use um cliente "Desktop app" (aceita qualquer porta do `127.0.0.1`); em Docker, ajuste `DOTY_OAUTH_CALLBACK_URL`.
+- A rota de retorno não exige o token da API (o navegador não o tem); ela só aceita um `state` aleatório, de uso único e válido por 10 minutos, criado por um login iniciado no Doty.
+- O agente pode adicionar servidores com OAuth, mas não faz login: o login é sempre seu, pelo diálogo.
+
+Recursos, prompts e sampling do MCP ainda não são suportados.
 
 ## Subagentes
 

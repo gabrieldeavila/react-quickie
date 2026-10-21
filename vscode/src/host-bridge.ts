@@ -56,6 +56,9 @@ export class HostBridge {
     if (message?.type === 'ready') this.flush();
     if (message?.type === 'openFile') void openFile(message);
     if (message?.type === 'openMcpConfig') void openMcpConfig(message, this.dataDir);
+    if (message?.type === 'openExternal') {
+      void vscode.env.openExternal(vscode.Uri.parse(message.url, true));
+    }
     if (message?.type === 'setTitle' && this.view) this.view.description = message.title;
     if (message?.type === 'setFocus') setChatFocusedContext(message.focused);
   }

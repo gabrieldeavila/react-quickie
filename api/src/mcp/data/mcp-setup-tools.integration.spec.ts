@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as os from 'os';
 import * as path from 'path';
 import type { ToolExecutionOptions } from 'ai';
@@ -63,7 +65,11 @@ describe('McpSetupToolsService (temp dirs)', () => {
       snapshot: jest.fn(() => undefined),
     } as unknown as McpClientPoolService;
     service = new McpSetupToolsService(
-      new McpServerCatalogService(serversService, pool),
+      new McpServerCatalogService(
+        serversService,
+        pool,
+        new McpOAuthProviderFactory(new McpOAuthRepository()),
+      ),
       serversService,
       new McpConfigEditsService(
         configRepository,

@@ -55,6 +55,16 @@ describe('parseWebviewMessage', () => {
     expect(parseWebviewMessage({ type: 'openMcpConfig', scope: '/etc/passwd' })).toBeNull();
   });
 
+  it('reads openExternal for web pages only', () => {
+    expect(
+      parseWebviewMessage({ type: 'openExternal', url: 'https://accounts.example.com/auth?x=1' }),
+    ).toEqual({ type: 'openExternal', url: 'https://accounts.example.com/auth?x=1' });
+    expect(parseWebviewMessage({ type: 'openExternal', url: 'command:workbench.action.reload' })).toBeNull();
+    expect(parseWebviewMessage({ type: 'openExternal', url: 'file:///etc/passwd' })).toBeNull();
+    expect(parseWebviewMessage({ type: 'openExternal', url: 'not a url' })).toBeNull();
+    expect(parseWebviewMessage({ type: 'openExternal' })).toBeNull();
+  });
+
   it('rejects unknown or malformed messages', () => {
     expect(parseWebviewMessage(null)).toBeNull();
     expect(parseWebviewMessage({ type: 'runBash', command: 'rm -rf /' })).toBeNull();

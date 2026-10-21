@@ -7,6 +7,8 @@ type Props = {
   server: McpServerView;
   isBusy: boolean;
   actions: McpRowAction[];
+  /** Shown as a button next to the menu when the server needs a sign-in. */
+  onSignIn?: () => void;
 };
 
 const DOT: Record<McpServerView["status"], string> = {
@@ -14,12 +16,13 @@ const DOT: Record<McpServerView["status"], string> = {
   connecting: "●",
   idle: "●",
   error: "●",
+  "needs-auth": "⚠",
   disabled: "○",
   untrusted: "⚠",
 };
 
 /** One server: status dot, name, "http · global · 12 tools", status, actions. */
-export function McpServerRow({ server, isBusy, actions }: Props) {
+export function McpServerRow({ server, isBusy, actions, onSignIn }: Props) {
   const status = describeServerStatus(server);
 
   return (
@@ -42,6 +45,16 @@ export function McpServerRow({ server, isBusy, actions }: Props) {
           <small className="mcp-server-row__error">{server.error}</small>
         ) : null}
       </div>
+      {onSignIn ? (
+        <button
+          type="button"
+          className="chat-button mcp-server-row__action"
+          disabled={isBusy}
+          onClick={onSignIn}
+        >
+          Sign in
+        </button>
+      ) : null}
       {actions.length ? (
         <McpRowMenu serverName={server.name} actions={actions} />
       ) : null}

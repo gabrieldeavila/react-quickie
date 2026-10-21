@@ -3,6 +3,8 @@ export type McpServerStatus =
   | "idle"
   | "connecting"
   | "connected"
+  /** An http/sse server wants an OAuth sign-in. */
+  | "needs-auth"
   | "error"
   | "untrusted"
   | "disabled";
@@ -32,6 +34,8 @@ export type McpServerView = {
   error?: string;
   /** The entry as written in the file; literal secrets are "••••". */
   config?: unknown;
+  /** Doty holds OAuth tokens for this server. */
+  signedIn?: boolean;
 };
 
 export type McpConfigFileView = {

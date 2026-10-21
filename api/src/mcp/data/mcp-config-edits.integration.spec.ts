@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as os from 'os';
 import * as path from 'path';
 import type { ContextService } from 'src/common/context/context.service';
@@ -66,7 +68,11 @@ describe('MCP config edits (temp dirs)', () => {
       serversService,
       typedPool,
       edits,
-      new McpServerCatalogService(serversService, typedPool),
+      new McpServerCatalogService(
+        serversService,
+        typedPool,
+        new McpOAuthProviderFactory(new McpOAuthRepository()),
+      ),
       {
         get: (key: string) => (key === 'root' ? root : undefined),
       } as unknown as ContextService,
