@@ -619,6 +619,15 @@ Notes:
 - [ ] End-to-end check in the real VS Code with a light and a dark theme: pick and create instructions, `/landing-pages`, `/mcp` add → edit → disable → remove a stdio server, trust a project server, the prompt preview for the same setup. How to drive VS Code: Playwright `_electron.launch` with VS Code's binary, `--extensionDevelopmentPath=vscode`, a throwaway short `--user-data-dir`, `ELECTRON_RUN_AS_NODE` and `VSCODE_*` unset, and a mock OpenAI-compatible server for streaming (`doty.openaiCompatible.*` settings). Optionally commit that driver as `vscode/scripts/smoke.mjs` with `playwright-core` as a dev dependency.
 - [ ] Carry-over from the previous UI plan (Phase 5): click the view title-bar buttons (＋, History, Settings) in VS Code; until now they were only run through the command palette.
 
+Carried over from earlier phases' Notes (no phase owned them):
+
+- [ ] Phase 1's manual model check (strong model + small OpenAI-compatible model + no-tools model); record the results in Phase 1's Progress.
+- [ ] Shorten `memory.md` to short guidance (no pipeline or quality gates), like the built-in instructions.
+- [ ] Send `behavior.md`, `memory.md`, `AGENTS.md` and `.agents/*.md` to the model as plain Markdown (frontmatter stripped), not HTML; drop `MarkdownService` / `marked` if nothing else uses them. The snapshot spec then tests the prompt that is actually sent.
+- [ ] README (root, Portuguese) and `vscode/README.md`: no mention of modes / Agent Builder left; document `AGENTS.md` and `prompt:preview` too.
+- [ ] How the branch lands: `feat/instructions-and-mcp` is based on `feat/ui-a-english-ui`, which isn't merged into `main`. Record whether that branch's PR goes first or both ship in one PR.
+- [ ] Set the plan header's `Status` when done.
+
 #### Progress
 
 ```
@@ -644,3 +653,5 @@ Notes: —
 - MCP resources, prompts, sampling and OAuth flows (header tokens and env vars only, as before).
 - Automatic instruction selection by the model (the model can't pick instructions for itself in v1).
 - Rewriting the subagent definitions beyond adding the environment block.
+- Listing / editing a global MCP server while a project server of the same name shadows it (Phases 3 and 7 Notes). The user edits the project entry or the global file directly.
+- A total size budget for the system prompt. Today: ≤ 8 instructions × 20 KB each, plus `AGENTS.md`, `.agents/` and memory, with no cap against the model's context window. Small local models can run out of context with many large instructions; revisit if that shows up in use.

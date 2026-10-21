@@ -2,7 +2,7 @@ import type { SystemModelMessage } from 'ai';
 import * as fs from 'fs-extra';
 import path from 'path';
 
-/** Markdown file → rendered text, '' when missing or unreadable. */
+/** Markdown file → prompt text, '' when missing or unreadable. */
 export type ReadMarkdown = (file: string) => Promise<string>;
 
 async function toInstruction(

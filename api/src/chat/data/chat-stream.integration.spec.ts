@@ -9,11 +9,6 @@ import type { ApprovalSecretService } from './approval-secret.service';
 import { ChatStreamService } from './chat-stream.service';
 import { ContextCompactionService } from './context-compaction.service';
 
-// The real PromptsService pulls in ESM-only `marked`; it is faked below anyway.
-jest.mock('src/common/helpers/prompts.service', () => ({
-  PromptsService: class {},
-}));
-
 // Phase 6 wiring against the real AI SDK: usage metadata on finish, context
 // compaction before the stream, and Anthropic cache breakpoints per step.
 

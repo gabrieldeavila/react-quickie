@@ -1,16 +1,12 @@
 import * as fs from 'fs';
-import matter from 'gray-matter';
 import * as os from 'os';
 import * as path from 'path';
+import { readMarkdownBody as readMarkdown } from './data/read-markdown-body';
 import { buildEnvironmentBlock } from './domain/build-environment-block';
 import { loadSystemPrompt, type SystemPromptInput } from './load-system-prompt';
 
 // The shipped skills, so a change to behavior.md or memory.md shows up here.
 const SKILLS_DIR = path.resolve(__dirname, '../../agents/skills');
-
-// Like MarkdownService without the HTML rendering (`marked` is ESM-only).
-const readMarkdown = (file: string) =>
-  Promise.resolve(matter(fs.readFileSync(file, 'utf-8')).content.trim());
 
 const environment = buildEnvironmentBlock({
   client: 'vscode',

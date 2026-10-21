@@ -6,7 +6,6 @@ import { FileReadService } from './storage/file-read.service';
 import { FileSearchService } from './storage/file-search.service';
 import { FileWriteService } from './storage/file-write.service';
 import { PromptsService } from './prompts.service';
-import { MarkdownService } from './markdown.module';
 import { TsCheckerService } from './tschecker.service';
 import { LinterService } from './linter.service';
 import { MemoryService } from './memory.service';
@@ -23,7 +22,6 @@ import { EnvironmentService } from './environment.service';
     MemoryService,
     PromptsService,
     EnvironmentService,
-    MarkdownService,
     TsCheckerService,
     LinterService,
   ],
@@ -33,7 +31,6 @@ import { EnvironmentService } from './environment.service';
     StorageService,
     PromptsService,
     EnvironmentService,
-    MarkdownService,
     TsCheckerService,
     LinterService,
   ],

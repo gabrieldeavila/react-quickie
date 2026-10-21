@@ -6,10 +6,9 @@ import { formatInstructionMessage } from 'src/instructions/domain/format-instruc
 import type { SelectedModel } from 'src/llm/domain/find-model';
 import { ContextService } from '../context/context.service';
 import { EnvironmentService } from './environment.service';
-import { MarkdownService } from './markdown.module';
 import { MemoryService } from './memory.service';
 import { loadSystemPrompt } from './prompts/load-system-prompt';
-import type { ReadMarkdown } from './prompts/skill-loaders';
+import { readMarkdownBody } from './prompts/data/read-markdown-body';
 
 export type InstructionsRequest = {
   model: SelectedModel;
@@ -19,18 +18,12 @@ export type InstructionsRequest = {
 
 @Injectable()
 export class PromptsService {
-  private readonly readMarkdown: ReadMarkdown;
-
   constructor(
-    markdownService: MarkdownService,
     private readonly contextService: ContextService,
     private readonly memoryService: MemoryService,
     private readonly environmentService: EnvironmentService,
     private readonly instructionSelection: InstructionSelectionService,
-  ) {
-    this.readMarkdown = async (file) =>
-      (await markdownService.getMarkdownFile(file)?.html) ?? '';
-  }
+  ) {}
 
   /** System instructions for a request (order in `loadSystemPrompt`). */
   async getInstructions({
@@ -46,7 +39,7 @@ export class PromptsService {
     );
 
     return loadSystemPrompt({
-      readMarkdown: this.readMarkdown,
+      readMarkdown: readMarkdownBody,
       skillsDir,
       root,
       toolsAvailable,
