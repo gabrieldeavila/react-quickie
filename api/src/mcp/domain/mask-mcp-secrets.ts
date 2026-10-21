@@ -18,7 +18,8 @@ function maskValue(value: unknown): unknown {
 
 /**
  * A raw server entry as the UI may see it: literal `env` and `headers`
- * values become `••••`. Everything else is returned unchanged.
+ * values and a literal `oauth.clientSecret` become `••••`. Everything else
+ * is returned unchanged.
  */
 export function maskMcpSecrets(entry: unknown): unknown {
   if (!isPlainObject(entry)) return entry;
@@ -29,6 +30,10 @@ export function maskMcpSecrets(entry: unknown): unknown {
     masked[field] = Object.fromEntries(
       Object.entries(values).map(([key, value]) => [key, maskValue(value)]),
     );
+  }
+  const oauth = entry.oauth;
+  if (isPlainObject(oauth) && oauth.clientSecret !== undefined) {
+    masked.oauth = { ...oauth, clientSecret: maskValue(oauth.clientSecret) };
   }
   return masked;
 }

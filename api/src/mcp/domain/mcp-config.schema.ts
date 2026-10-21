@@ -24,11 +24,23 @@ const stdioServerSchema = z.object({
   ...toolFilterFields,
 });
 
+/**
+ * OAuth for http/sse servers. Sign-in works without it when the server
+ * supports dynamic client registration; providers that don't (e.g. Google)
+ * need a pre-registered client here. `clientSecret` should be `${VAR}`.
+ */
+const oauthSchema = z.object({
+  clientId: z.string().min(1).optional(),
+  clientSecret: z.string().optional(),
+  scope: z.string().optional(),
+});
+
 const httpServerSchema = z.object({
   type: z.enum(['http', 'sse']),
   // Checked as a URL after `${VAR}` interpolation (see parse-mcp-config).
   url: z.string().min(1),
   headers: z.record(z.string(), z.string()).optional(),
+  oauth: oauthSchema.optional(),
   ...toolFilterFields,
 });
 
@@ -42,6 +54,7 @@ export type McpApprovalMode = z.infer<typeof approvalModeSchema>;
 export type McpApprovalSetting = z.infer<typeof approvalSchema>;
 export type McpStdioServerConfig = z.infer<typeof stdioServerSchema>;
 export type McpHttpServerConfig = z.infer<typeof httpServerSchema>;
+export type McpOAuthSettings = z.infer<typeof oauthSchema>;
 export type McpServerConfig = z.infer<typeof mcpServerSchema>;
 
 export function isStdioServer(

@@ -38,6 +38,14 @@ describe("describeServerStatus", () => {
     ).toBe(false);
   });
 
+  it("asks for a sign-in instead of a reconnect", () => {
+    expect(describeServerStatus(server({ status: "needs-auth" }))).toEqual({
+      label: "Sign-in needed",
+      tone: "warning",
+      canReconnect: false,
+    });
+  });
+
   it("marks errors and lets the user retry", () => {
     expect(describeServerStatus(server({ status: "error" }))).toMatchObject({
       tone: "error",

@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as os from 'os';
 import * as path from 'path';
 import type { ContextService } from 'src/common/context/context.service';
@@ -8,6 +10,7 @@ import { SECRET_MASK } from '../domain/mask-mcp-secrets';
 import type { McpClientPoolService } from './mcp-client-pool.service';
 import { McpConfigEditsService } from './mcp-config-edits.service';
 import { McpConfigRepository } from './mcp-config.repository';
+import { McpServerCatalogService } from './mcp-server-catalog.service';
 import { McpServersService } from './mcp-servers.service';
 import { McpTrustRepository } from './mcp-trust.repository';
 
@@ -61,9 +64,19 @@ describe('MCP config edits (temp dirs)', () => {
       serversService,
       typedPool,
     );
-    controller = new McpController(serversService, typedPool, edits, {
-      get: (key: string) => (key === 'root' ? root : undefined),
-    } as unknown as ContextService);
+    controller = new McpController(
+      serversService,
+      typedPool,
+      edits,
+      new McpServerCatalogService(
+        serversService,
+        typedPool,
+        new McpOAuthProviderFactory(new McpOAuthRepository()),
+      ),
+      {
+        get: (key: string) => (key === 'root' ? root : undefined),
+      } as unknown as ContextService,
+    );
   });
 
   afterEach(() => {

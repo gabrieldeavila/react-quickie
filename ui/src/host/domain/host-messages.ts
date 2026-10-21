@@ -27,12 +27,16 @@ export type OpenMcpConfigMessage = {
   root?: string;
 };
 
+/** Opens an http(s) page in the user's browser (MCP OAuth sign-in). */
+export type OpenExternalMessage = { type: "openExternal"; url: string };
+
 export type WebviewToHostMessage =
   | OpenFileMessage
   | ReadyMessage
   | SetTitleMessage
   | SetFocusMessage
-  | OpenMcpConfigMessage;
+  | OpenMcpConfigMessage
+  | OpenExternalMessage;
 
 export type InsertSelectionMessage = {
   type: "insertSelection";

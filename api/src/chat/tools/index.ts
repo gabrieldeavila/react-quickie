@@ -84,6 +84,18 @@ export const TOOL_UI_MAPPING: Record<string, ToolUiMetadata> = {
     uiLabel: 'Saving instruction...',
     uiDescription: 'Creating or updating an instruction.',
   },
+  list_mcp_servers: {
+    uiLabel: 'Listing MCP servers...',
+    uiDescription: 'Looking at the configured MCP servers.',
+  },
+  save_mcp_server: {
+    uiLabel: 'Saving MCP server...',
+    uiDescription: 'Adding or updating an MCP server.',
+  },
+  remove_mcp_server: {
+    uiLabel: 'Removing MCP server...',
+    uiDescription: 'Removing an MCP server from the config.',
+  },
   get_recent_commits: {
     uiLabel: 'Reading recent commits...',
     uiDescription: 'Reading the recent Git history.',

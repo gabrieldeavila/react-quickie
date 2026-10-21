@@ -10,6 +10,8 @@ import type { McpServerEditor } from "./useMcpServerEditor";
 import type { McpServersState } from "./useMcpServers";
 
 const LABELS: Record<ServerActionKey, string> = {
+  signIn: "Sign in",
+  signOut: "Sign out",
   edit: "Edit",
   enable: "Enable",
   disable: "Disable",
@@ -25,6 +27,7 @@ type Input = {
   editor: McpServerEditor;
   showTools: (name: string) => void;
   askConfirmation: (request: ConfirmationRequest) => void;
+  signIn: (name: string) => void;
 };
 
 /** Binds each server's menu actions to the API calls and dialog views. */
@@ -34,12 +37,15 @@ export function useMcpRowActions({
   editor,
   showTools,
   askConfirmation,
+  signIn,
 }: Input) {
   const host = getHostBridge();
 
   return useCallback(
     (server: McpServerView): McpRowAction[] => {
       const handlers: Record<ServerActionKey, () => void> = {
+        signIn: () => signIn(server.name),
+        signOut: () => state.signOut(server.name),
         edit: () => editor.edit(server),
         enable: () => state.setDisabled(server, false),
         disable: () => state.setDisabled(server, true),
@@ -63,6 +69,6 @@ export function useMcpRowActions({
         disabled: state.busy !== null,
       }));
     },
-    [askConfirmation, editor, host, root, showTools, state],
+    [askConfirmation, editor, host, root, showTools, signIn, state],
   );
 }

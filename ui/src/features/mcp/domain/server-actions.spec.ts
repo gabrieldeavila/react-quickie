@@ -33,6 +33,24 @@ describe("serverActions", () => {
     ).toEqual(["edit", "enable", "remove"]);
   });
 
+  it("offers sign-in first when the server needs it", () => {
+    expect(
+      serverActions(server({ status: "needs-auth" }), {
+        canEdit: true,
+        canOpenFile: false,
+      }),
+    ).toEqual(["signIn", "edit", "disable", "tools", "remove"]);
+  });
+
+  it("offers sign-out once signed in", () => {
+    expect(
+      serverActions(server({ signedIn: true }), {
+        canEdit: false,
+        canOpenFile: false,
+      }),
+    ).toEqual(["reconnect", "signOut"]);
+  });
+
   it("only lets you open the file of an untrusted project server", () => {
     expect(
       serverActions(server({ scope: "project", status: "untrusted" }), {

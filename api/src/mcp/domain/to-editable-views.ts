@@ -7,6 +7,8 @@ export type EditableMcpServerView = McpServerView & {
   disabled: boolean;
   /** The entry as written, with literal secrets masked. */
   config?: unknown;
+  /** http/sse only: Doty holds OAuth tokens for this server. */
+  signedIn?: boolean;
 };
 
 /** Adds what the edit dialog needs to each listed server. */

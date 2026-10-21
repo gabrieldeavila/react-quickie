@@ -23,6 +23,11 @@ export type HostBridge = {
   setFocused(focused: boolean): void;
   /** Opens a scope's mcp.json in the editor (VSCode only, like openFile). */
   openMcpConfig(scope: "global" | "project", root?: string): void;
+  /**
+   * Opens a web page in the user's browser. A browser may block the tab
+   * (no user gesture after an await), so callers also show the link.
+   */
+  openExternal(url: string): void;
 };
 
 const browserHost: HostBridge = {
@@ -33,6 +38,9 @@ const browserHost: HostBridge = {
   setTitle: () => {},
   setFocused: () => {},
   openMcpConfig: () => {},
+  openExternal: (url) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  },
 };
 
 function createVscodeHost(): HostBridge {
@@ -56,6 +64,7 @@ function createVscodeHost(): HostBridge {
     setFocused: (focused) => vscode.postMessage({ type: "setFocus", focused }),
     openMcpConfig: (scope, root) =>
       vscode.postMessage({ type: "openMcpConfig", scope, root }),
+    openExternal: (url) => vscode.postMessage({ type: "openExternal", url }),
   };
 }
 

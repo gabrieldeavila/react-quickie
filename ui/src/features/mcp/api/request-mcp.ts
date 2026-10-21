@@ -17,10 +17,9 @@ async function readError(response: Response): Promise<string> {
  * Every MCP endpoint answers with the refreshed server list. A 409 (file
  * changed elsewhere) throws McpConflictError with the list the API sent.
  */
-export async function requestMcp(
-  path: string,
-  init?: RequestInit,
-): Promise<McpServersResponse> {
+export async function requestMcp<
+  T extends McpServersResponse = McpServersResponse,
+>(path: string, init?: RequestInit): Promise<T> {
   const response = await authFetch(`${getMcpApiUrl()}${path}`, init);
   if (response.status === 409) {
     const body = (await response.json()) as McpServersResponse & {
@@ -32,7 +31,7 @@ export async function requestMcp(
     );
   }
   if (!response.ok) throw new Error(await readError(response));
-  return (await response.json()) as McpServersResponse;
+  return (await response.json()) as T;
 }
 
 export function sendJson(

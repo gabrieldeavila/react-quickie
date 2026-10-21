@@ -25,7 +25,14 @@ export type UsableMcpServer = Extract<ParsedMcpServer, { config: object }> & {
 };
 
 export type McpServerStatus =
-  'idle' | 'connecting' | 'connected' | 'error' | 'untrusted' | 'disabled';
+  | 'idle'
+  | 'connecting'
+  | 'connected'
+  /** An http/sse server answered 401: the user must sign in from the dialog. */
+  | 'needs-auth'
+  | 'error'
+  | 'untrusted'
+  | 'disabled';
 
 export type McpServerView = {
   name: string;

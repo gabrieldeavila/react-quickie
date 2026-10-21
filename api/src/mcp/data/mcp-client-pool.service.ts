@@ -6,12 +6,14 @@ import {
 } from '@ai-sdk/mcp';
 import type { Tool } from 'ai';
 import { hashConfig } from '../domain/hash-config';
+import { isUnauthorizedError } from '../domain/is-unauthorized-error';
 import type { UsableMcpServer } from '../domain/mcp-server.types';
 import { createMcpTransport } from './create-mcp-transport';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
 import { readPoolSettings } from './read-pool-settings';
 import { withTimeout } from './with-timeout';
 
-type PoolStatus = 'connecting' | 'connected' | 'error';
+type PoolStatus = 'connecting' | 'connected' | 'needs-auth' | 'error';
 
 type PoolEntry = {
   hash: string;
@@ -33,6 +35,8 @@ export type PoolSnapshot = {
 };
 
 const SWEEP_INTERVAL_MS = 60_000;
+
+const NEEDS_AUTH_MESSAGE = 'Sign in to use this server.';
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -56,6 +60,8 @@ export class McpClientPoolService implements OnModuleDestroy {
     () => void this.closeIdle(),
     SWEEP_INTERVAL_MS,
   ).unref();
+
+  constructor(private readonly oauthProviders: McpOAuthProviderFactory) {}
 
   /** The server's tools, or null when it can't connect (the chat goes on without them). */
   async getTools(
@@ -133,6 +139,12 @@ export class McpClientPoolService implements OnModuleDestroy {
     const fail = (error: unknown) => {
       // Ignores clients this pool already closed or replaced.
       if (this.entries.get(key) !== entry) return;
+      // Not retried on its own: signing in from the dialog reconnects it.
+      if (isUnauthorizedError(error)) {
+        entry.status = 'needs-auth';
+        entry.error = NEEDS_AUTH_MESSAGE;
+        return;
+      }
       entry.status = 'error';
       entry.error = describeError(error);
       entry.failedAt = Date.now();
@@ -156,15 +168,22 @@ export class McpClientPoolService implements OnModuleDestroy {
     server: UsableMcpServer,
     onLost: (error: unknown) => void,
   ) {
-    const transport = createMcpTransport(server.config, root);
+    const transport = createMcpTransport(
+      server.config,
+      root,
+      this.oauthProviders.create(root, server, { interactive: false }),
+    );
     const opening = (async () => {
       const client = await createMCPClient({
         transport,
         clientName: 'doty',
         // Not fatal on its own (e.g. a malformed notification); a dead
         // process is caught by `watchClose`.
-        onUncaughtError: (error) =>
-          this.logger.warn(`MCP "${server.name}": ${describeError(error)}`),
+        // A 401 is reported here too; the needs-auth status covers it.
+        onUncaughtError: (error) => {
+          if (isUnauthorizedError(error)) return;
+          this.logger.warn(`MCP "${server.name}": ${describeError(error)}`);
+        },
       });
       if (isTransport(transport)) this.watchClose(transport, onLost);
       try {
