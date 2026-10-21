@@ -126,10 +126,6 @@ export function useInstructionEditor(root: string, state: InstructionsState) {
   const remove = useCallback(
     async (item: InstructionSummary) => {
       if (!item.editable || item.source === "built-in") return;
-      const confirmed = window.confirm(
-        `Delete the ${item.source} instruction "${item.name}"?`,
-      );
-      if (!confirmed) return;
       setBusy(true);
       setActionError(null);
       try {

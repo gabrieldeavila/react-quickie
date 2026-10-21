@@ -1,4 +1,8 @@
+import { ConfirmationBar } from "@/components/primitives/ConfirmationBar";
+import { useConfirmation } from "@/components/primitives/useConfirmation";
 import { useEscapeKey } from "@/components/primitives/useEscapeKey";
+import { deletionPrompt } from "../domain/deletion-prompt";
+import type { InstructionSummary } from "../domain/instruction.types";
 import type { InstructionsState } from "../hooks/useInstructions";
 import { useInstructionEditor } from "../hooks/useInstructionEditor";
 import { InstructionForm } from "./InstructionForm";
@@ -14,8 +18,21 @@ type Props = {
 export function InstructionsDialog({ root, state, onClose }: Props) {
   const editor = useInstructionEditor(root, state);
   const { draft } = editor;
-  // Escape backs out of the form first, then closes the dialog.
-  useEscapeKey(draft ? editor.cancel : onClose);
+  const confirmation = useConfirmation();
+  // Escape cancels a pending confirmation, backs out of the form, then
+  // closes the dialog.
+  useEscapeKey(
+    confirmation.pending
+      ? confirmation.cancel
+      : draft
+        ? editor.cancel
+        : onClose,
+  );
+  const askDelete = (item: InstructionSummary) =>
+    confirmation.ask({
+      ...deletionPrompt(item),
+      onConfirm: () => editor.remove(item),
+    });
   const title = draft
     ? draft.isNew
       ? "New instruction"
@@ -67,9 +84,11 @@ export function InstructionsDialog({ root, state, onClose }: Props) {
             disabled={editor.busy}
             onEdit={editor.edit}
             onDuplicate={editor.duplicate}
-            onDelete={editor.remove}
+            onDelete={askDelete}
           />
         )}
+
+        <ConfirmationBar confirmation={confirmation} />
 
         <div className="chat-modal__actions">
           {draft ? (

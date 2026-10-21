@@ -1,8 +1,10 @@
 import { useCallback } from "react";
+import type { ConfirmationRequest } from "@/components/primitives/useConfirmation";
 import { getHostBridge } from "@/host/host-bridge";
 import type { McpRowAction } from "../components/McpRowMenu";
 import { canEditScope } from "../domain/can-edit-scope";
 import type { McpServerView } from "../domain/mcp-server.types";
+import { removalPrompt } from "../domain/removal-prompt";
 import { serverActions, type ServerActionKey } from "../domain/server-actions";
 import type { McpServerEditor } from "./useMcpServerEditor";
 import type { McpServersState } from "./useMcpServers";
@@ -22,10 +24,17 @@ type Input = {
   state: McpServersState;
   editor: McpServerEditor;
   showTools: (name: string) => void;
+  askConfirmation: (request: ConfirmationRequest) => void;
 };
 
 /** Binds each server's menu actions to the API calls and dialog views. */
-export function useMcpRowActions({ root, state, editor, showTools }: Input) {
+export function useMcpRowActions({
+  root,
+  state,
+  editor,
+  showTools,
+  askConfirmation,
+}: Input) {
   const host = getHostBridge();
 
   return useCallback(
@@ -36,12 +45,11 @@ export function useMcpRowActions({ root, state, editor, showTools }: Input) {
         disable: () => state.setDisabled(server, true),
         reconnect: () => state.reconnect(server.name),
         tools: () => showTools(server.name),
-        remove: () => {
-          const file = server.scope === "global" ? "global" : "project";
-          if (window.confirm(`Remove "${server.name}" from the ${file} mcp.json?`)) {
-            state.remove(server);
-          }
-        },
+        remove: () =>
+          askConfirmation({
+            ...removalPrompt(server),
+            onConfirm: () => state.remove(server),
+          }),
         openFile: () => host.openMcpConfig(server.scope, root),
       };
       const canEdit = state.data ? canEditScope(server.scope, state.data) : false;
@@ -55,6 +63,6 @@ export function useMcpRowActions({ root, state, editor, showTools }: Input) {
         disabled: state.busy !== null,
       }));
     },
-    [editor, host, root, showTools, state],
+    [askConfirmation, editor, host, root, showTools, state],
   );
 }

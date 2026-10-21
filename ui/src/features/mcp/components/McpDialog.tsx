@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ConfirmationBar } from "@/components/primitives/ConfirmationBar";
+import { useConfirmation } from "@/components/primitives/useConfirmation";
 import { useEscapeKey } from "@/components/primitives/useEscapeKey";
 import { getHostBridge } from "@/host/host-bridge";
 import { canEditScope } from "../domain/can-edit-scope";
@@ -20,19 +22,23 @@ export function McpDialog({ root, onClose }: Props) {
   const state = useMcpServers(root);
   const editor = useMcpServerEditor(state);
   const [toolsFor, setToolsFor] = useState<string | null>(null);
+  const confirmation = useConfirmation();
   const actionsFor = useMcpRowActions({
     root,
     state,
     editor,
     showTools: setToolsFor,
+    askConfirmation: confirmation.ask,
   });
   const { data } = state;
   const toolsServer = data?.servers.find((server) => server.name === toolsFor);
   const view = editor.draft ? "form" : toolsServer ? "tools" : "list";
 
-  // Escape steps back (form or tools → list), then closes.
+  // Escape cancels a pending confirmation, steps back (form or tools →
+  // list), then closes.
   useEscapeKey(() => {
-    if (view === "form") editor.cancel();
+    if (confirmation.pending) confirmation.cancel();
+    else if (view === "form") editor.cancel();
     else if (view === "tools") setToolsFor(null);
     else onClose();
   });
@@ -135,6 +141,8 @@ export function McpDialog({ root, onClose }: Props) {
         {view === "tools" && toolsServer ? (
           <McpToolList server={toolsServer} state={state} />
         ) : null}
+
+        <ConfirmationBar confirmation={confirmation} />
 
         <McpDialogActions
           view={view}
