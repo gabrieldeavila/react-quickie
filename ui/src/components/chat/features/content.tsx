@@ -4,6 +4,7 @@ import { ChatModalSettings } from "./modal/settings";
 import { ChatModalNewProject } from "./modal/newProject";
 import { ChatModalInstructions } from "./modal/instructions";
 import { ChatModalMcp } from "./modal/mcp";
+import { ChatSignInPopup } from "./modal/sign-in-popup";
 
 const ChatContent = memo(() => {
   return (
@@ -16,6 +17,7 @@ const ChatContent = memo(() => {
       <ChatModalNewProject />
       <ChatModalInstructions />
       <ChatModalMcp />
+      <ChatSignInPopup />
     </main>
   );
 });

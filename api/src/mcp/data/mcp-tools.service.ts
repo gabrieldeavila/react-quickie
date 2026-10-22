@@ -8,8 +8,10 @@ import {
 } from '../domain/mcp-server.types';
 import { namespaceMcpTools } from '../domain/namespace-mcp-tools';
 import { withCappedOutput } from '../domain/with-capped-output';
+import { withSuccessCallback } from '../domain/with-success-callback';
 import { McpClientPoolService } from './mcp-client-pool.service';
 import { McpServersService } from './mcp-servers.service';
+import { McpSignInRequestsService } from './mcp-sign-in-requests.service';
 
 export type McpToolkit = {
   tools: ToolSet;
@@ -18,9 +20,16 @@ export type McpToolkit = {
 
 const EMPTY_TOOLKIT: McpToolkit = { tools: {}, approvalPolicies: {} };
 
-function capAll(tools: Record<string, Tool>): Record<string, Tool> {
+/** Caps each result, and calls `onSuccess` after a call that worked. */
+function wrapAll(
+  tools: Record<string, Tool>,
+  onSuccess: () => void,
+): Record<string, Tool> {
   return Object.fromEntries(
-    Object.entries(tools).map(([name, tool]) => [name, withCappedOutput(tool)]),
+    Object.entries(tools).map(([name, tool]) => [
+      name,
+      withSuccessCallback(withCappedOutput(tool), onSuccess),
+    ]),
   );
 }
 
@@ -32,6 +41,7 @@ export class McpToolsService {
   constructor(
     private readonly serversService: McpServersService,
     private readonly pool: McpClientPoolService,
+    private readonly signIns: McpSignInRequestsService,
   ) {}
 
   /** Never throws: a broken config or server only removes MCP tools. */
@@ -65,7 +75,10 @@ export class McpToolsService {
           ? [
               {
                 server: server.name,
-                tools: capAll(serverTools),
+                // A call that works means a printed sign-in link is done.
+                tools: wrapAll(serverTools, () =>
+                  this.signIns.clearPrintedLinks(root, server.name),
+                ),
                 enabledTools: server.config.enabledTools,
                 disabledTools: server.config.disabledTools,
               },

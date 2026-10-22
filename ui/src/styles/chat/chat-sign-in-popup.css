@@ -1,0 +1,48 @@
+.sign-in-popup {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  left: 16px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.sign-in-popup__card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 360px;
+  padding: 12px 14px;
+  border: 1px solid var(--chat-popover-border);
+  border-radius: 12px;
+  background: var(--chat-popover-bg);
+  box-shadow: var(--chat-shadow);
+  color: var(--chat-text);
+  pointer-events: auto;
+}
+
+.sign-in-popup__card p {
+  margin: 0;
+  color: var(--chat-text-muted);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.sign-in-popup__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sign-in-popup__error {
+  max-width: 360px;
+  margin: 0;
+  color: var(--chat-error);
+  font-size: 0.85rem;
+  pointer-events: auto;
+}

@@ -1,12 +1,13 @@
 import * as os from 'os';
-import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
-import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as path from 'path';
 import type { McpStdioServerConfig } from '../domain/mcp-config.schema';
 import type { UsableMcpServer } from '../domain/mcp-server.types';
 import { McpClientPoolService } from './mcp-client-pool.service';
 import type { McpServersService } from './mcp-servers.service';
 import { McpToolsService } from './mcp-tools.service';
+import { McpSignInRequestsService } from './mcp-sign-in-requests.service';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 
 // Runs the real @ai-sdk/mcp client against a stdio fixture server.
 
@@ -38,6 +39,7 @@ describe('McpToolsService (stdio integration)', () => {
     process.env.DOTY_MCP_CONNECT_TIMEOUT_MS = String(TIMEOUT_MS);
     pool = new McpClientPoolService(
       new McpOAuthProviderFactory(new McpOAuthRepository()),
+      new McpSignInRequestsService(),
     );
   });
 
@@ -52,6 +54,7 @@ describe('McpToolsService (stdio integration)', () => {
         stdio('fake', { approval: { echo: 'never' }, disabledTools: [] }),
       ]),
       pool,
+      new McpSignInRequestsService(),
     );
 
     const { tools, approvalPolicies } = await service.getToolkit(ROOT);
@@ -75,7 +78,11 @@ describe('McpToolsService (stdio integration)', () => {
   });
 
   it('caps large results for the current turn', async () => {
-    const service = new McpToolsService(fakeServers([stdio('fake')]), pool);
+    const service = new McpToolsService(
+      fakeServers([stdio('fake')]),
+      pool,
+      new McpSignInRequestsService(),
+    );
     const { tools } = await service.getToolkit(ROOT);
 
     const result = (await tools.mcp__fake__big_output.execute!(
@@ -108,6 +115,7 @@ describe('McpToolsService (stdio integration)', () => {
         stdio('ok'),
       ]),
       pool,
+      new McpSignInRequestsService(),
     );
 
     const startedAt = Date.now();

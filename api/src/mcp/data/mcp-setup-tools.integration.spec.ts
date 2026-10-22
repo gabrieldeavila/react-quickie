@@ -1,6 +1,4 @@
 import * as fs from 'fs';
-import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
-import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as os from 'os';
 import * as path from 'path';
 import type { ToolExecutionOptions } from 'ai';
@@ -12,6 +10,10 @@ import { McpServerCatalogService } from './mcp-server-catalog.service';
 import { McpServersService } from './mcp-servers.service';
 import { McpSetupToolsService } from './mcp-setup-tools.service';
 import { McpTrustRepository } from './mcp-trust.repository';
+import { McpConnectionCheckService } from './mcp-connection-check.service';
+import { McpSignInRequestsService } from './mcp-sign-in-requests.service';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 
 // Real files in temp dirs; only the client pool (process spawning) is faked.
 
@@ -76,6 +78,11 @@ describe('McpSetupToolsService (temp dirs)', () => {
         trustRepository,
         serversService,
         pool,
+      ),
+      new McpConnectionCheckService(
+        serversService,
+        pool,
+        new McpSignInRequestsService(),
       ),
     );
   });

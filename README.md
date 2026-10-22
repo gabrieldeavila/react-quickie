@@ -204,9 +204,15 @@ O Doty usa ferramentas de servidores [MCP](https://modelcontextprotocol.io) (Git
 | `DOTY_MCP_IDLE_TIMEOUT_MS`    | Fecha servidores sem uso após esse tempo. Padrão: `600000`.    |
 | `DOTY_OAUTH_CALLBACK_URL`     | URL de retorno do login OAuth. Padrão: `http://127.0.0.1:<PORT>/mcp/oauth/callback`. |
 
-### Login OAuth
+### Login (OAuth e afins)
 
-Servidores `http`/`sse` que pedem login (respondem 401) aparecem como **Login necessário** no diálogo. Clique em **Sign in**: o navegador abre a página do provedor e, ao terminar, volta para a API, que guarda os tokens e reconecta o servidor. Os tokens ficam em `$DOTY_DATA_DIR/mcp-oauth.json` (somente o dono lê) e são renovados sozinhos; **Sign out** no menu "⋯" os apaga.
+Quando um servidor pede login, o Doty mostra um aviso no canto da conversa com **Sign in** e **Dismiss**, seja qual for a forma como o servidor pediu:
+
+- **OAuth do MCP** (servidores `http`/`sse` que respondem 401): o Doty faz o fluxo OAuth. O navegador abre a página do provedor e, ao terminar, volta para a API, que guarda os tokens e reconecta o servidor. Os tokens ficam em `$DOTY_DATA_DIR/mcp-oauth.json` (somente o dono lê) e são renovados sozinhos; **Sign out** no menu "⋯" do diálogo os apaga.
+- **Elicitação por URL** (`elicitation/create` com `mode: "url"`, de qualquer servidor): o Doty abre a URL pedida e responde `accept`, ou `decline` se você dispensar.
+- **Link de login impresso** por um servidor local (`stdio`) na saída de erro: o Doty procura URLs com cara de login (`oauth`, `authorize`, `accounts.…`) e as mostra no aviso. É uma estimativa, por isso o aviso diz o domínio e que o link veio da saída do servidor.
+
+Só abrem páginas `https` (ou `http` em `localhost`). Depois de `save_mcp_server`, o agente conecta o servidor e diz se ele funcionou, se precisa de login ou qual foi o erro.
 
 - Provedores com registro dinâmico de cliente não precisam de configuração.
 - Provedores sem registro dinâmico (como o Google) precisam de um cliente OAuth próprio, do tipo **Desktop app**, em `oauth`:

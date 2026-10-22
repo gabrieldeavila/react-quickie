@@ -1,6 +1,4 @@
 import * as fs from 'fs';
-import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
-import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as os from 'os';
 import * as path from 'path';
 import type { ContextService } from 'src/common/context/context.service';
@@ -13,6 +11,8 @@ import { McpConfigRepository } from './mcp-config.repository';
 import { McpServerCatalogService } from './mcp-server-catalog.service';
 import { McpServersService } from './mcp-servers.service';
 import { McpTrustRepository } from './mcp-trust.repository';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 
 // Real files in temp dirs; only the client pool (process spawning) is faked.
 

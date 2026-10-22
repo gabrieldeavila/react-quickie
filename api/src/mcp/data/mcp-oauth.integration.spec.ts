@@ -18,6 +18,7 @@ import { McpOAuthRepository } from './mcp-oauth.repository';
 import { McpOAuthError, McpOAuthService } from './mcp-oauth.service';
 import { McpServersService } from './mcp-servers.service';
 import { McpTrustRepository } from './mcp-trust.repository';
+import { McpSignInRequestsService } from './mcp-sign-in-requests.service';
 
 // The whole sign-in against a local fake: 401 → needs-auth → start →
 // browser callback → tokens → connected. Only the browser is simulated.
@@ -66,7 +67,7 @@ describe('MCP OAuth sign-in (fake server, temp dirs)', () => {
       new McpConfigRepository(workspace),
       new McpTrustRepository(),
     );
-    pool = new McpClientPoolService(providers);
+    pool = new McpClientPoolService(providers, new McpSignInRequestsService());
     oauth = new McpOAuthService(servers, providers, repository, pool);
   });
 
