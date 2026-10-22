@@ -1,3 +1,9 @@
+import {
+  emptyOAuthForm,
+  oauthFormToConfig,
+  readOAuthForm,
+  type OAuthFormValues,
+} from "./oauth-form";
 import type {
   McpScope,
   McpServerView,
@@ -17,11 +23,21 @@ export type McpServerFormValues = {
   /** http / sse */
   url: string;
   headers: KeyValueRow[];
+  /** http / sse: sign-in client, for providers without automatic registration. */
+  oauth: OAuthFormValues;
   /** Fields the form doesn't edit (approval, tool filters, disabled, unknown keys); kept on save. */
   extra: Record<string, unknown>;
 };
 
-const FORM_KEYS = new Set(["type", "command", "args", "env", "url", "headers"]);
+const FORM_KEYS = new Set([
+  "type",
+  "command",
+  "args",
+  "env",
+  "url",
+  "headers",
+  "oauth",
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
@@ -58,6 +74,7 @@ export function emptyServerForm(
     env: [],
     url: "",
     headers: [],
+    oauth: emptyOAuthForm(),
     extra: {},
   };
 }
@@ -74,6 +91,7 @@ export function formFromServer(server: McpServerView): McpServerFormValues {
     env: readRows(config.env),
     url: typeof config.url === "string" ? config.url : "",
     headers: readRows(config.headers),
+    oauth: readOAuthForm(config.oauth),
     extra: Object.fromEntries(
       Object.entries(config).filter(([key]) => !FORM_KEYS.has(key)),
     ),
@@ -113,6 +131,7 @@ export function formToConfig(
     type: values.transport,
     url: values.url.trim(),
     headers: toRecord(values.headers),
+    oauth: oauthFormToConfig(values.oauth),
     ...values.extra,
   });
 }

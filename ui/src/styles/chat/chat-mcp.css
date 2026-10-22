@@ -123,3 +123,35 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+.mcp-oauth {
+  padding: 10px 12px;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 10px;
+}
+
+.mcp-oauth > summary {
+  cursor: pointer;
+}
+
+.mcp-oauth[open] > summary {
+  margin-bottom: 8px;
+}
+
+.mcp-oauth > :not(summary) + :not(summary) {
+  margin-top: 10px;
+}
+
+.mcp-oauth__hint {
+  margin: 0;
+  color: var(--chat-text-muted);
+  font-size: 0.82rem;
+}
+
+.mcp-oauth__scopes {
+  resize: vertical;
+}
+
+.mcp-oauth__preset {
+  display: inline-block;
+}

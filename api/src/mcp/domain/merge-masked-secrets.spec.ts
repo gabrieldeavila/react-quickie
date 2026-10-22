@@ -81,4 +81,25 @@ describe('mergeMaskedSecrets', () => {
       ),
     ).toThrow(/oauth.clientSecret/);
   });
+
+  it("takes a reused client's secret from the server it came from", () => {
+    const google = {
+      type: 'http',
+      url: 'https://docsmcp.googleapis.com/mcp/v1',
+      oauth: { clientId: 'id', clientSecret: 'real' },
+    };
+    const incoming = {
+      type: 'http',
+      url: 'https://drivemcp.googleapis.com/mcp/v1',
+      oauth: { clientId: 'id', clientSecret: SECRET_MASK },
+    };
+
+    expect(mergeMaskedSecrets(incoming, undefined, google)).toEqual({
+      ...incoming,
+      oauth: { clientId: 'id', clientSecret: 'real' },
+    });
+    expect(() => mergeMaskedSecrets(incoming, undefined, undefined)).toThrow(
+      /type the value again/,
+    );
+  });
 });

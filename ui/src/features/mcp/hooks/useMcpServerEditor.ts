@@ -5,7 +5,12 @@ import {
   formToConfig,
   type McpServerFormValues,
 } from "../domain/mcp-server-form";
-import type { McpServerView } from "../domain/mcp-server.types";
+import type { McpScope, McpServerView } from "../domain/mcp-server.types";
+import {
+  reusableOAuthClients,
+  reuseOAuthClient,
+  type OAuthClientSource,
+} from "../domain/oauth-form";
 import { parseServerJson, serverToJson } from "../domain/server-json";
 import {
   validateMcpServerForm,
@@ -19,6 +24,8 @@ type Draft = {
   isNew: boolean;
   /** "Edit JSON": the raw entry, for fields the form doesn't cover. */
   json: string | null;
+  /** Set when the OAuth client was copied from another server. */
+  oauthFrom?: { scope: McpScope; name: string };
 };
 
 /** Form state of the add / edit view, including the raw JSON mode. */
@@ -58,6 +65,23 @@ export function useMcpServerEditor(state: McpServersState) {
     },
     [],
   );
+
+  /** Copies another server's OAuth client into the form. */
+  const reuseOAuth = useCallback((source: OAuthClientSource) => {
+    setDraft((current) =>
+      current
+        ? {
+            ...current,
+            values: {
+              ...current.values,
+              oauth: reuseOAuthClient(current.values.oauth, source),
+            },
+            oauthFrom: { scope: source.scope, name: source.name },
+          }
+        : current,
+    );
+    setErrors((current) => ({ ...current, oauth: undefined }));
+  }, []);
 
   const setJson = useCallback((json: string) => {
     setDraft((current) => (current ? { ...current, json } : current));
@@ -115,14 +139,25 @@ export function useMcpServerEditor(state: McpServersState) {
       config = formToConfig(draft.values);
     }
 
-    const error = await state.save(draft.values.scope, draft.values.name, config);
+    const error = await state.save(
+      draft.values.scope,
+      draft.values.name,
+      config,
+      draft.oauthFrom,
+    );
     if (error) setFormError(error);
     else setDraft(null);
   }, [draft, state]);
 
+  const oauthClients = draft
+    ? reusableOAuthClients(state.data?.servers ?? [], draft.values)
+    : [];
+
   return {
     draft,
     errors,
+    oauthClients,
+    reuseOAuth,
     formError,
     isSaving: state.busy === "save",
     create,

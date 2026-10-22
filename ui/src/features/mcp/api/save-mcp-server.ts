@@ -5,7 +5,13 @@ import { requestMcp, sendJson } from "./request-mcp";
 export function saveMcpServer(
   root: string,
   name: string,
-  body: { scope: McpScope; config: unknown; baseHash: string | null },
+  body: {
+    scope: McpScope;
+    config: unknown;
+    baseHash: string | null;
+    /** The server a reused OAuth client comes from (for its masked secret). */
+    oauthFrom?: { scope: McpScope; name: string };
+  },
 ): Promise<McpServersResponse> {
   return requestMcp(
     `/servers/${encodeURIComponent(name)}?root=${encodeURIComponent(root)}`,

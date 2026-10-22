@@ -250,4 +250,36 @@ describe('MCP config edits (temp dirs)', () => {
       controller.remove('missing', 'global', undefined),
     ).rejects.toMatchObject({ status: 404 });
   });
+
+  it("reuses another server's OAuth client, secret included", async () => {
+    const oauth = { clientId: 'google-id', clientSecret: 'real-secret' };
+    await controller.upsert('docs', {
+      scope: 'global',
+      config: { type: 'http', url: 'https://docs.example.com/mcp', oauth },
+    });
+
+    // The dialog only ever sees the secret masked.
+    const masked = { clientId: 'google-id', clientSecret: SECRET_MASK };
+    await controller.upsert('drive', {
+      scope: 'global',
+      config: {
+        type: 'http',
+        url: 'https://drive.example.com/mcp',
+        oauth: masked,
+      },
+      oauthFrom: { scope: 'global', name: 'docs' },
+    });
+    expect(readJson(globalFile()).mcpServers.drive.oauth).toEqual(oauth);
+
+    await expect(
+      controller.upsert('gmail', {
+        scope: 'global',
+        config: {
+          type: 'http',
+          url: 'https://gmail.example.com/mcp',
+          oauth: masked,
+        },
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+  });
 });

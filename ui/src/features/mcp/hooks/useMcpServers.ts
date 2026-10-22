@@ -97,9 +97,19 @@ export function useMcpServers(root: string) {
   );
 
   const save = useCallback(
-    (scope: McpScope, name: string, config: unknown) =>
+    (
+      scope: McpScope,
+      name: string,
+      config: unknown,
+      oauthFrom?: { scope: McpScope; name: string },
+    ) =>
       run("save", () =>
-        saveMcpServer(root, name, { scope, config, baseHash: baseHashFor(scope) }),
+        saveMcpServer(root, name, {
+          scope,
+          config,
+          baseHash: baseHashFor(scope),
+          oauthFrom,
+        }),
       ),
     [baseHashFor, root, run],
   );

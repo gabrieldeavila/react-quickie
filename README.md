@@ -225,7 +225,7 @@ Requer o [Google Workspace Developer Preview Program](https://developers.google.
 1. Num projeto do Google Cloud, ative as APIs: `gcloud services enable docs.googleapis.com docsmcp.googleapis.com`.
 2. Em Google Auth Platform, configure a tela de consentimento (Internal, ou External com você como usuário de teste) com os escopos `drive.readonly`, `drive.file`, `documents.readonly` e `documents`.
 3. Crie um cliente OAuth do tipo **Web application**, marque **"Use this client for an AI-powered agent"** e cadastre o redirect URI `http://127.0.0.1:3000/mcp/oauth/callback` (`npm run dev`) e/ou `http://127.0.0.1:41736/mcp/oauth/callback` (VS Code).
-4. Coloque `GOOGLE_OAUTH_CLIENT_ID` e `GOOGLE_OAUTH_CLIENT_SECRET` no `api/.env` e adicione o servidor:
+4. Em `/mcp` → **Add**, escolha HTTP, cole a URL e preencha **Sign-in (OAuth)**: client ID, secret, escopos e **Stay signed in (Google)**. Nos próximos servidores do Google, use **Reuse the client of** para copiar o cliente (inclusive o secret) sem colar de novo. Se preferir arquivos, use `${VAR}` com as variáveis no `api/.env`:
 
   ```json
   "google-docs": {

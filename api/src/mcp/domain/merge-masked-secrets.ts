@@ -5,19 +5,27 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-/** A masked `oauth.clientSecret` takes the stored one. */
+function storedClientSecret(entry: unknown): unknown {
+  const oauth = isPlainObject(entry) ? entry.oauth : undefined;
+  return isPlainObject(oauth) ? oauth.clientSecret : undefined;
+}
+
+/**
+ * A masked `oauth.clientSecret` takes the stored one, else the one of the
+ * server the client was reused from (`oauthSource`).
+ */
 function mergeOAuthSecret(
   incoming: Record<string, unknown>,
   stored: unknown,
+  oauthSource: unknown,
 ): unknown {
   const oauth = incoming.oauth;
   if (!isPlainObject(oauth) || oauth.clientSecret !== SECRET_MASK) {
     return oauth;
   }
-  const storedOAuth = isPlainObject(stored) ? stored.oauth : undefined;
-  const previous = isPlainObject(storedOAuth)
-    ? storedOAuth.clientSecret
-    : undefined;
+  const own = storedClientSecret(stored);
+  const previous =
+    typeof own === 'string' ? own : storedClientSecret(oauthSource);
   if (typeof previous !== 'string') {
     throw new McpConfigEditError(
       'invalid-server',
@@ -35,6 +43,7 @@ function mergeOAuthSecret(
 export function mergeMaskedSecrets(
   incoming: unknown,
   stored: unknown,
+  oauthSource?: unknown,
 ): unknown {
   if (!isPlainObject(incoming)) return incoming;
   const merged: Record<string, unknown> = { ...incoming };
@@ -61,7 +70,7 @@ export function mergeMaskedSecrets(
     );
   }
   if (incoming.oauth !== undefined) {
-    merged.oauth = mergeOAuthSecret(incoming, stored);
+    merged.oauth = mergeOAuthSecret(incoming, stored, oauthSource);
   }
   return merged;
 }

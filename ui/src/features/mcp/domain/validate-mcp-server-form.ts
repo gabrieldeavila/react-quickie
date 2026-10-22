@@ -1,7 +1,7 @@
 import type { KeyValueRow, McpServerFormValues } from "./mcp-server-form";
 
 export type McpServerFormErrors = Partial<
-  Record<"name" | "command" | "url" | "env" | "headers", string>
+  Record<"name" | "command" | "url" | "env" | "headers" | "oauth", string>
 >;
 
 /** Same rule as the API. */
@@ -22,6 +22,14 @@ function isUrlLike(value: string): boolean {
   return value.includes("${") || URL.canParse(value);
 }
 
+/** A secret belongs to a client ID; sign-in parameters need names. */
+function oauthError({ oauth }: McpServerFormValues): string | undefined {
+  if (oauth.clientSecret.trim() && !oauth.clientId.trim()) {
+    return "Enter the client ID that goes with this secret.";
+  }
+  return rowsError(oauth.params);
+}
+
 /** Mirrors the API's server schema, so most mistakes show before saving. */
 export function validateMcpServerForm(
   values: McpServerFormValues,
@@ -40,6 +48,8 @@ export function validateMcpServerForm(
     else if (!isUrlLike(url)) errors.url = "That isn't a valid URL.";
     const headers = rowsError(values.headers);
     if (headers) errors.headers = headers;
+    const oauth = oauthError(values);
+    if (oauth) errors.oauth = oauth;
   }
   return errors;
 }
