@@ -25,6 +25,12 @@ export class PendingOAuthFlows {
     return entry?.flow;
   }
 
+  /** No sign-in is waiting for the browser (expired ones don't count). */
+  isEmpty(now: number): boolean {
+    this.prune(now);
+    return this.entries.size === 0;
+  }
+
   private prune(now: number): void {
     for (const [state, entry] of this.entries) {
       if (entry.expiresAt <= now) this.entries.delete(state);

@@ -7,6 +7,7 @@ import type {
 } from '@ai-sdk/mcp';
 import { randomBytes } from 'crypto';
 import type { McpOAuthSettings } from '../domain/mcp-config.schema';
+import { applyAuthorizationParams } from '../domain/apply-authorization-params';
 import type { McpOAuthRecord } from '../domain/mcp-oauth.types';
 import { resolveOAuthClientInformation } from '../domain/resolve-oauth-client-information';
 import type { McpOAuthRepository } from './mcp-oauth.repository';
@@ -137,7 +138,10 @@ export class McpOAuthProvider implements OAuthClientProvider {
   }
 
   redirectToAuthorization(authorizationUrl: URL): void {
-    this.authorizationUrl = authorizationUrl;
+    this.authorizationUrl = applyAuthorizationParams(
+      authorizationUrl,
+      this.settings?.authorizationParams,
+    );
   }
 
   invalidateCredentials(scope: InvalidationScope): Promise<void> {

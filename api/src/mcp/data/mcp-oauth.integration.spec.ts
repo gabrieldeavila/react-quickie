@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as net from 'net';
 import * as os from 'os';
 import * as path from 'path';
 import type { WorkspaceService } from 'src/workspace/data/workspace.service';
@@ -19,6 +20,15 @@ import { McpOAuthError, McpOAuthService } from './mcp-oauth.service';
 import { McpServersService } from './mcp-servers.service';
 import { McpTrustRepository } from './mcp-trust.repository';
 import { McpSignInRequestsService } from './mcp-sign-in-requests.service';
+import { OAuthCallbackListener } from './oauth-callback-listener';
+
+async function freePort(): Promise<number> {
+  const server = net.createServer();
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const { port } = server.address() as net.AddressInfo;
+  await new Promise<void>((resolve) => server.close(() => resolve()));
+  return port;
+}
 
 // The whole sign-in against a local fake: 401 → needs-auth → start →
 // browser callback → tokens → connected. Only the browser is simulated.
@@ -31,6 +41,12 @@ describe('MCP OAuth sign-in (fake server, temp dirs)', () => {
   let servers: McpServersService;
   let pool: McpClientPoolService;
   let oauth: McpOAuthService;
+
+  const writeConfig = (mcpServers: Record<string, unknown>) =>
+    fs.writeFileSync(
+      path.join(process.env.DOTY_DATA_DIR!, 'mcp.json'),
+      JSON.stringify({ mcpServers }),
+    );
 
   const httpServer = async (): Promise<UsableMcpServer> => {
     const { active } = await servers.resolve(root);
@@ -68,10 +84,17 @@ describe('MCP OAuth sign-in (fake server, temp dirs)', () => {
       new McpTrustRepository(),
     );
     pool = new McpClientPoolService(providers, new McpSignInRequestsService());
-    oauth = new McpOAuthService(servers, providers, repository, pool);
+    oauth = new McpOAuthService(
+      servers,
+      providers,
+      repository,
+      pool,
+      new OAuthCallbackListener(),
+    );
   });
 
   afterEach(async () => {
+    await oauth.onModuleDestroy();
     await pool.onModuleDestroy();
     await fake.close();
     process.env = { ...savedEnv };
@@ -135,6 +158,48 @@ describe('MCP OAuth sign-in (fake server, temp dirs)', () => {
     const server = await httpServer();
     expect(await pool.getTools(root, server)).toBeNull();
     expect(pool.snapshot(root, server)?.status).toBe('needs-auth');
+  });
+
+  it('adds the configured sign-in parameters to the authorization URL', async () => {
+    writeConfig({
+      fake: {
+        type: 'http',
+        url: fake.mcpUrl,
+        oauth: {
+          authorizationParams: { access_type: 'offline', state: 'forged' },
+        },
+      },
+    });
+
+    const started = await oauth.start(root, 'fake');
+    if (started.status !== 'redirect') throw new Error('expected a redirect');
+    const url = new URL(started.authorizationUrl);
+    expect(url.searchParams.get('access_type')).toBe('offline');
+    expect(url.searchParams.get('state')).not.toBe('forged');
+  });
+
+  it('receives the callback on the fixed port, then stops listening', async () => {
+    const port = await freePort();
+    process.env.DOTY_OAUTH_CALLBACK_PORT = String(port);
+
+    const started = await oauth.start(root, 'fake');
+    if (started.status !== 'redirect') throw new Error('expected a redirect');
+    const url = new URL(started.authorizationUrl);
+    const callback = new URL(url.searchParams.get('redirect_uri')!);
+    expect(callback.port).toBe(String(port));
+
+    // The browser comes back to the dedicated listener.
+    callback.searchParams.set('code', FAKE_CODE);
+    callback.searchParams.set('state', url.searchParams.get('state')!);
+    const page = await fetch(callback);
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain('Signed in');
+
+    const tools = await pool.getTools(root, await httpServer());
+    expect(Object.keys(tools ?? {})).toEqual(['echo']);
+
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await expect(fetch(callback)).rejects.toThrow();
   });
 
   it('only signs in http servers', async () => {

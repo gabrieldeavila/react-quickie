@@ -36,7 +36,7 @@ const saveInputSchema = z.object({
   config: z
     .record(z.string(), z.unknown())
     .describe(
-      'The mcp.json entry. stdio: { command, args?, env? }. http/sse: { type: "http" | "sse", url, headers?, oauth? } where oauth is { clientId?, clientSecret?, scope? } for providers without dynamic client registration (e.g. Google); the user signs in from the prompt Doty shows. Optional: disabled, enabledTools, disabledTools. Write secrets as "${ENV_VAR}", never literally. "approval" is ignored: only the user sets it.',
+      'The mcp.json entry. stdio: { command, args?, env? }. http/sse: { type: "http" | "sse", url, headers?, oauth? } where oauth is { clientId?, clientSecret?, scope?, authorizationParams? } for providers without dynamic client registration (e.g. Google, which also needs authorizationParams { access_type: "offline", prompt: "consent" } to stay signed in); the user signs in from the prompt Doty shows. Optional: disabled, enabledTools, disabledTools. Write secrets as "${ENV_VAR}", never literally. "approval" is ignored: only the user sets it.',
     ),
   replace: z
     .boolean()

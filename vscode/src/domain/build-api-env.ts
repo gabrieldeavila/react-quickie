@@ -2,6 +2,8 @@ export type DotySettings = {
   defaultModel?: string;
   openaiCompatibleBaseUrl?: string;
   openaiCompatibleModels?: string;
+  /** Fixed port for MCP OAuth callbacks; 0 or unset uses the API's port. */
+  mcpOAuthCallbackPort?: number;
 };
 
 export type ApiEnvInput = {
@@ -32,6 +34,9 @@ export function buildApiEnv(input: ApiEnvInput): Record<string, string> {
       DOTY_DEFAULT_MODEL: input.settings.defaultModel,
       OPENAI_COMPATIBLE_BASE_URL: input.settings.openaiCompatibleBaseUrl,
       OPENAI_COMPATIBLE_MODELS: input.settings.openaiCompatibleModels,
+      DOTY_OAUTH_CALLBACK_PORT: input.settings.mcpOAuthCallbackPort
+        ? String(input.settings.mcpOAuthCallbackPort)
+        : undefined,
     }),
     ELECTRON_RUN_AS_NODE: '1',
     NODE_ENV: 'production',

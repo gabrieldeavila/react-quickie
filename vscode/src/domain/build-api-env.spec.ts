@@ -25,6 +25,13 @@ describe('buildApiEnv', () => {
     });
   });
 
+  it('passes the OAuth callback port unless it is 0', () => {
+    const withPort = (mcpOAuthCallbackPort: number) =>
+      buildApiEnv({ ...input, settings: { ...input.settings, mcpOAuthCallbackPort } });
+    expect(withPort(41736).DOTY_OAUTH_CALLBACK_PORT).toBe('41736');
+    expect(withPort(0)).not.toHaveProperty('DOTY_OAUTH_CALLBACK_PORT');
+  });
+
   it('keeps the host env but never an inherited token', () => {
     const env = buildApiEnv(input);
     expect(env.PATH).toBe('/usr/bin');

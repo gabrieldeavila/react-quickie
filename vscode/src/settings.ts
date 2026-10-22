@@ -9,5 +9,6 @@ export function readSettings(): DotySettings {
     defaultModel: config.get<string>('defaultModel'),
     openaiCompatibleBaseUrl: config.get<string>('openaiCompatible.baseUrl'),
     openaiCompatibleModels: config.get<string>('openaiCompatible.models'),
+    mcpOAuthCallbackPort: config.get<number>('mcp.oauthCallbackPort'),
   };
 }
