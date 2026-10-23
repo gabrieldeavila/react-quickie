@@ -59,6 +59,11 @@ describe('McpToolsService (stdio integration)', () => {
 
     const { tools, approvalPolicies } = await service.getToolkit(ROOT);
 
+    // Optional parameters stay optional with providers that default to strict.
+    expect(Object.values(tools).every((tool) => tool.strict === false)).toBe(
+      true,
+    );
+
     expect(Object.keys(tools).sort()).toEqual([
       'mcp__fake__big_output',
       'mcp__fake__echo',

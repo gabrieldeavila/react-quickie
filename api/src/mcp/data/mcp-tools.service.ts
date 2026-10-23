@@ -20,7 +20,18 @@ export type McpToolkit = {
 
 const EMPTY_TOOLKIT: McpToolkit = { tools: {}, approvalPolicies: {} };
 
-/** Caps each result, and calls `onSuccess` after a call that worked. */
+/** MCP tools are plain function tools; `strict` is a function-tool field. */
+function nonStrict(tool: Tool): Tool {
+  return { ...tool, strict: false } as Tool;
+}
+
+/**
+ * Caps each result, and calls `onSuccess` after a call that worked. MCP
+ * schemas come from third-party servers and often have optional parameters
+ * with a `null` default, which strict mode can't express: providers that
+ * default to strict tools (OpenAI's Responses API) then make the model
+ * invent a value (`""`, `"all"`). `strict: false` lets it leave them out.
+ */
 function wrapAll(
   tools: Record<string, Tool>,
   onSuccess: () => void,
@@ -28,7 +39,7 @@ function wrapAll(
   return Object.fromEntries(
     Object.entries(tools).map(([name, tool]) => [
       name,
-      withSuccessCallback(withCappedOutput(tool), onSuccess),
+      nonStrict(withSuccessCallback(withCappedOutput(tool), onSuccess)),
     ]),
   );
 }
