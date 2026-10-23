@@ -15,6 +15,8 @@ import { SubagentToolService } from 'src/subagents/data/subagent-tool.service';
 import { McpToolsService } from 'src/mcp/data/mcp-tools.service';
 import { McpSetupToolsService } from 'src/mcp/data/mcp-setup-tools.service';
 import { InstructionToolsService } from 'src/instructions/data/instruction-tools.service';
+import { ApprovalRulesRepository } from 'src/approvals/data/approval-rules.repository';
+import { applyApprovalRules } from 'src/approvals/domain/apply-approval-rules';
 import {
   buildToolApprovalMap,
   type ToolApprovalMap,
@@ -33,6 +35,7 @@ export class ChatService {
     private readonly mcpToolsService: McpToolsService,
     private readonly instructionToolsService: InstructionToolsService,
     private readonly mcpSetupToolsService: McpSetupToolsService,
+    private readonly approvalRulesRepository: ApprovalRulesRepository,
   ) {}
 
   /**
@@ -45,12 +48,13 @@ export class ChatService {
     toolApproval: ToolApprovalMap;
   }> {
     const root = this.contextService.get('root');
-    const [mcp, git, subagents] = await Promise.all([
+    const [mcp, git, subagents, approvalRules] = await Promise.all([
       root
         ? this.mcpToolsService.getToolkit(root)
         : { tools: {}, approvalPolicies: {} },
       this.gitToolsService.createToolkit(root),
       this.subagentToolService.createToolkit(root),
+      this.approvalRulesRepository.read(),
     ]);
     const instructions = this.instructionToolsService.createToolkit(root);
     const mcpSetup = root
@@ -67,15 +71,21 @@ export class ChatService {
         ...mcpSetup.tools,
       },
       // The subagent policy applies even without a root: a write-capable
-      // agent must never run unasked.
-      toolApproval: buildToolApprovalMap({
-        ...mcp.approvalPolicies,
-        ...(root ? this.bashToolsService.createApprovalPolicies(root) : {}),
-        ...git.approvalPolicies,
-        ...subagents.approvalPolicies,
-        ...instructions.approvalPolicies,
-        ...mcpSetup.approvalPolicies,
-      }),
+      // agent must never run unasked. User rules only turn `ask` into `never`.
+      toolApproval: buildToolApprovalMap(
+        applyApprovalRules(
+          {
+            ...mcp.approvalPolicies,
+            ...(root ? this.bashToolsService.createApprovalPolicies(root) : {}),
+            ...git.approvalPolicies,
+            ...subagents.approvalPolicies,
+            ...instructions.approvalPolicies,
+            ...mcpSetup.approvalPolicies,
+          },
+          approvalRules.rules,
+          root ? this.approvalRulesRepository.projectKey(root) : undefined,
+        ),
+      ),
     };
   }
 
