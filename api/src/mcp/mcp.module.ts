@@ -11,14 +11,21 @@ import { McpSignInRequestsService } from './data/mcp-sign-in-requests.service';
 import { McpServersService } from './data/mcp-servers.service';
 import { McpSetupToolsService } from './data/mcp-setup-tools.service';
 import { McpToolsService } from './data/mcp-tools.service';
+import { McpToolApprovalService } from './data/mcp-tool-approval.service';
 import { McpTrustRepository } from './data/mcp-trust.repository';
 import { OAuthCallbackListener } from './data/oauth-callback-listener';
 import { McpController } from './delivery/mcp.controller';
 import { McpOAuthController } from './delivery/mcp-oauth.controller';
 import { McpSignInController } from './delivery/mcp-sign-in.controller';
+import { McpToolApprovalController } from './delivery/mcp-tool-approval.controller';
 
 @Module({
-  controllers: [McpController, McpOAuthController, McpSignInController],
+  controllers: [
+    McpController,
+    McpOAuthController,
+    McpSignInController,
+    McpToolApprovalController,
+  ],
   providers: [
     McpConfigRepository,
     McpTrustRepository,
@@ -34,6 +41,7 @@ import { McpSignInController } from './delivery/mcp-sign-in.controller';
     McpSignInRequestsService,
     McpConnectionCheckService,
     OAuthCallbackListener,
+    McpToolApprovalService,
   ],
   exports: [McpToolsService, McpSetupToolsService],
 })

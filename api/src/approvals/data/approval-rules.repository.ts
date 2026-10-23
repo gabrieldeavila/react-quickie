@@ -4,6 +4,7 @@ import * as path from 'path';
 import { getAppPaths } from 'src/config/app-paths';
 import { writeFileAtomic } from 'src/common/fs/write-file-atomic';
 import { toRealPath } from 'src/workspace/data/to-real-path';
+import { ApprovalRulesInvalidError } from '../domain/approval-rules-invalid.error';
 import { EMPTY_APPROVAL_RULES } from '../domain/approval-rule.types';
 import {
   addApprovalRule,
@@ -91,11 +92,7 @@ export class ApprovalRulesRepository {
   ): Promise<void> {
     const run = this.writes.then(async () => {
       const { rules, error } = await this.read();
-      if (error) {
-        throw new Error(
-          `${this.filePath()} is invalid (${error}) Fix or delete it first.`,
-        );
-      }
+      if (error) throw new ApprovalRulesInvalidError(this.filePath(), error);
       const next = change(rules);
       if (next === rules) return;
       await writeFileAtomic(

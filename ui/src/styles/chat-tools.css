@@ -111,6 +111,7 @@
 }
 
 .bash-approval-button--approve,
+.bash-approval-button--always,
 .bash-approval-button--reject,
 .bash-approval-button--revise {
   border-color: var(--chat-border-strong);
@@ -119,10 +120,27 @@
 }
 
 .bash-approval-button--approve:hover,
+.bash-approval-button--always:hover,
 .bash-approval-button--reject:hover,
 .bash-approval-button--revise:hover {
   border-color: color-mix(in srgb, var(--chat-accent) 58%, var(--chat-border));
   background: color-mix(in srgb, var(--chat-accent) 8%, var(--chat-surface));
+}
+
+.bash-approval-button--always {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bash-approval-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+  transform: none;
+}
+
+.bash-approval-error {
+  margin: 0 0 10px;
 }
 
 @media (max-width: 520px) {

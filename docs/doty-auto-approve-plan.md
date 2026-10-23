@@ -1,6 +1,6 @@
 # Doty — auto-approve tool calls
 
-Status: Phase 1 done · Date: 2026-10-22 · Base: `feat/mcp-setup-and-oauth` (or `main` once it is merged) · Branch: `feat/auto-approve`
+Status: Phases 1–2 done · Date: 2026-10-22 · Base: `feat/mcp-setup-and-oauth` (or `main` once it is merged) · Branch: `feat/auto-approve`
 
 Today every risky tool call stops the agent and waits for **Allow / Deny** on an approval card: bash commands the policy flags, `create_commit`, MCP tools (unless set to `never` in `/mcp`), write-capable subagents, `save_instruction`, `save_mcp_server`/`remove_mcp_server`. A long task can ask the same question many times ("run `pnpm test`?", "call `list_drive_items`?"). This plan adds two ways to stop asking, without losing the guardrails:
 
@@ -85,17 +85,17 @@ Status: done · Last commit: `feat(approvals): user approval rules that skip the
 
 ### Checklist
 
-- [ ] API `approvals/delivery/approvals.controller.ts`: `GET /approvals/rules?root=`, `POST /approvals/rules` `{ root, scope: 'global' | 'project', tool, command? }`, `DELETE /approvals/rules` (same body). Validate `tool` (known tool name or glob) and `command` with `normalizeCommand`; refuse a bash rule without a command (no "allow all bash").
-- [ ] Decide per tool what "Always allow" saves (pure `ui/.../domain/rule-from-approval.ts` +spec):
+- [x] API `approvals/delivery/approvals.controller.ts`: `GET /approvals/rules?root=`, `POST /approvals/rules` `{ root, scope: 'global' | 'project', tool, command? }`, `DELETE /approvals/rules` (same body). Validate `tool` (known tool name or glob) and `command` with `normalizeCommand`; refuse a bash rule without a command (no "allow all bash").
+- [x] Decide per tool what "Always allow" saves (pure `ui/.../domain/rule-from-approval.ts` +spec):
   - bash → `{ tool, command }` with the exact normalized command; hide the button when `normalizeCommand` returns `undefined` (chained/redirected command).
   - MCP tool → `{ tool: 'mcp__server__tool' }`, plus a secondary "all tools of this server" (`mcp__server__*`).
   - others (`create_commit`, `save_instruction`, `run_subagent` with `writes`, `save_mcp_server`…) → `{ tool }`.
-- [ ] Card UI ([ToolApprovalCard.tsx](../ui/src/features/chat/components/ToolApprovalCard.tsx)): split **Allow** into **Allow once** / **Always allow ▾** (menu: "in this project" / "everywhere"). Saving the rule also approves the current call.
-- [ ] `ui/src/features/approvals/` (`api/`, `hooks/useApprovalRules.ts`) for the calls.
-- [ ] Decide (see Decisions): MCP "Always allow" writes `approval: never` to `mcp.json` (one place for MCP) **or** a rule (one place for everything).
+- [x] Card UI ([ToolApprovalCard.tsx](../ui/src/features/chat/components/ToolApprovalCard.tsx)): split **Allow** into **Allow once** / **Always allow ▾** (menu: "in this project" / "everywhere"). Saving the rule also approves the current call.
+- [x] `ui/src/features/approvals/` (`api/`, `hooks/useApprovalRules.ts`) for the calls.
+- [x] Decide (see Decisions): MCP "Always allow" writes `approval: never` to `mcp.json` (one place for MCP) **or** a rule (one place for everything).
 
 ### Progress
-Status: not started · Last commit: — · Done: — · Left: all · Notes: —
+Status: done · Last commit: `feat(approvals): "Always allow" on the approval card` · Done: all · Left: — · Notes: Decision 1 taken as recommended: MCP goes to `mcp.json` through `POST /mcp/tools/always-allow { root, tool, wholeServer }` ([mcp-tool-approval.service.ts](../api/src/mcp/data/mcp-tool-approval.service.ts)). It maps the exposed name back to server/tool on the API, because sanitized or hashed names can't be inverted in the UI. The MCP menu has no project/everywhere choice: the setting lives in the server's own file. Rule validation lives in `approvals/domain/validate-rule-request.ts`; the only glob accepted is `mcp__<server>__*`, so `*` and `create_*` are refused. A broken rules file answers 409. The UI hook is `useAlwaysAllow` (save, then approve; on error it shows the message and doesn't approve). List/remove calls (`useApprovalRules`) are left for Phase 4, which is the first phase that needs them. Endpoints were smoke-tested with curl against a temp data dir; the card wasn't clicked through in a browser.
 
 ---
 

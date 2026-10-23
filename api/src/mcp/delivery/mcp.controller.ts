@@ -4,7 +4,6 @@ import {
   ConflictException,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -18,8 +17,6 @@ import {
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { ContextService } from 'src/common/context/context.service';
 import { McpConfigConflictError } from '../domain/mcp-config-conflict.error';
-import { McpConfigUntrustedError } from '../domain/mcp-config-untrusted.error';
-import { McpConfigEditError } from '../domain/mcp-config-text';
 import {
   isUsableServer,
   type McpConfigSource,
@@ -31,6 +28,7 @@ import {
 } from '../data/mcp-config-edits.service';
 import { McpServersService } from '../data/mcp-servers.service';
 import { McpServerCatalogService } from '../data/mcp-server-catalog.service';
+import { toMcpEditHttpError } from './to-mcp-edit-http-error';
 
 type EditBody = {
   scope?: unknown;
@@ -178,15 +176,7 @@ export class McpController {
           ...(await this.list()),
         });
       }
-      if (error instanceof McpConfigUntrustedError) {
-        throw new ForbiddenException(error.message);
-      }
-      if (error instanceof McpConfigEditError) {
-        throw error.kind === 'not-found'
-          ? new NotFoundException(error.message)
-          : new BadRequestException(error.message);
-      }
-      throw error;
+      throw toMcpEditHttpError(error);
     }
   }
 
