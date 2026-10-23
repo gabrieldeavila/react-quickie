@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AutoApproveChip } from "@/features/approvals/components/AutoApproveChip";
 import { InstructionsPicker } from "@/features/instructions/components/InstructionsPicker";
 import { ModelPicker } from "@/features/models/components/ModelPicker";
 import { UsageBadges } from "@/features/usage/components/UsageBadges";
@@ -12,13 +13,14 @@ type ComposerToolbarProps = {
   children: ReactNode;
 };
 
-/** Bottom row of the message box: instructions and model pickers, usage, send. */
+/** Bottom row of the message box: instructions, model, auto mode, usage, send. */
 export function ComposerToolbar({ children }: ComposerToolbarProps) {
   const {
     conversationModel,
     instructions,
     instructionSelection,
     setIsInstructionsDialogOpen,
+    autoApprove,
   } = useChatBaseContext();
   const { renderedMessages } = useChatServicesContext();
 
@@ -37,6 +39,10 @@ export function ComposerToolbar({ children }: ComposerToolbarProps) {
           modelRef={conversationModel.modelRef}
           options={conversationModel.options}
           selectModel={conversationModel.selectModel}
+        />
+        <AutoApproveChip
+          isOn={autoApprove.isOn}
+          onToggle={autoApprove.toggle}
         />
       </div>
       <div className="chat-composer__trailing">

@@ -13,6 +13,7 @@ export function createChatTransport({
   instructionIds,
   model,
   modelTarget,
+  autoApprove,
 }: CreateChatTransportParams) {
   return new DefaultChatTransport({
     api: getChatApiUrl(),
@@ -23,6 +24,7 @@ export function createChatTransport({
           instructions?: string[];
           model?: string;
           compaction?: unknown;
+          autoApprove?: boolean;
         };
         if (body.messages) {
           // Before buildRequestMessages, which drops the data-compaction part.
@@ -38,6 +40,7 @@ export function createChatTransport({
         if (model) body.model = model;
         body.root = projectRoot;
         body.instructions = instructionIds;
+        body.autoApprove = autoApprove;
         options.body = JSON.stringify(body);
       }
       return authFetch(url, options);

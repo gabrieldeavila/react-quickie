@@ -12,6 +12,7 @@ const useSendMessage = () => {
     sendMessageRef,
     clearInput,
     pastedImages,
+    autoApprove,
   } = useChatBaseContext();
 
   const handleSendMessage = useCallback(async () => {
@@ -32,7 +33,9 @@ const useSendMessage = () => {
     const title = trimmedInput || "Image";
     const conversationId: string =
       activeConversationIdRef.current ??
-      (await history.createConversation(title));
+      (await history.createConversation(title, {
+        autoApprove: autoApprove.draft,
+      }));
     activeConversationIdRef.current = conversationId;
     pendingConversationIdRef.current = conversationId;
     const persistedParts = [
@@ -48,6 +51,7 @@ const useSendMessage = () => {
     clearInput();
   }, [
     activeConversationIdRef,
+    autoApprove.draft,
     clearError,
     clearInput,
     history,

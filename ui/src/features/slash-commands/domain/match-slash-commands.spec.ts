@@ -21,6 +21,7 @@ describe("matchSlashCommands", () => {
       "instructions",
       "new",
       "settings",
+      "auto",
       "forms",
       "new-api",
       "settings-sync",

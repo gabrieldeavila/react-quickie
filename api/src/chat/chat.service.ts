@@ -17,6 +17,7 @@ import { McpSetupToolsService } from 'src/mcp/data/mcp-setup-tools.service';
 import { InstructionToolsService } from 'src/instructions/data/instruction-tools.service';
 import { ApprovalRulesRepository } from 'src/approvals/data/approval-rules.repository';
 import { applyApprovalRules } from 'src/approvals/domain/apply-approval-rules';
+import { applyAutoMode } from 'src/approvals/domain/apply-auto-mode';
 import {
   buildToolApprovalMap,
   type ToolApprovalMap,
@@ -71,19 +72,25 @@ export class ChatService {
         ...mcpSetup.tools,
       },
       // The subagent policy applies even without a root: a write-capable
-      // agent must never run unasked. User rules only turn `ask` into `never`.
+      // agent must never run unasked. User rules, then auto mode, only turn
+      // `ask` into `never`.
       toolApproval: buildToolApprovalMap(
-        applyApprovalRules(
-          {
-            ...mcp.approvalPolicies,
-            ...(root ? this.bashToolsService.createApprovalPolicies(root) : {}),
-            ...git.approvalPolicies,
-            ...subagents.approvalPolicies,
-            ...instructions.approvalPolicies,
-            ...mcpSetup.approvalPolicies,
-          },
-          approvalRules.rules,
-          root ? this.approvalRulesRepository.projectKey(root) : undefined,
+        applyAutoMode(
+          applyApprovalRules(
+            {
+              ...mcp.approvalPolicies,
+              ...(root
+                ? this.bashToolsService.createApprovalPolicies(root)
+                : {}),
+              ...git.approvalPolicies,
+              ...subagents.approvalPolicies,
+              ...instructions.approvalPolicies,
+              ...mcpSetup.approvalPolicies,
+            },
+            approvalRules.rules,
+            root ? this.approvalRulesRepository.projectKey(root) : undefined,
+          ),
+          { enabled: this.contextService.get('autoApprove') === true },
         ),
       ),
     };

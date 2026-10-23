@@ -1,10 +1,33 @@
-import { resolve, sep } from 'path';
+import { assessCommandRisk, type CommandRisk } from './command-risk';
+import { referencesOutsideWorkspace } from './workspace-paths';
 
 export type CommandDecision = 'allowed' | 'approval_required' | 'blocked';
 
 export interface CommandAssessment {
   decision: CommandDecision;
   reason?: string;
+  /** Set when `decision` is `approval_required`. */
+  risk?: CommandRisk;
+}
+
+const MUTATION_PATTERNS: RegExp[] = [
+  /\b(rm|mv|chmod|chown|install|touch|mkdir|rmdir|git\s+(reset|clean|checkout|push)|npm\s+(install|uninstall)|pnpm\s+(install|remove|add)|yarn\s+(add|remove)|docker|curl|wget)\b/i,
+  /\bgit\s+branch\b[^;&|]*\s-D\b/,
+  /\bgit\s+stash\s+(drop|clear)\b/i,
+  /\bfind\b[^;&|]*\s-(delete|exec|execdir|ok)\b/i,
+  /\|\s*(ba|z)?sh\b/i,
+];
+
+function askFor(
+  command: string,
+  rootPath: string,
+  reason: string,
+): CommandAssessment {
+  return {
+    decision: 'approval_required',
+    reason,
+    risk: assessCommandRisk(command, rootPath),
+  };
 }
 
 export function assessCommand(
@@ -29,16 +52,12 @@ export function assessCommand(
     };
   }
 
-  if (
-    /\b(rm|mv|chmod|chown|install|touch|mkdir|rmdir|git\s+(reset|clean|checkout)|npm\s+(install|uninstall)|pnpm\s+(install|remove|add)|yarn\s+(add|remove)|docker|curl|wget)\b/i.test(
+  if (MUTATION_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return askFor(
       normalized,
-    )
-  ) {
-    return {
-      decision: 'approval_required',
-      reason:
-        'The command may change files, install dependencies or reach external resources.',
-    };
+      rootPath,
+      'The command may change files, install dependencies or reach external resources.',
+    );
   }
 
   // Pipelines and conditional chaining are safe for read-only commands. The
@@ -49,45 +68,20 @@ export function assessCommand(
   );
 
   if (/[<>]|\$\(|`/.test(commandWithoutSafeNullRedirects)) {
-    return {
-      decision: 'approval_required',
-      reason: 'The command redirects to a file or runs a nested command.',
-    };
+    return askFor(
+      normalized,
+      rootPath,
+      'The command redirects to a file or runs a nested command.',
+    );
   }
 
-  const outsideWorkspace = referencesOutsideWorkspace(normalized, rootPath);
-  if (outsideWorkspace) {
-    return {
-      decision: 'approval_required',
-      reason: 'The command may access files outside the current workspace.',
-    };
+  if (referencesOutsideWorkspace(normalized, rootPath)) {
+    return askFor(
+      normalized,
+      rootPath,
+      'The command may access files outside the current workspace.',
+    );
   }
 
   return { decision: 'allowed' };
-}
-
-function referencesOutsideWorkspace(
-  command: string,
-  rootPath: string,
-): boolean {
-  const absolutePaths: string[] =
-    command.match(/(?:^|[\s])\/(?:[^\s"']+)/g) ?? [];
-  const resolvedRoot = resolve(rootPath);
-
-  return absolutePaths.some((value) => {
-    const candidatePath = value.trim();
-
-    // `/dev/null` is a harmless standard stream target commonly used by
-    // read-only inspection commands (`2>/dev/null`). It is not workspace
-    // access and must not trigger an approval request.
-    if (/^\/?dev\/null(?:\b|["'])/.test(candidatePath)) {
-      return false;
-    }
-
-    const candidate = resolve(candidatePath);
-    return (
-      candidate !== resolvedRoot &&
-      !candidate.startsWith(`${resolvedRoot}${sep}`)
-    );
-  });
 }

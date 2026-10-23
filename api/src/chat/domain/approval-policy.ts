@@ -6,9 +6,13 @@ import type { ToolApprovalStatus } from 'ai';
  */
 export type ApprovalDecision = 'never' | 'ask' | 'always-deny';
 
+/** On an `ask`: `destructive` still asks in auto mode, `changes` may run unasked. */
+export type ApprovalRisk = 'changes' | 'destructive';
+
 export type ApprovalVerdict = {
   decision: ApprovalDecision;
   reason?: string;
+  risk?: ApprovalRisk;
 };
 
 /** Decides, per tool call, whether a tool may run. Input is the parsed call input. */

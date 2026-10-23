@@ -7,6 +7,7 @@ import type { ProjectContext } from "./chat.interface";
 import type { ConversationModel } from "@/features/models/hooks/useConversationModel";
 import type { InstructionsState } from "@/features/instructions/hooks/useInstructions";
 import type { InstructionSelection } from "@/features/instructions/hooks/useInstructionSelection";
+import type { ConversationAutoApprove } from "@/features/approvals/hooks/useConversationAutoApprove";
 
 export type ChatBaseContextValue = {
   isRootModalOpen: boolean;
@@ -34,6 +35,8 @@ export type ChatBaseContextValue = {
   conversationModel: ConversationModel;
   instructions: InstructionsState;
   instructionSelection: InstructionSelection;
+  /** Auto mode of the active conversation. */
+  autoApprove: ConversationAutoApprove;
 } & ReturnType<typeof useChat> &
   ReturnType<typeof useChatComposer>;
 

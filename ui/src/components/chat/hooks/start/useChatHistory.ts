@@ -9,7 +9,10 @@ import {
   listMessagesByConversation,
   migrateDefaultConversationTitles,
 } from "../../../../lib/chatDb";
-import type { ChatConversation } from "~types/interface/chat-db.interface";
+import type {
+  ChatConversation,
+  NewConversationFields,
+} from "~types/interface/chat-db.interface";
 import type { UseChatHistoryResult } from "~types/interface/history.interface";
 import { ACTIVE_CHAT_STORAGE_KEY } from "~types/consts/chat.const";
 import { saveAssistantMessage } from "@/features/chat/api/save-assistant-message";
@@ -108,10 +111,14 @@ export const useChatHistory = (): UseChatHistoryResult => {
   }, [conversations]);
 
   const createConversation = useCallback(
-    async (firstUserMessage?: string): Promise<string> => {
+    async (
+      firstUserMessage?: string,
+      initial?: NewConversationFields,
+    ): Promise<string> => {
       const conversation = await ensureConversation(
         undefined,
         firstUserMessage,
+        initial,
       );
       await reloadConversations();
       setActiveConversationId(conversation.id);

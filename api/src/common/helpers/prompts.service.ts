@@ -46,6 +46,7 @@ export class PromptsService {
       toolNames,
       selectedInstructions: selected.map(formatInstructionMessage),
       projectMemory: await this.readProjectMemory(root),
+      autoApprove: this.contextService.get('autoApprove') === true,
       environment: await this.environmentService.describe({
         modelRef: model.ref,
         toolsAvailable,

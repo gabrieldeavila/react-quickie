@@ -16,17 +16,28 @@ describe("buildSlashCommands", () => {
       "instructions",
       "new",
       "settings",
+      "auto",
       "forms",
       "landing-pages",
     ]);
-    expect(commands[4]).toEqual({
+    expect(commands[5]).toEqual({
       kind: "instruction",
       key: "instruction:forms",
       name: "forms",
       description: "Forms",
       isActive: true,
     });
-    expect(commands[5]).toMatchObject({ isActive: false });
+    expect(commands[6]).toMatchObject({ isActive: false });
+  });
+
+  it("describes /auto by what it will do", () => {
+    const describe = (autoApprove: boolean) =>
+      buildSlashCommands([], [], autoApprove).find(
+        ({ name }) => name === "auto",
+      )?.description;
+
+    expect(describe(false)).toMatch(/^Auto-approve/);
+    expect(describe(true)).toBe("Turn auto-approve off");
   });
 
   it("keeps keys unique even when an instruction reuses a built-in name", () => {

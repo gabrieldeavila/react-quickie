@@ -1,0 +1,43 @@
+.auto-approve-chip--on {
+  color: var(--chat-warning-strong);
+  border-color: color-mix(in srgb, var(--chat-warning-strong) 45%, transparent);
+}
+
+.auto-approve-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid
+    color-mix(in srgb, var(--chat-warning-strong) 45%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--chat-warning) 12%, transparent);
+  color: var(--chat-text);
+  font-size: 0.8rem;
+}
+
+.auto-approve-banner__icon {
+  flex-shrink: 0;
+  color: var(--chat-warning-strong);
+}
+
+.auto-approve-banner__text {
+  flex: 1;
+  margin: 0;
+  min-width: 0;
+}
+
+.auto-approve-banner__off {
+  flex-shrink: 0;
+  border: 1px solid var(--chat-border-strong);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--chat-text);
+  font-size: 0.78rem;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.auto-approve-banner__off:hover {
+  background: var(--chat-hover);
+}

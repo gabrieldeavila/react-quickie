@@ -38,6 +38,8 @@ function toBadRequest(error: unknown): unknown {
     return {
       root: body.root as string | undefined,
       instructionIds: readInstructionIds(body.instructions),
+      // Only a literal `true` turns auto mode on.
+      autoApprove: body.autoApprove === true,
     };
   }),
 )

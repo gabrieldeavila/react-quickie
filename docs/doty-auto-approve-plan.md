@@ -1,6 +1,6 @@
 # Doty — auto-approve tool calls
 
-Status: Phases 1–2 done · Date: 2026-10-22 · Base: `feat/mcp-setup-and-oauth` (or `main` once it is merged) · Branch: `feat/auto-approve`
+Status: Phases 1–3 done · Date: 2026-10-22 · Base: `feat/mcp-setup-and-oauth` (or `main` once it is merged) · Branch: `feat/auto-approve`
 
 Today every risky tool call stops the agent and waits for **Allow / Deny** on an approval card: bash commands the policy flags, `create_commit`, MCP tools (unless set to `never` in `/mcp`), write-capable subagents, `save_instruction`, `save_mcp_server`/`remove_mcp_server`. A long task can ask the same question many times ("run `pnpm test`?", "call `list_drive_items`?"). This plan adds two ways to stop asking, without losing the guardrails:
 
@@ -105,14 +105,14 @@ Status: done · Last commit: `feat(approvals): "Always allow" on the approval ca
 
 ### Checklist
 
-- [ ] Split bash `approval_required` by risk in `command-policy.ts` (+spec): `destructive` (`rm`, `git reset|clean|checkout`, `git push --force`, `chmod/chown`, `docker`, writes outside the workspace) vs `changes` (installs, `mkdir`, `touch`, redirects into the workspace, network). Keep the public decision values; add a `risk` field.
-- [ ] `domain/apply-auto-mode.ts` (+spec): when the request has `autoApprove: true`, `ask` → `never` **except** the always-ask list: bash `destructive`, `create_commit`, `remove_mcp_server`, and any tool the user marked "always ask" (Phase 4). `always-deny` unchanged.
-- [ ] Request: the UI sends `autoApprove` in the chat body ([chat.transport.helper.ts](../ui/src/helpers/chat.transport.helper.ts)); [chat.controller.ts](../api/src/chat/delivery/chat.controller.ts) stores it in the request context; `getToolkit()` applies auto mode after rules.
-- [ ] UI: a toggle chip in the composer ("Auto-approve"), off by default, **per conversation** (stored with the conversation in IndexedDB, like the selected instructions), reset for new conversations; a visible banner while on; `/auto` slash command to toggle.
-- [ ] The prompt's tool guide tells the model that auto mode is on and that destructive actions still ask (so it doesn't assume silence = consent for them).
+- [x] Split bash `approval_required` by risk in `command-policy.ts` (+spec): `destructive` (`rm`, `git reset|clean|checkout`, `git push --force`, `chmod/chown`, `docker`, writes outside the workspace) vs `changes` (installs, `mkdir`, `touch`, redirects into the workspace, network). Keep the public decision values; add a `risk` field.
+- [x] `domain/apply-auto-mode.ts` (+spec): when the request has `autoApprove: true`, `ask` → `never` **except** the always-ask list: bash `destructive`, `create_commit`, `remove_mcp_server`, and any tool the user marked "always ask" (Phase 4). `always-deny` unchanged.
+- [x] Request: the UI sends `autoApprove` in the chat body ([chat.transport.helper.ts](../ui/src/helpers/chat.transport.helper.ts)); [chat.controller.ts](../api/src/chat/delivery/chat.controller.ts) stores it in the request context; `getToolkit()` applies auto mode after rules.
+- [x] UI: a toggle chip in the composer ("Auto-approve"), off by default, **per conversation** (stored with the conversation in IndexedDB, like the selected instructions), reset for new conversations; a visible banner while on; `/auto` slash command to toggle.
+- [x] The prompt's tool guide tells the model that auto mode is on and that destructive actions still ask (so it doesn't assume silence = consent for them).
 
 ### Progress
-Status: not started · Last commit: — · Done: — · Left: all · Notes: —
+Status: done · Last commit: `feat(approvals): auto mode per conversation` · Done: all · Left: — · Notes: Risk rating is `bash/domain/command-risk.ts` (+spec); path checks moved to `workspace-paths.ts`. Destructive also covers `mv`, `git restore`, `git branch -D`, `git stash drop|clear`, `find -delete|-exec`, piping into a shell, and anything touching outside the workspace (absolute, `~`, `../`) unless every step is a plain read (`ls`, `cat`, `grep`…); we can't tell all writes from reads, so the default is destructive. The policy now also asks for `git push`, `git branch -D`, `git stash drop`, `find -delete|-exec` and `| sh`, which used to run unasked. The verdict carries the risk (`ApprovalVerdict.risk`). Always-ask list adds `save_mcp_server` to Decision 4: saving a server starts its command, which would bypass the destructive-bash floor. `applyAutoMode` takes `alwaysAsk` globs, passed empty until Phase 4. The prompt part is a separate per-request system message after project memory (`build-auto-mode-notice.ts`), not the static tool guide, so prompt caching keeps working. UI: `features/approvals/` (`pick-auto-approve`, `useConversationAutoApprove`, `AutoApproveChip`, `AutoApproveBanner`), Dexie v6 `conversations.autoApprove`. Before the first message there's no conversation, so the toggle is a draft the new conversation is created with; `/new` and switching conversations start off. Subagents don't get auto mode yet (their asks still bounce to the parent, which applies it): Phase 4. Not clicked through in a browser.
 
 ---
 

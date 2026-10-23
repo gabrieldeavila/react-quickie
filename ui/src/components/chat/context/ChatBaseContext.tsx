@@ -9,6 +9,7 @@ import { shouldPersistAssistantMessage } from "@/features/chat/domain/to-assista
 import { useConversationModel } from "@/features/models/hooks/useConversationModel";
 import { useInstructions } from "@/features/instructions/hooks/useInstructions";
 import { useInstructionSelection } from "@/features/instructions/hooks/useInstructionSelection";
+import { useConversationAutoApprove } from "@/features/approvals/hooks/useConversationAutoApprove";
 import { savedAnInstruction } from "@/features/instructions/domain/saved-an-instruction";
 import { useHostSelection } from "@/host/hooks/useHostSelection";
 import { readProjectContext } from "../../../helpers/chat.helper";
@@ -51,6 +52,11 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
     available: instructions.instructions,
     reloadConversations: history.reloadConversations,
   });
+  const autoApprove = useConversationAutoApprove({
+    conversationId: history.activeConversationId,
+    stored: history.activeConversation?.autoApprove,
+    reloadConversations: history.reloadConversations,
+  });
 
   const activeConversationId = useMemo(
     () => history.activeConversationId,
@@ -74,12 +80,14 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
         instructionIds: instructionSelection.selectedIds,
         model: conversationModel.modelRef,
         modelTarget: conversationModel.target,
+        autoApprove: autoApprove.isOn,
       }),
     [
       projectContext.reference,
       instructionSelection.selectedIds,
       conversationModel.modelRef,
       conversationModel.target,
+      autoApprove.isOn,
     ],
   );
 
@@ -135,6 +143,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       conversationModel,
       instructions,
       instructionSelection,
+      autoApprove,
       ...chat,
       ...chatComposer,
     }),
@@ -152,6 +161,7 @@ export function ChatBaseProvider({ children }: { children: ReactNode }) {
       conversationModel,
       instructions,
       instructionSelection,
+      autoApprove,
       chat,
       chatComposer,
     ],

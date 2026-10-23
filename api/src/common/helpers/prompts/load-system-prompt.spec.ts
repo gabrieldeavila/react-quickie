@@ -104,4 +104,24 @@ describe('loadSystemPrompt', () => {
       'Project memory from the current workspace:\n- stack: "nest"',
     );
   });
+
+  it('adds the auto mode notice after memory and before the environment', async () => {
+    const contents = (await load({ autoApprove: true })).map(
+      ({ content }) => content,
+    );
+    const notice = contents.findIndex((text) =>
+      text.startsWith('Auto mode is on'),
+    );
+
+    expect(notice).toBe(contents.length - 2);
+    expect(notice).toBeGreaterThan(
+      contents.findIndex((text) => text.startsWith('Project memory')),
+    );
+  });
+
+  it('has no auto mode notice by default', async () => {
+    const contents = (await load()).map(({ content }) => content);
+
+    expect(contents.some((text) => text.startsWith('Auto mode'))).toBe(false);
+  });
 });
