@@ -2,7 +2,7 @@ import type { SystemModelMessage } from 'ai';
 
 const AUTO_MODE_NOTICE = [
   'Auto mode is on for this conversation: the user pre-approved tool calls that would normally ask, so they run without a prompt.',
-  'Destructive commands (deleting, moving or overwriting files, `git reset`/`checkout`/`clean`, force-push, `docker`, writes outside the workspace), commits, and adding or removing MCP servers still ask. For those, only the user’s answer is consent; no answer or silence is not.',
+  'These still ask: deleting files (`delete_file`, `rm`); destructive commands (`mv`, `git reset`/`checkout`/`clean`, `docker`, writes outside the workspace); anything that sends data to another machine (`git push`, `ssh`/`scp`, `curl`/`wget` uploads or URLs built from variables); MCP tools their server does not mark read-only; commits; saving instructions; and adding or removing MCP servers. For those, only the user’s answer is consent; no answer or silence is not.',
   'Auto mode is not permission to widen the task: do only what the user asked, and say what you ran.',
 ].join('\n');
 

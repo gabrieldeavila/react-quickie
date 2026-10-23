@@ -13,6 +13,7 @@ const tools = [
       properties: { text: { type: 'string' } },
       required: ['text'],
     },
+    annotations: { title: 'Echo', readOnlyHint: true },
   },
   {
     name: 'big.output',

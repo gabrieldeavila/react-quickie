@@ -8,6 +8,7 @@ import {
 } from '@ai-sdk/mcp';
 import type { Tool } from 'ai';
 import { isUnauthorizedError } from '../domain/is-unauthorized-error';
+import { withMcpAnnotations } from '../domain/mcp-tool-annotations';
 import type { UsableMcpServer } from '../domain/mcp-server.types';
 import { findSignInUrl } from '../domain/sign-in-url';
 import { allowUrlElicitations } from './allow-url-elicitations';
@@ -86,7 +87,10 @@ export function openMcpClient(
     );
     if (isTransport(transport)) watchClose(transport, input.onLost);
     try {
-      return { client, tools: await client.tools() };
+      // Not `client.tools()`: it drops the annotations auto mode reads.
+      const definitions = await client.listTools();
+      const tools = client.toolsFromDefinitions(definitions);
+      return { client, tools: withMcpAnnotations(tools, definitions.tools) };
     } catch (error) {
       await client.close().catch(() => undefined);
       throw error;

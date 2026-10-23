@@ -11,7 +11,8 @@ describe('buildAutoModeNotice', () => {
 
     expect(notice.role).toBe('system');
     expect(notice.content).toMatch(/Auto mode is on/);
-    expect(notice.content).toMatch(/Destructive commands .* still ask/);
+    expect(notice.content).toMatch(/still ask: deleting files/);
+    expect(notice.content).toMatch(/sends data to another machine/);
     expect(notice.content).toMatch(/silence is not/);
   });
 });

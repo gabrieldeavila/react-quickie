@@ -69,8 +69,10 @@ describe('McpToolsService (stdio integration)', () => {
       'mcp__fake__echo',
     ]);
     expect(approvalPolicies.mcp__fake__echo({})).toEqual({ decision: 'never' });
+    // No hints: auto mode keeps asking. `echo` is read-only.
     expect(approvalPolicies.mcp__fake__big_output({})).toEqual({
       decision: 'ask',
+      risk: 'destructive',
     });
 
     const result = await tools.mcp__fake__echo.execute!(

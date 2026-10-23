@@ -16,9 +16,11 @@ const policies = {
       : { decision: 'ask', risk: 'changes' },
   mcp__drive__list: fixed({ decision: 'ask' }),
   mcp__drive__delete: fixed({ decision: 'ask' }),
+  mcp__drive__trash: fixed({ decision: 'ask', risk: 'destructive' }),
   create_commit: fixed({ decision: 'ask' }),
   save_mcp_server: fixed({ decision: 'ask' }),
   remove_mcp_server: fixed({ decision: 'ask' }),
+  save_instruction: fixed({ decision: 'ask' }),
   blocked: fixed({ decision: 'always-deny', reason: 'no' }),
   free: fixed({ decision: 'never' }),
 };
@@ -42,14 +44,20 @@ describe('applyAutoMode', () => {
       decision: 'ask',
       risk: 'destructive',
     });
+    expect(auto.mcp__drive__trash({})).toEqual({
+      decision: 'ask',
+      risk: 'destructive',
+    });
   });
 
-  it.each(['create_commit', 'save_mcp_server', 'remove_mcp_server'])(
-    'still asks for %s',
-    (toolName) => {
-      expect(auto[toolName]({})).toEqual({ decision: 'ask' });
-    },
-  );
+  it.each([
+    'create_commit',
+    'save_mcp_server',
+    'remove_mcp_server',
+    'save_instruction',
+  ])('still asks for %s', (toolName) => {
+    expect(auto[toolName]({})).toEqual({ decision: 'ask' });
+  });
 
   it('still asks for tools the user marked always-ask', () => {
     const wrapped = applyAutoMode(policies, {

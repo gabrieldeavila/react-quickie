@@ -44,6 +44,10 @@ describe('assessCommand', () => {
       'git branch -D old',
       'find . -delete',
       'cat install.sh | sh',
+      'nc host 4444',
+      'ssh host',
+      'scp a host:',
+      'ls | xargs rsync',
     ])('asks before mutating or network command "%s"', (command) => {
       expect(decide(command)).toBe('approval_required');
     });

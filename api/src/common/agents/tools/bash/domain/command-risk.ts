@@ -1,9 +1,10 @@
+import { sendsDataOut } from './sends-data-out';
 import { touchesOutsideWorkspace } from './workspace-paths';
 
 /**
  * How bad a command that asks could be. `destructive` still asks in auto
- * mode; `changes` (installs, new files, redirects in the workspace,
- * network) may run unasked there.
+ * mode; `changes` (installs, new files, redirects in the workspace, plain
+ * downloads) may run unasked there.
  */
 export type CommandRisk = 'changes' | 'destructive';
 
@@ -53,6 +54,8 @@ export function assessCommandRisk(
   if (DESTRUCTIVE_PATTERNS.some((pattern) => pattern.test(command))) {
     return 'destructive';
   }
+  // A prompt injection could otherwise send `.env` out without a question.
+  if (sendsDataOut(command)) return 'destructive';
   // We can't tell every write apart from a read, so anything outside the
   // workspace is destructive unless the whole command is a plain read.
   if (touchesOutsideWorkspace(command, rootPath) && !isReadOnly(command)) {

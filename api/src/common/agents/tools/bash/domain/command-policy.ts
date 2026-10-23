@@ -1,4 +1,5 @@
 import { assessCommandRisk, type CommandRisk } from './command-risk';
+import { REMOTE_TOOLS } from './sends-data-out';
 import { referencesOutsideWorkspace } from './workspace-paths';
 
 export type CommandDecision = 'allowed' | 'approval_required' | 'blocked';
@@ -16,6 +17,7 @@ const MUTATION_PATTERNS: RegExp[] = [
   /\bgit\s+stash\s+(drop|clear)\b/i,
   /\bfind\b[^;&|]*\s-(delete|exec|execdir|ok)\b/i,
   /\|\s*(ba|z)?sh\b/i,
+  REMOTE_TOOLS,
 ];
 
 function askFor(

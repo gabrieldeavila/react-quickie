@@ -22,6 +22,7 @@ import {
   buildToolApprovalMap,
   type ToolApprovalMap,
 } from './domain/approval-policy';
+import { createStorageApprovalPolicies } from './domain/storage-approval-policies';
 
 @Injectable()
 export class ChatService {
@@ -79,6 +80,7 @@ export class ChatService {
           applyApprovalRules(
             {
               ...mcp.approvalPolicies,
+              ...createStorageApprovalPolicies(),
               ...(root
                 ? this.bashToolsService.createApprovalPolicies(root)
                 : {}),

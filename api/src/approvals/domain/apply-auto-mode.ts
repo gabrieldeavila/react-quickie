@@ -6,17 +6,21 @@ import {
   REMOVE_MCP_SERVER_TOOL,
   SAVE_MCP_SERVER_TOOL,
 } from 'src/mcp/domain/mcp-setup-tool-names';
+import { SAVE_INSTRUCTION_TOOL } from 'src/instructions/domain/instruction-tool-names';
 import { matchesToolGlob } from 'src/subagents/domain/tool-glob';
 
 /**
  * Tools that ask even in auto mode. `save_mcp_server` is here because
  * saving a server starts its command: approving it unasked would run any
- * command, past the destructive-bash floor.
+ * command, past the destructive-bash floor. `save_instruction` because an
+ * instruction lands in later conversations' prompts: a prompt injection
+ * saved unasked would outlive this conversation.
  */
 export const AUTO_MODE_ALWAYS_ASK: readonly string[] = [
   'create_commit',
   REMOVE_MCP_SERVER_TOOL,
   SAVE_MCP_SERVER_TOOL,
+  SAVE_INSTRUCTION_TOOL,
 ];
 
 export type AutoModeOptions = {
