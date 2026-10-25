@@ -6,14 +6,8 @@
  * rgba() on the web and follows the theme in VS Code.
  */
 :root {
-  --chat-font: var(
-    --vscode-font-family,
-    "Cabinet Grotesk",
-    "Satoshi",
-    "Inter",
-    system-ui,
-    sans-serif
-  );
+  /* Same brand font in VS Code: the editor's UI font reads oversized at our rem sizes. */
+  --chat-font: "Cabinet Grotesk", "Satoshi", "Inter", system-ui, sans-serif;
 
   /* Text */
   --chat-text: var(--vscode-foreground, #e7edf5);
