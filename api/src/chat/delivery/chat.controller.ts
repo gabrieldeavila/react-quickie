@@ -59,7 +59,8 @@ export class ChatController {
   ) {
     const model = this.selectModel(body.model);
     const compaction = this.parseCompaction(body.compaction);
-    const { tools, toolApproval } = await this.chatService.getToolkit();
+    const { tools, toolApproval, approvalUsage } =
+      await this.chatService.getToolkit();
     const { uiMessages, modelMessages } = await this.prepareMessages(
       body.messages,
       tools,
@@ -72,6 +73,7 @@ export class ChatController {
       messages: modelMessages,
       tools,
       toolApproval,
+      approvalUsage,
       summary: compaction?.summary,
       abortSignal,
     });

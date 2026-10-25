@@ -47,6 +47,13 @@ export function getDeniedReason(part: ToolPartLike): string | undefined {
   return typeof reason === "string" && reason.trim() ? reason : undefined;
 }
 
+/** Why auto mode's intent check ran a call: only those approvals carry a reason. */
+export function getAutoApprovedReason(part: ToolPartLike): string | undefined {
+  if (part.approval?.approved !== true) return undefined;
+  const reason = part.approval.reason;
+  return typeof reason === "string" && reason.trim() ? reason : undefined;
+}
+
 const BASH_TOOL = "run_bash_command";
 const SUBAGENT_TOOL = "run_subagent";
 

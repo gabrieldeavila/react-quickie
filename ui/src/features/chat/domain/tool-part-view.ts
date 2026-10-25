@@ -1,6 +1,10 @@
 import type { ToolStatus } from "~types/interface/chat.interface";
 import { isLegacyApprovalRequestOutput } from "./legacy-approval";
-import { getDeniedReason, isDeniedToolPart } from "./tool-approval";
+import {
+  getAutoApprovedReason,
+  getDeniedReason,
+  isDeniedToolPart,
+} from "./tool-approval";
 
 type ToolOutput = {
   success?: boolean;
@@ -67,5 +71,7 @@ export function formatToolOutput(part: ToolPartView): string {
   }
   if (part.state === "output-error") return part.errorText ?? "";
   if (isLegacyApprovalRequestOutput(part.output)) return LEGACY_APPROVAL_TEXT;
-  return stringifyResult(part.output);
+  const result = stringifyResult(part.output);
+  const autoApproved = getAutoApprovedReason(part);
+  return autoApproved ? `Auto-approved: ${autoApproved}\n\n${result}` : result;
 }

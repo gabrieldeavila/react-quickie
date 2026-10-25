@@ -1,7 +1,10 @@
 import { readUIMessageStream, streamText, tool, type UIMessage } from 'ai';
 import { MockLanguageModelV4, simulateReadableStream } from 'ai/test';
 import { z } from 'zod/v4';
-import { buildToolApprovalMap } from 'src/chat/domain/approval-policy';
+import {
+  buildToolApprovalMap,
+  type IntentConfirmer,
+} from 'src/chat/domain/approval-policy';
 import { createBashApprovalPolicy } from 'src/common/agents/tools/bash/domain/bash-approval-policy';
 import { assessCommand } from 'src/common/agents/tools/bash/domain/command-policy';
 import { applyAutoMode } from '../domain/apply-auto-mode';
@@ -33,7 +36,11 @@ const toolCallStream = (command: string) => ({
   }),
 });
 
-async function runCommand(command: string, enabled: boolean) {
+async function runCommand(
+  command: string,
+  enabled: boolean,
+  confirmIntent?: IntentConfirmer,
+) {
   const execute = jest.fn(() => Promise.resolve('ran'));
   const toolApproval = buildToolApprovalMap(
     applyAutoMode(
@@ -44,12 +51,13 @@ async function runCommand(command: string, enabled: boolean) {
       },
       { enabled },
     ),
+    confirmIntent,
   );
   const result = streamText({
     model: new MockLanguageModelV4({
       doStream: [toolCallStream(command)] as never,
     }),
-    messages: [{ role: 'user', content: 'go' }],
+    messages: [{ role: 'user', content: 'remove the dist folder' }],
     tools: {
       run_bash_command: tool({
         inputSchema: z.object({ command: z.string() }),
@@ -66,8 +74,8 @@ async function runCommand(command: string, enabled: boolean) {
     last = message;
   }
   const part = last?.parts.find((p) => p.type.startsWith('tool-')) as
-    { state: string } | undefined;
-  return { state: part?.state, execute };
+    { state: string; approval?: { reason?: string } } | undefined;
+  return { state: part?.state, approval: part?.approval, execute };
 }
 
 describe('auto mode (streamText loop)', () => {
@@ -98,6 +106,36 @@ describe('auto mode (streamText loop)', () => {
     'git push',
   ])('still asks for "%s", which sends data out', async (command) => {
     const { state, execute } = await runCommand(command, true);
+
+    expect(state).toBe('approval-requested');
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('runs a destructive command the user asked for, with the reason', async () => {
+    const confirm = jest.fn<
+      ReturnType<IntentConfirmer>,
+      Parameters<IntentConfirmer>
+    >(() => Promise.resolve('You asked to remove dist.'));
+    const { state, approval, execute } = await runCommand(
+      'rm -rf dist',
+      true,
+      confirm,
+    );
+
+    expect(state).toBe('output-available');
+    expect(approval?.reason).toBe('You asked to remove dist.');
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(confirm.mock.calls[0][0]).toMatchObject({
+      toolName: 'run_bash_command',
+      input: { command: 'rm -rf dist' },
+      messages: [{ role: 'user', content: 'remove the dist folder' }],
+    });
+  });
+
+  it('asks the user when the intent check says no', async () => {
+    const { state, execute } = await runCommand('rm -rf dist', true, () =>
+      Promise.resolve(undefined),
+    );
 
     expect(state).toBe('approval-requested');
     expect(execute).not.toHaveBeenCalled();

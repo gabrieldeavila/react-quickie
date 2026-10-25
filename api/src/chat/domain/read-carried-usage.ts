@@ -11,7 +11,7 @@ export type CarriedUsage = {
   extraUsage?: ExtraUsage[];
 };
 
-const SOURCES = new Set<unknown>(['subagent', 'compaction']);
+const SOURCES = new Set<unknown>(['subagent', 'compaction', 'approval']);
 
 function toExtraUsage(value: unknown): ExtraUsage | undefined {
   if (!value || typeof value !== 'object') return undefined;

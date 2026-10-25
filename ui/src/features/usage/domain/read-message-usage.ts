@@ -15,7 +15,7 @@ function isTokenUsage(value: unknown): value is TokenUsage {
   return isCount(usage.inputTokens) && isCount(usage.outputTokens);
 }
 
-const SOURCES = new Set<unknown>(["subagent", "compaction"]);
+const SOURCES = new Set<unknown>(["subagent", "compaction", "approval"]);
 
 function isExtraUsage(value: unknown): value is ExtraUsage {
   if (!value || typeof value !== "object") return false;

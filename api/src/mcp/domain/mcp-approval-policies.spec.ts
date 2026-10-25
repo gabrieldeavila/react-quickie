@@ -35,7 +35,7 @@ describe('createMcpApprovalPolicies', () => {
     expect(policies.mcp__db__query({})).toEqual({ decision: 'never' });
     expect(policies.mcp__gh__create({})).toEqual({
       decision: 'ask',
-      risk: 'destructive',
+      risk: 'changes',
     });
     expect(policies.mcp__gh__read({})).toEqual({ decision: 'never' });
   });
@@ -48,7 +48,7 @@ describe('createMcpApprovalPolicies', () => {
     expect(policies.mcp__x__t({})).toMatchObject({ decision: 'ask' });
   });
 
-  it('rates an ask by the server hints', () => {
+  it('rates an ask by its hints and name', () => {
     const policies = createMcpApprovalPolicies(
       [
         {

@@ -27,6 +27,47 @@ describe('buildToolApprovalMap', () => {
     expect(seen).toEqual([{ command: 'ls' }]);
   });
 
+  it('asks the intent check first for a confirmable ask', async () => {
+    const confirm = jest.fn(() => Promise.resolve('You asked to delete it.'));
+    const map = buildToolApprovalMap(
+      {
+        rm: () => ({ decision: 'ask', risk: 'destructive', confirmable: true }),
+      },
+      confirm,
+    );
+    const messages = [{ role: 'user' as const, content: 'delete x' }];
+
+    await expect(map.rm({ path: 'x' }, { messages })).resolves.toEqual({
+      type: 'approved',
+      reason: 'You asked to delete it.',
+    });
+    expect(confirm).toHaveBeenCalledWith({
+      toolName: 'rm',
+      input: { path: 'x' },
+      messages,
+    });
+  });
+
+  it('falls back to the user when the intent check says no', async () => {
+    const map = buildToolApprovalMap(
+      { rm: () => ({ decision: 'ask', confirmable: true }) },
+      () => Promise.resolve(undefined),
+    );
+
+    await expect(map.rm({}, { messages: [] })).resolves.toBe('user-approval');
+  });
+
+  it('never runs the intent check on a plain ask', () => {
+    const confirm = jest.fn(() => Promise.resolve('yes'));
+    const map = buildToolApprovalMap(
+      { commit: () => ({ decision: 'ask' }) },
+      confirm,
+    );
+
+    expect(map.commit({}, { messages: [] })).toBe('user-approval');
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
   it('returns an empty map when no tool has a policy', () => {
     expect(buildToolApprovalMap({})).toEqual({});
   });

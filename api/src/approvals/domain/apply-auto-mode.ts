@@ -29,19 +29,16 @@ export type AutoModeOptions = {
   alwaysAsk?: string[];
 };
 
-function keepsAsking(
-  toolName: string,
-  verdict: ApprovalVerdict,
-  alwaysAsk: string[],
-): boolean {
-  if (verdict.risk === 'destructive') return true;
+function alwaysAsks(toolName: string, alwaysAsk: string[]): boolean {
   if (AUTO_MODE_ALWAYS_ASK.includes(toolName)) return true;
   return alwaysAsk.some((pattern) => matchesToolGlob(pattern, toolName));
 }
 
 /**
  * Auto mode turns `ask` into `never`, except destructive calls and the
- * always-ask tools. `never` and `always-deny` pass through unchanged.
+ * always-ask tools. A destructive call is marked `confirmable`: the user's
+ * own request may still approve it. `never` and `always-deny` pass through
+ * unchanged.
  */
 export function applyAutoMode(
   policies: Record<string, ToolApprovalPolicy>,
@@ -55,8 +52,9 @@ export function applyAutoMode(
       (input: unknown): ApprovalVerdict => {
         const verdict = policy(input);
         if (verdict.decision !== 'ask') return verdict;
-        return keepsAsking(toolName, verdict, alwaysAsk)
-          ? verdict
+        if (alwaysAsks(toolName, alwaysAsk)) return verdict;
+        return verdict.risk === 'destructive'
+          ? { ...verdict, confirmable: true }
           : { decision: 'never' };
       },
     ]),

@@ -39,14 +39,16 @@ describe('applyAutoMode', () => {
     expect(auto.mcp__drive__list({})).toEqual({ decision: 'never' });
   });
 
-  it('still asks for destructive commands', () => {
+  it('still asks for destructive commands, which the user may confirm', () => {
     expect(auto.run_bash_command({ command: 'rm -rf x' })).toEqual({
       decision: 'ask',
       risk: 'destructive',
+      confirmable: true,
     });
     expect(auto.mcp__drive__trash({})).toEqual({
       decision: 'ask',
       risk: 'destructive',
+      confirmable: true,
     });
   });
 
@@ -67,6 +69,18 @@ describe('applyAutoMode', () => {
 
     expect(wrapped.mcp__drive__delete({})).toEqual({ decision: 'ask' });
     expect(wrapped.mcp__drive__list({})).toEqual({ decision: 'never' });
+  });
+
+  it('never marks an always-ask tool confirmable, even when destructive', () => {
+    const wrapped = applyAutoMode(policies, {
+      enabled: true,
+      alwaysAsk: ['mcp__drive__trash'],
+    });
+
+    expect(wrapped.mcp__drive__trash({})).toEqual({
+      decision: 'ask',
+      risk: 'destructive',
+    });
   });
 
   it('never relaxes a deny and keeps never', () => {

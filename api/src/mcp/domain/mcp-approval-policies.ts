@@ -32,7 +32,7 @@ export function createMcpApprovalPolicies(
         ) {
           return [name, NEVER];
         }
-        const risk = mcpToolRisk(annotations);
+        const risk = mcpToolRisk(tool, annotations);
         return [name, () => ({ decision: 'ask', risk })];
       },
     ),

@@ -12,7 +12,6 @@ import {
 } from "@/features/slash-commands/domain/slash-menu-ids";
 import { useSlashCommands } from "@/features/slash-commands/hooks/useSlashCommands";
 import { ModelNotices } from "@/features/models/components/ModelNotices";
-import { AutoApproveBanner } from "@/features/approvals/components/AutoApproveBanner";
 import { CHAT_INPUT_ID } from "./chat-input-id";
 import { ComposerToolbar } from "./ComposerToolbar";
 import { PastedImages } from "./PastedImages";
@@ -30,7 +29,6 @@ export function ChatComposer() {
     attachmentError,
     rejectAttachments,
     conversationModel,
-    autoApprove,
   } = useChatBaseContext();
   const imagesAllowed =
     conversationModel.resolved?.model.supportsImages ?? true;
@@ -101,11 +99,6 @@ export function ChatComposer() {
     <div className="chat-input-section">
       <div className="chat-composer">
         <PastedImages />
-        {autoApprove.isOn ? (
-          <AutoApproveBanner
-            onTurnOff={() => void autoApprove.setAutoApprove(false)}
-          />
-        ) : null}
         <ModelNotices
           unavailableModel={conversationModel.unavailableModel}
           resolved={conversationModel.resolved}

@@ -15,7 +15,7 @@ export const AutoApproveChip = memo(({ isOn, onToggle }: Props) => (
     aria-pressed={isOn}
     title={
       isOn
-        ? "Auto-approve is on for this conversation. Click to turn it off."
+        ? "Auto-approve is on: tool calls run without asking. Deletes, shares, destructive commands, commits and MCP server changes still ask. Click to turn it off."
         : "Auto-approve tool calls in this conversation (destructive ones still ask)."
     }
   >

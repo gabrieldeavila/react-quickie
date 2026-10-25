@@ -68,6 +68,19 @@ export class ProviderRegistryService {
     );
   }
 
+  /**
+   * Model that checks risky calls against the user's request in auto mode:
+   * `DOTY_APPROVAL_MODEL` → `DOTY_SUMMARY_MODEL` → conversation model.
+   */
+  selectForApproval(conversation: SelectedModel): SelectedModel {
+    return (
+      firstAvailableModel(this.providers, [
+        this.env.DOTY_APPROVAL_MODEL,
+        this.env.DOTY_SUMMARY_MODEL,
+      ]) ?? conversation
+    );
+  }
+
   languageModel(selected: SelectedModel): LanguageModel {
     return this.registry.languageModel(selected.ref as `${string}:${string}`);
   }
