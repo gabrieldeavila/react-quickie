@@ -31,7 +31,10 @@
   min-width: 36px;
 }
 
+/* Fixed to the viewport (top/right set inline), so it floats over the dialog
+   instead of extending its scroll area. */
 .mcp-row-menu__panel {
+  position: fixed;
   min-width: 160px;
 }
 

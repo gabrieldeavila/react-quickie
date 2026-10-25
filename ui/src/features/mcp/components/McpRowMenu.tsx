@@ -1,5 +1,6 @@
 import { FiMoreHorizontal } from "react-icons/fi";
 import { usePopoverPanel } from "@/components/primitives/usePopoverPanel";
+import { useRowMenuPlacement } from "../hooks/useRowMenuPlacement";
 
 export type McpRowAction = {
   key: string;
@@ -14,6 +15,7 @@ type Props = { serverName: string; actions: McpRowAction[] };
 export function McpRowMenu({ serverName, actions }: Props) {
   const { isOpen, toggle, closeAndRestoreFocus, containerRef, panelRef } =
     usePopoverPanel();
+  const placement = useRowMenuPlacement(isOpen, containerRef, panelRef);
 
   return (
     <div className="chat-mode-popover" ref={containerRef}>
@@ -30,7 +32,8 @@ export function McpRowMenu({ serverName, actions }: Props) {
       {isOpen ? (
         <div
           ref={panelRef}
-          className="chat-mode-popover__panel chat-mode-popover__panel--left mcp-row-menu__panel"
+          className="chat-mode-popover__panel mcp-row-menu__panel"
+          style={placement ?? { visibility: "hidden" }}
           role="menu"
           aria-label={`Actions for ${serverName}`}
         >
