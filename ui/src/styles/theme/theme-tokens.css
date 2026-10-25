@@ -29,7 +29,10 @@
   --chat-bg: var(--vscode-sideBar-background, #0b0f14);
   --chat-surface: var(--vscode-editorWidget-background, rgba(15, 20, 28, 0.72));
   --chat-surface-strong: var(--vscode-editor-background, rgba(18, 24, 33, 0.94));
-  --chat-popover-bg: var(--vscode-editorWidget-background, rgba(18, 22, 29, 0.98));
+  --chat-popover-bg: var(--vscode-editorWidget-background, rgb(18, 22, 29));
+  /* Theme widget colours may be translucent; layer them over the opaque bg. */
+  --chat-popover-fill: linear-gradient(var(--chat-popover-bg), var(--chat-popover-bg)),
+    var(--chat-bg);
   --chat-popover-border: var(--vscode-editorWidget-border, rgba(255, 255, 255, 0.09));
   --chat-modal-bg: var(--vscode-editorWidget-background, rgba(10, 14, 20, 0.96));
   --chat-backdrop: var(--vscode-widget-shadow, rgba(3, 6, 10, 0.6));

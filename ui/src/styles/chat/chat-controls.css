@@ -131,7 +131,7 @@
   padding: 10px;
   border: 1px solid var(--chat-popover-border);
   border-radius: 12px;
-  background: var(--chat-popover-bg);
+  background: var(--chat-popover-fill);
   box-shadow: var(--chat-shadow);
   display: grid;
   gap: 6px;
