@@ -7,8 +7,10 @@
   box-sizing: border-box;
 }
 
+/* The dialog scrolls as a whole; a scrolling list would clip the row menu. */
 .mcp-server-list--dialog {
   max-height: none;
+  overflow: visible;
 }
 
 .mcp-server-row__dot {
