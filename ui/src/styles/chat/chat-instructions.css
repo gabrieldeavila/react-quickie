@@ -2,6 +2,14 @@
 
 .instructions-panel {
   width: min(340px, calc(100vw - 32px));
+  /* Only the list scrolls; the panel itself stays fixed-height. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.instructions-panel > * {
+  flex-shrink: 0;
 }
 
 .instructions-panel__search {
@@ -24,7 +32,8 @@
 .instructions-panel__list {
   display: grid;
   gap: 2px;
-  max-height: min(260px, 45vh);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
 }
 
