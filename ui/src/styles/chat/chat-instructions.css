@@ -37,6 +37,26 @@
   overflow-y: auto;
 }
 
+.instructions-panel__list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.instructions-panel__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.instructions-panel__list::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--chat-scrollbar);
+  background-clip: padding-box;
+}
+
+.instructions-panel__list:hover::-webkit-scrollbar-thumb {
+  background: var(--chat-scrollbar-hover);
+  background-clip: padding-box;
+}
+
 .instructions-panel__empty {
   margin: 0;
   padding: 6px 10px;
