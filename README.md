@@ -135,7 +135,7 @@ O prompt de sistema é montado nesta ordem (partes fixas primeiro, para o cache 
 Um modelo sem suporte a ferramentas é avisado de que não pode ler nem alterar arquivos. Para ver o prompt que uma requisição receberia:
 
 ```bash
-pnpm --dir api prompt:preview -- --root /caminho/do/projeto --model anthropic:claude-sonnet-5-5 --instructions forms,landing-pages
+pnpm --dir api prompt:preview -- --root /caminho/do/projeto --model anthropic:claude-sonnet-5-5 --instructions refactoring,react-architecture
 ```
 
 `DOTY_CLIENT` (`vscode` ou `web`, padrão `web`) diz ao agente em qual interface ele roda; a extensão VSCode define `vscode`.
@@ -154,7 +154,7 @@ starters:
 Orientações em Markdown…
 ```
 
-- embutidas: [api/src/instructions/builtin](api/src/instructions/builtin) — `landing-pages`, `forms`, `refactoring`, `design-system`, `react-architecture`, `backend-architecture`, `clean-architecture` (somente leitura);
+- embutidas: [api/src/instructions/builtin](api/src/instructions/builtin) — `refactoring`, `react-architecture`, `backend-architecture`, `clean-architecture` (somente leitura);
 - globais: `$DOTY_DATA_DIR/instructions/*.md` (padrão `~/.doty/instructions/`);
 - por projeto: `<raiz do projeto>/.doty/instructions/*.md` (podem ir para o Git e ser compartilhadas com o time).
 

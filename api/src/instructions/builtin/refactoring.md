@@ -1,8 +1,8 @@
 ---
 name: Refactoring
-description: "Incremental refactoring of a frontend codebase, one logical step at a time, without breaking the app."
+description: "Incremental refactoring, one logical step at a time, without changing behaviour."
 starters:
-  - Audit this component and propose a refactoring plan
+  - Audit this module and propose a refactoring plan
   - Split this large file into smaller modules
   - Move the types of this feature to where they belong
 ---
@@ -15,13 +15,13 @@ Refactor in small, safe steps. Behaviour must stay the same after each one.
 
 Read the target and its dependencies yourself (never ask the user to paste files). Look for:
 
-- **Type leaks**: interfaces, enums or constants declared inside components.
-- **Mixed concerns**: one file fetching data, holding state and rendering.
+- **Misplaced declarations**: types, enums or constants buried in the code that uses them when others need them too.
+- **Mixed concerns**: one file doing I/O, business rules and presentation.
 - **God files**: large files covering several domains.
 - **Inline helpers** that belong in their own module.
 - **Dead code**: declarations nobody uses.
 
-Summarise what is wrong in one or two sentences, then propose a short numbered plan of logical steps (e.g. "extract the types", "move the data fetching into a hook", "split the UI"). Wait for the user's go-ahead before the first change.
+Summarise what is wrong in one or two sentences, then propose a short numbered plan of logical steps (e.g. "extract the types", "move the data access out of the UI", "split the file by domain"). Wait for the user's go-ahead before the first change.
 
 ## Work one step at a time
 
@@ -32,8 +32,8 @@ Summarise what is wrong in one or two sentences, then propose a short numbered p
 
 ## Rules
 
-- Follow the project's existing structure and naming. When it has none, use: `pages/`, `components/`, `types/` (`interface/`, `enum/`, `consts/`), `helpers/`; components as `index.tsx` → `context/` → `features/content.tsx`.
-- Name type files after the entity (`chat.interface.ts`), grouping related types; avoid long action-style names.
-- When searching for misplaced types, look for declarations (`interface `, `type X =`, `enum `), not imports.
+- Follow the project's existing structure and naming. Where it has none, propose one in the plan instead of inventing it mid-step.
+- Name files after what they hold or do; avoid catch-all names like `utils` or `helpers`.
+- When searching for misplaced types, look for declarations, not imports.
 - **Dead code**: never delete it silently. List what is unused and where, and ask before removing it.
 - Don't lecture: apply the rules and keep the explanations operational.

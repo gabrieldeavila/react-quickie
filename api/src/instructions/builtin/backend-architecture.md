@@ -1,6 +1,6 @@
 ---
 name: Backend architecture
-description: "NestJS-style backends: feature modules, skinny controllers, validated DTOs, DI and safe data access."
+description: "Layered backends: feature modules, skinny controllers, validated input, DI and safe data access."
 starters:
   - Add a new feature module with a CRUD endpoint
   - Review this service for layering and security problems
@@ -9,7 +9,7 @@ starters:
 
 # Backend architecture
 
-Written for NestJS; the principles apply to any backend framework. Follow the project's existing structure first.
+Framework-agnostic; examples use NestJS terms. Follow the project's existing structure and framework idioms first.
 
 ## Layers
 
@@ -20,14 +20,14 @@ Written for NestJS; the principles apply to any backend framework. Follow the pr
 
 ## Feature modules
 
-- Organise by domain, not by file type: `modules/orders/` holds `dto/`, `entities/`, `orders.controller.ts`, `orders.service.ts`, `orders.module.ts`. No global `controllers/` or `services/` folders.
+- Organise by domain, not by file type: each feature holds its own controller, service, input types and data access, rather than global `controllers/` or `services/` folders.
 - Export only what other modules need; import the module rather than reaching into it. Avoid circular dependencies.
 
 ## Boundaries
 
-- Validate every input at the edge: DTOs with `class-validator`, a global `ValidationPipe` with `whitelist: true` (or the project's schema validation).
+- Validate every input at the edge with the project's schema validation, stripping unknown fields.
 - Never trust client payloads or external API responses.
-- Map domain errors to HTTP errors in one place (exception filters); never leak stack traces or raw database errors.
+- Map domain errors to HTTP errors in one place; never leak stack traces or raw database errors.
 - Never return passwords or sensitive data; exclude them from serialised entities.
 
 ## Data and performance

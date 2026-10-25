@@ -27,20 +27,9 @@ Applies to frontends, backends and scripts alike. Follow the project's existing 
 
 ## Structure
 
-Organise by feature, not by technical role:
-
-```
-src/
-  core/            shared kernel: errors, global types
-  infrastructure/  HTTP clients, database setup, library wrappers
-  modules/<feature>/
-    delivery/      UI components or controllers
-    domain/        rules and use cases
-    data/          repositories, DTOs, API calls
-    index.ts       the feature's public API
-```
-
-Features expose only what others need through `index.ts`. No circular dependencies between features.
+- Organise by feature, not by technical role. Inside a feature, keep delivery, domain and data access apart, using the project's names for them.
+- Each feature exposes a small public API; others don't reach into its internals.
+- No circular dependencies between features.
 
 ## Resilience
 

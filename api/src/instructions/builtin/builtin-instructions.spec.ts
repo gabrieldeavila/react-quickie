@@ -11,9 +11,6 @@ describe('built-in instructions', () => {
     expect(files.sort()).toEqual([
       'backend-architecture.md',
       'clean-architecture.md',
-      'design-system.md',
-      'forms.md',
-      'landing-pages.md',
       'react-architecture.md',
       'refactoring.md',
     ]);
