@@ -2,7 +2,9 @@ import type { ModelUsage } from 'src/llm/domain/model-usage.types';
 import type { TokenUsage } from 'src/llm/domain/token-usage.types';
 
 /** A model call made for the turn besides the main loop. */
-export type ExtraUsage = ModelUsage & { source: 'subagent' | 'compaction' };
+export type ExtraUsage = ModelUsage & {
+  source: 'subagent' | 'compaction' | 'approval';
+};
 
 /** `message.metadata` of an assistant message, sent with the UI stream. */
 export type ChatMessageMetadata = {
@@ -15,7 +17,7 @@ export type ChatMessageMetadata = {
    * plus its output. The next request starts its estimate from here.
    */
   contextTokens?: number;
-  /** Subagent runs and context summaries of this turn, each with its own model. */
+  /** Subagent runs, context summaries and approval checks of this turn, each with its own model. */
   extraUsage?: ExtraUsage[];
   /** USD of the whole turn, extras included; absent when no price is known. */
   costUsd?: number;

@@ -142,6 +142,13 @@
           "type": "string",
           "default": "",
           "description": "Comma-separated models of the OpenAI-compatible server (OPENAI_COMPATIBLE_MODELS)."
+        },
+        "doty.mcp.oauthCallbackPort": {
+          "type": "number",
+          "default": 41736,
+          "minimum": 0,
+          "maximum": 65535,
+          "description": "Fixed loopback port for MCP OAuth sign-in callbacks (DOTY_OAUTH_CALLBACK_PORT). Register http://127.0.0.1:<port>/mcp/oauth/callback as the redirect URI of OAuth clients you create (e.g. Google). Open only while a sign-in is pending; 0 uses the API's own (random) port."
         }
       }
     }

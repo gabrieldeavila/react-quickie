@@ -1,6 +1,4 @@
 import * as fs from 'fs';
-import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
-import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as os from 'os';
 import * as path from 'path';
 import type { ContextService } from 'src/common/context/context.service';
@@ -13,6 +11,8 @@ import { McpConfigRepository } from './mcp-config.repository';
 import { McpServerCatalogService } from './mcp-server-catalog.service';
 import { McpServersService } from './mcp-servers.service';
 import { McpTrustRepository } from './mcp-trust.repository';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 
 // Real files in temp dirs; only the client pool (process spawning) is faked.
 
@@ -249,5 +249,37 @@ describe('MCP config edits (temp dirs)', () => {
     await expect(
       controller.remove('missing', 'global', undefined),
     ).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("reuses another server's OAuth client, secret included", async () => {
+    const oauth = { clientId: 'google-id', clientSecret: 'real-secret' };
+    await controller.upsert('docs', {
+      scope: 'global',
+      config: { type: 'http', url: 'https://docs.example.com/mcp', oauth },
+    });
+
+    // The dialog only ever sees the secret masked.
+    const masked = { clientId: 'google-id', clientSecret: SECRET_MASK };
+    await controller.upsert('drive', {
+      scope: 'global',
+      config: {
+        type: 'http',
+        url: 'https://drive.example.com/mcp',
+        oauth: masked,
+      },
+      oauthFrom: { scope: 'global', name: 'docs' },
+    });
+    expect(readJson(globalFile()).mcpServers.drive.oauth).toEqual(oauth);
+
+    await expect(
+      controller.upsert('gmail', {
+        scope: 'global',
+        config: {
+          type: 'http',
+          url: 'https://gmail.example.com/mcp',
+          oauth: masked,
+        },
+      }),
+    ).rejects.toMatchObject({ status: 400 });
   });
 });

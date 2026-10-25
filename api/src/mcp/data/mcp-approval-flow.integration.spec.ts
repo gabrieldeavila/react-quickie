@@ -1,6 +1,4 @@
 import * as os from 'os';
-import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
-import { McpOAuthRepository } from './mcp-oauth.repository';
 import * as path from 'path';
 import { isStepCount, streamText } from 'ai';
 import { MockLanguageModelV4, simulateReadableStream } from 'ai/test';
@@ -8,6 +6,9 @@ import { buildToolApprovalMap } from 'src/chat/domain/approval-policy';
 import { McpClientPoolService } from './mcp-client-pool.service';
 import type { McpServersService } from './mcp-servers.service';
 import { McpToolsService } from './mcp-tools.service';
+import { McpSignInRequestsService } from './mcp-sign-in-requests.service';
+import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpOAuthRepository } from './mcp-oauth.repository';
 
 // MCP tools are dynamic tools: checks that the name-keyed `toolApproval`
 // map from Phase 1 applies to them inside the real streamText loop.
@@ -44,6 +45,7 @@ const callTool = (toolName: string, input: object) =>
 describe('MCP tools + native approval', () => {
   const pool = new McpClientPoolService(
     new McpOAuthProviderFactory(new McpOAuthRepository()),
+    new McpSignInRequestsService(),
   );
   const service = new McpToolsService(
     {
@@ -64,6 +66,7 @@ describe('MCP tools + native approval', () => {
         }),
     } as unknown as McpServersService,
     pool,
+    new McpSignInRequestsService(),
   );
 
   afterAll(() => pool.onModuleDestroy());

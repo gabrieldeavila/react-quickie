@@ -4,6 +4,7 @@ import type {
   ChatConversation,
   ChatMessageRecord,
   ChatMessageRole,
+  NewConversationFields,
 } from "../../types/interface/chat-db.interface";
 import {
   getConversationTitle,
@@ -29,6 +30,11 @@ class ChatDatabase extends Dexie {
     });
     // v5: conversations gain an optional, non-indexed `instructionIds`.
     this.version(5).stores({
+      conversations: "id, updatedAt, lastMessageAt, createdAt",
+      messages: "id, conversationId, createdAt, role",
+    });
+    // v6: conversations gain an optional, non-indexed `autoApprove`.
+    this.version(6).stores({
       conversations: "id, updatedAt, lastMessageAt, createdAt",
       messages: "id, conversationId, createdAt, role",
     });
@@ -78,6 +84,7 @@ export const migrateDefaultConversationTitles = async (): Promise<void> => {
 export const ensureConversation = async (
   conversationId?: string,
   firstUserMessage?: string,
+  initial?: NewConversationFields,
 ): Promise<ChatConversation> => {
   const now: number = Date.now();
 
@@ -108,6 +115,7 @@ export const ensureConversation = async (
     createdAt: now,
     updatedAt: now,
     lastMessageAt: now,
+    ...initial,
   };
 
   await chatDb.conversations.put(conversation);

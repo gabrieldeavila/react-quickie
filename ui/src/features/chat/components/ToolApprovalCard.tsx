@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useChatBaseContext } from "@/components/chat/context/context";
+import { AlwaysAllowMenu } from "@/features/approvals/components/AlwaysAllowMenu";
+import { useAlwaysAllow } from "@/features/approvals/hooks/useAlwaysAllow";
 import {
   describeApprovalInput,
   describeApprovalTitle,
@@ -19,9 +22,16 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
   const { approve, deny, suggestAlternative, isBusy } = useToolApproval(
     approval.approvalId,
   );
+  const { projectContext } = useChatBaseContext();
+  const alwaysAllow = useAlwaysAllow({
+    root: projectContext.reference,
+    toolName: approval.toolName,
+    input: approval.input,
+    approve,
+  });
   const [alternative, setAlternative] = useState("");
   const isBash = approval.toolName === BASH_TOOL;
-  const disabled = !isAnswerable || isBusy;
+  const disabled = !isAnswerable || isBusy || alwaysAllow.isSaving;
 
   return (
     <div className="bash-approval-card" role="alert">
@@ -43,8 +53,15 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
               disabled={disabled}
               onClick={approve}
             >
-              Allow
+              {alwaysAllow.options.length > 0 ? "Allow once" : "Allow"}
             </button>
+            {alwaysAllow.options.length > 0 ? (
+              <AlwaysAllowMenu
+                options={alwaysAllow.options}
+                disabled={disabled}
+                onChoose={(option) => void alwaysAllow.choose(option)}
+              />
+            ) : null}
             <button
               className="bash-approval-button bash-approval-button--reject"
               type="button"
@@ -54,6 +71,11 @@ export function ToolApprovalCard({ approval, isAnswerable }: Props) {
               Deny
             </button>
           </div>
+          {alwaysAllow.error ? (
+            <small className="bash-approval-error" role="status">
+              Couldn't save the rule: {alwaysAllow.error}
+            </small>
+          ) : null}
           {isBash ? (
             <div className="bash-approval-revise">
               <input

@@ -15,6 +15,7 @@ export function useSlashCommandActions() {
     setInput,
     setIsInstructionsDialogOpen,
     setIsMcpDialogOpen,
+    autoApprove,
   } = useChatBaseContext();
   const { handleCreateConversation } = useChatServicesContext();
   const openSettings = useOpenSettings();
@@ -24,8 +25,13 @@ export function useSlashCommandActions() {
       buildSlashCommands(
         instructions.instructions,
         instructionSelection.selectedIds,
+        autoApprove.isOn,
       ),
-    [instructions.instructions, instructionSelection.selectedIds],
+    [
+      instructions.instructions,
+      instructionSelection.selectedIds,
+      autoApprove.isOn,
+    ],
   );
 
   const run = useCallback(
@@ -48,9 +54,13 @@ export function useSlashCommandActions() {
         case "settings":
           openSettings();
           return;
+        case "auto":
+          autoApprove.toggle();
+          return;
       }
     },
     [
+      autoApprove,
       handleCreateConversation,
       instructionSelection,
       openSettings,

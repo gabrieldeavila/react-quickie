@@ -6,6 +6,7 @@ import {
   createStorageTools,
 } from 'src/chat/tools';
 import type { ToolApprovalPolicy } from 'src/chat/domain/approval-policy';
+import { createStorageApprovalPolicies } from 'src/chat/domain/storage-approval-policies';
 import { BashToolsService } from 'src/common/agents/tools/bash/bash.service';
 import { GitToolsService } from 'src/common/agents/tools/git/git.service';
 import { MemoryService } from 'src/common/helpers/memory.service';
@@ -67,6 +68,7 @@ export class SubagentToolkitService {
     };
     const policies = {
       ...mcp.approvalPolicies,
+      ...createStorageApprovalPolicies(),
       ...this.bashToolsService.createApprovalPolicies(root),
       ...this.gitToolsService.createApprovalPolicies(),
     };

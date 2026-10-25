@@ -8,10 +8,10 @@ From the repository root:
 
 ```bash
 npm install
-npm run build              # api, ui and vscode
-npm run package --prefix vscode
-code --install-extension vscode/doty.vsix
+npm run vscode:install     # builds api, ui and vscode, packages and installs the .vsix
 ```
+
+Then run **Developer: Reload Window** in VS Code to load the new version.
 
 Then open a folder, run **Doty: Set API key** and click the Doty icon in the activity bar.
 

@@ -7,6 +7,7 @@ import {
   toolSuccess,
 } from 'src/common/agents/tools/shared/format-tool-error';
 import { checkMcpServerRequest } from '../domain/check-mcp-server-request';
+import { describeConnectionCheck } from '../domain/describe-connection-check';
 import { keepUserMcpApproval } from '../domain/keep-user-mcp-approval';
 import { createMcpSetupApprovalPolicies } from '../domain/mcp-setup-approval-policies';
 import {
@@ -16,6 +17,7 @@ import {
 } from '../domain/mcp-setup-tool-names';
 import type { McpConfigSource } from '../domain/mcp-server.types';
 import { McpConfigEditsService } from './mcp-config-edits.service';
+import { McpConnectionCheckService } from './mcp-connection-check.service';
 import { McpServerCatalogService } from './mcp-server-catalog.service';
 import { McpServersService } from './mcp-servers.service';
 
@@ -34,7 +36,7 @@ const saveInputSchema = z.object({
   config: z
     .record(z.string(), z.unknown())
     .describe(
-      'The mcp.json entry. stdio: { command, args?, env? }. http/sse: { type: "http" | "sse", url, headers?, oauth? } where oauth is { clientId?, clientSecret?, scope? } for providers without dynamic client registration (e.g. Google); servers with OAuth need the user to click "Sign in" in /mcp. Optional: disabled, enabledTools, disabledTools. Write secrets as "${ENV_VAR}", never literally. "approval" is ignored: only the user sets it.',
+      'The mcp.json entry. stdio: { command, args?, env? }. http/sse: { type: "http" | "sse", url, headers?, oauth? } where oauth is { clientId?, clientSecret?, scope?, authorizationParams? } for providers without dynamic client registration (e.g. Google, which also needs authorizationParams { access_type: "offline", prompt: "consent" } to stay signed in); the user signs in from the prompt Doty shows. Optional: disabled, enabledTools, disabledTools. Write secrets as "${ENV_VAR}", never literally. "approval" is ignored: only the user sets it.',
     ),
   replace: z
     .boolean()
@@ -62,6 +64,7 @@ export class McpSetupToolsService {
     private readonly catalog: McpServerCatalogService,
     private readonly serversService: McpServersService,
     private readonly edits: McpConfigEditsService,
+    private readonly connectionCheck: McpConnectionCheckService,
   ) {}
 
   createToolkit(root: string): McpSetupToolkitForChat {
@@ -94,7 +97,7 @@ export class McpSetupToolsService {
   private saveTool(root: string) {
     return tool({
       description:
-        "Adds or updates an MCP server in Doty's mcp.json. The user approves every change; the server's tools are available from the next message.",
+        "Adds or updates an MCP server in Doty's mcp.json, then connects it and reports whether it works, needs a sign-in, or failed. The user approves every change.",
       inputSchema: saveInputSchema,
       execute: async ({
         scope = 'global',
@@ -112,9 +115,10 @@ export class McpSetupToolsService {
           const entry = keepUserMcpApproval(config, stored);
           checkMcpServerRequest(name, entry);
           await this.edits.upsert(root, scope, name, entry, undefined);
+          const connection = await this.connectionCheck.check(root, name);
           return toolSuccess(
-            `${stored === undefined ? 'Added' : 'Updated'} the ${scope} MCP server "${name}". Its tools are available from the next message.`,
-            { name, scope },
+            `${stored === undefined ? 'Added' : 'Updated'} the ${scope} MCP server "${name}". ${describeConnectionCheck(name, connection)}`,
+            { name, scope, connection },
           );
         } catch (error) {
           return formatToolError(`save the MCP server "${name}"`, error);

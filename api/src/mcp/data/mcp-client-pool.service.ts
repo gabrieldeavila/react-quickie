@@ -1,21 +1,19 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import {
-  createMCPClient,
-  type MCPClient,
-  type MCPTransport,
-} from '@ai-sdk/mcp';
+import type { MCPClient } from '@ai-sdk/mcp';
 import type { Tool } from 'ai';
 import { hashConfig } from '../domain/hash-config';
 import { isUnauthorizedError } from '../domain/is-unauthorized-error';
 import type { UsableMcpServer } from '../domain/mcp-server.types';
-import { createMcpTransport } from './create-mcp-transport';
 import { McpOAuthProviderFactory } from './mcp-oauth-provider.factory';
+import { McpSignInRequestsService } from './mcp-sign-in-requests.service';
+import { openMcpClient } from './open-mcp-client';
 import { readPoolSettings } from './read-pool-settings';
-import { withTimeout } from './with-timeout';
 
 type PoolStatus = 'connecting' | 'connected' | 'needs-auth' | 'error';
 
 type PoolEntry = {
+  root: string;
+  name: string;
   hash: string;
   status: PoolStatus;
   ready: Promise<void>;
@@ -42,10 +40,6 @@ function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function isTransport(value: unknown): value is MCPTransport {
-  return typeof (value as MCPTransport)?.start === 'function';
-}
-
 /**
  * One connected client per (root, server, server config hash). Clients
  * connect lazily on the first chat request that needs them, reconnect when
@@ -61,7 +55,10 @@ export class McpClientPoolService implements OnModuleDestroy {
     SWEEP_INTERVAL_MS,
   ).unref();
 
-  constructor(private readonly oauthProviders: McpOAuthProviderFactory) {}
+  constructor(
+    private readonly oauthProviders: McpOAuthProviderFactory,
+    private readonly signIns: McpSignInRequestsService,
+  ) {}
 
   /** The server's tools, or null when it can't connect (the chat goes on without them). */
   async getTools(
@@ -131,6 +128,8 @@ export class McpClientPoolService implements OnModuleDestroy {
     server: UsableMcpServer,
   ): PoolEntry {
     const entry: PoolEntry = {
+      root,
+      name: server.name,
       hash,
       status: 'connecting',
       lastUsedAt: Date.now(),
@@ -143,6 +142,7 @@ export class McpClientPoolService implements OnModuleDestroy {
       if (isUnauthorizedError(error)) {
         entry.status = 'needs-auth';
         entry.error = NEEDS_AUTH_MESSAGE;
+        this.signIns.addFromOAuth(root, server.name);
         return;
       }
       entry.status = 'error';
@@ -151,70 +151,32 @@ export class McpClientPoolService implements OnModuleDestroy {
       this.logger.warn(`MCP "${server.name}" (${root}): ${entry.error}`);
     };
 
-    entry.ready = this.open(root, server, fail).then(({ client, tools }) => {
+    entry.ready = openMcpClient({
+      root,
+      server,
+      authProvider: this.oauthProviders.create(root, server, {
+        interactive: false,
+      }),
+      signIns: this.signIns,
+      logger: this.logger,
+      timeoutMs: this.settings.connectTimeoutMs,
+      onLost: fail,
+    }).then(({ client, tools }) => {
       if (this.entries.get(key) !== entry) {
         void client.close().catch(() => undefined);
         return;
       }
       Object.assign(entry, { status: 'connected', client, tools });
+      this.signIns.clearOAuth(root, server.name);
     }, fail);
 
     this.entries.set(key, entry);
     return entry;
   }
 
-  private async open(
-    root: string,
-    server: UsableMcpServer,
-    onLost: (error: unknown) => void,
-  ) {
-    const transport = createMcpTransport(
-      server.config,
-      root,
-      this.oauthProviders.create(root, server, { interactive: false }),
-    );
-    const opening = (async () => {
-      const client = await createMCPClient({
-        transport,
-        clientName: 'doty',
-        // Not fatal on its own (e.g. a malformed notification); a dead
-        // process is caught by `watchClose`.
-        // A 401 is reported here too; the needs-auth status covers it.
-        onUncaughtError: (error) => {
-          if (isUnauthorizedError(error)) return;
-          this.logger.warn(`MCP "${server.name}": ${describeError(error)}`);
-        },
-      });
-      if (isTransport(transport)) this.watchClose(transport, onLost);
-      try {
-        return { client, tools: await client.tools() };
-      } catch (error) {
-        await client.close().catch(() => undefined);
-        throw error;
-      }
-    })();
-
-    return withTimeout(opening, this.settings.connectTimeoutMs, () => {
-      // Kills a stdio process that never finished the handshake.
-      if (isTransport(transport)) void transport.close().catch(() => undefined);
-      void opening.then(({ client }) => client.close()).catch(() => undefined);
-    });
-  }
-
-  /** A stdio process that exits marks the server as failed, so it reconnects later. */
-  private watchClose(
-    transport: MCPTransport,
-    onLost: (error: unknown) => void,
-  ) {
-    const clientOnClose = transport.onclose;
-    transport.onclose = () => {
-      clientOnClose?.();
-      onLost(new Error('The MCP server process exited.'));
-    };
-  }
-
   private async close(key: string, entry: PoolEntry): Promise<void> {
     if (this.entries.get(key) === entry) this.entries.delete(key);
+    this.signIns.onServerClosed(entry.root, entry.name);
     await entry.client?.close().catch(() => undefined);
   }
 

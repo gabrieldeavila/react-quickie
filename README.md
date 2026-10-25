@@ -204,26 +204,46 @@ O Doty usa ferramentas de servidores [MCP](https://modelcontextprotocol.io) (Git
 | `DOTY_MCP_IDLE_TIMEOUT_MS`    | Fecha servidores sem uso após esse tempo. Padrão: `600000`.    |
 | `DOTY_OAUTH_CALLBACK_URL`     | URL de retorno do login OAuth. Padrão: `http://127.0.0.1:<PORT>/mcp/oauth/callback`. |
 
-### Login OAuth
+### Login (OAuth e afins)
 
-Servidores `http`/`sse` que pedem login (respondem 401) aparecem como **Login necessário** no diálogo. Clique em **Sign in**: o navegador abre a página do provedor e, ao terminar, volta para a API, que guarda os tokens e reconecta o servidor. Os tokens ficam em `$DOTY_DATA_DIR/mcp-oauth.json` (somente o dono lê) e são renovados sozinhos; **Sign out** no menu "⋯" os apaga.
+Quando um servidor pede login, o Doty mostra um aviso no canto da conversa com **Sign in** e **Dismiss**, seja qual for a forma como o servidor pediu:
+
+- **OAuth do MCP** (servidores `http`/`sse` que respondem 401): o Doty faz o fluxo OAuth. O navegador abre a página do provedor e, ao terminar, volta para a API, que guarda os tokens e reconecta o servidor. Os tokens ficam em `$DOTY_DATA_DIR/mcp-oauth.json` (somente o dono lê) e são renovados sozinhos; **Sign out** no menu "⋯" do diálogo os apaga.
+- **Elicitação por URL** (`elicitation/create` com `mode: "url"`, de qualquer servidor): o Doty abre a URL pedida e responde `accept`, ou `decline` se você dispensar.
+- **Link de login impresso** por um servidor local (`stdio`) na saída de erro: o Doty procura URLs com cara de login (`oauth`, `authorize`, `accounts.…`) e as mostra no aviso. É uma estimativa, por isso o aviso diz o domínio e que o link veio da saída do servidor.
+
+Só abrem páginas `https` (ou `http` em `localhost`). Depois de `save_mcp_server`, o agente conecta o servidor e diz se ele funcionou, se precisa de login ou qual foi o erro.
 
 - Provedores com registro dinâmico de cliente não precisam de configuração.
-- Provedores sem registro dinâmico (como o Google) precisam de um cliente OAuth próprio, do tipo **Desktop app**, em `oauth`:
+- Provedores sem registro dinâmico (como o Google) precisam de um cliente OAuth próprio em `oauth` (`clientId`, `clientSecret`, `scope`). `authorizationParams` acrescenta parâmetros à URL de login; o Google só emite refresh token com `access_type=offline`, sem isso o login expira em ~1 h.
+- O endereço de retorno é `http://127.0.0.1:<porta>/mcp/oauth/callback`: a porta da API (`3000` em `npm run dev`) ou, se definida, `DOTY_OAUTH_CALLBACK_PORT`. No VS Code a API usa uma porta aleatória, então a extensão define essa porta fixa pela configuração `doty.mcp.oauthCallbackPort` (padrão `41736`); a API só escuta nela enquanto um login está pendente. Em Docker, ajuste `DOTY_OAUTH_CALLBACK_URL`.
+
+#### Exemplo: Google Docs (servidor MCP oficial, em preview)
+
+Requer o [Google Workspace Developer Preview Program](https://developers.google.com/workspace/preview).
+
+1. Num projeto do Google Cloud, ative as APIs: `gcloud services enable docs.googleapis.com docsmcp.googleapis.com`.
+2. Em Google Auth Platform, configure a tela de consentimento (Internal, ou External com você como usuário de teste) com os escopos `drive.readonly`, `drive.file`, `documents.readonly` e `documents`.
+3. Crie um cliente OAuth do tipo **Web application**, marque **"Use this client for an AI-powered agent"** e cadastre o redirect URI `http://127.0.0.1:3000/mcp/oauth/callback` (`npm run dev`) e/ou `http://127.0.0.1:41736/mcp/oauth/callback` (VS Code).
+4. Em `/mcp` → **Add**, escolha HTTP, cole a URL e preencha **Sign-in (OAuth)**: client ID, secret, escopos e **Stay signed in (Google)**. Nos próximos servidores do Google, use **Reuse the client of** para copiar o cliente (inclusive o secret) sem colar de novo. Se preferir arquivos, use `${VAR}` com as variáveis no `api/.env`:
 
   ```json
-  "drive": {
+  "google-docs": {
     "type": "http",
-    "url": "https://<servidor-mcp>/mcp",
+    "url": "https://docsmcp.googleapis.com/mcp/v1",
     "oauth": {
       "clientId": "${GOOGLE_OAUTH_CLIENT_ID}",
       "clientSecret": "${GOOGLE_OAUTH_CLIENT_SECRET}",
-      "scope": "https://www.googleapis.com/auth/drive.readonly"
+      "scope": "https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/documents.readonly https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly",
+      "authorizationParams": { "access_type": "offline", "prompt": "consent" }
     }
   }
   ```
 
-- O endereço de retorno é a própria API no loopback. No VS Code a porta muda a cada sessão, por isso use um cliente "Desktop app" (aceita qualquer porta do `127.0.0.1`); em Docker, ajuste `DOTY_OAUTH_CALLBACK_URL`.
+5. Na próxima mensagem aparece o aviso de login; clique em **Sign in**.
+
+Os outros produtos do Workspace (Drive, Gmail, Sheets, Slides, Calendar…) têm servidores próprios (`https://drivemcp.googleapis.com/mcp/v1` etc.) e funcionam do mesmo jeito.
+
 - A rota de retorno não exige o token da API (o navegador não o tem); ela só aceita um `state` aleatório, de uso único e válido por 10 minutos, criado por um login iniciado no Doty.
 - O agente pode adicionar servidores com OAuth, mas não faz login: o login é sempre seu, pelo diálogo.
 

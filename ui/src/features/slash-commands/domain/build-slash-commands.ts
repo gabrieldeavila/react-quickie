@@ -27,15 +27,28 @@ const BUILT_IN_COMMANDS: SlashCommand[] = [
   },
 ];
 
+function autoCommand(autoApprove: boolean): SlashCommand {
+  return {
+    kind: "built-in",
+    key: "built-in:auto",
+    name: "auto",
+    description: autoApprove
+      ? "Turn auto-approve off"
+      : "Auto-approve tool calls in this conversation",
+  };
+}
+
 type InstructionEntry = { id: string; name: string };
 
 /** Built-in commands, then one toggle per instruction (`/<instruction-id>`). */
 export function buildSlashCommands(
   instructions: InstructionEntry[],
   selectedIds: string[],
+  autoApprove = false,
 ): SlashCommand[] {
   return [
     ...BUILT_IN_COMMANDS,
+    autoCommand(autoApprove),
     ...instructions.map(
       ({ id, name }): SlashCommand => ({
         kind: "instruction",

@@ -12,9 +12,14 @@ export interface ChatConversation {
   model?: string;
   /** Instruction ids selected for this conversation (Dexie v5). */
   instructionIds?: string[];
+  /** Auto mode is on for this conversation (Dexie v6). */
+  autoApprove?: boolean;
   metadata?: Record<string, unknown>;
   attachments?: unknown[];
 }
+
+/** Fields a new conversation may start with. */
+export type NewConversationFields = Pick<ChatConversation, "autoApprove">;
 
 export interface ChatMessageRecord {
   id: string;

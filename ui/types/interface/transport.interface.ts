@@ -8,4 +8,6 @@ export interface CreateChatTransportParams {
   model: string | null;
   /** Capabilities of `model`; unknown until the catalog loads. */
   modelTarget?: ModelTarget;
+  /** Auto mode is on for the conversation. */
+  autoApprove: boolean;
 }

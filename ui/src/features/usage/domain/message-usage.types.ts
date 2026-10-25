@@ -9,7 +9,7 @@ export type TokenUsage = {
 
 /** A model call made for the turn besides the main loop. */
 export type ExtraUsage = {
-  source: "subagent" | "compaction";
+  source: "subagent" | "compaction" | "approval";
   model: string;
   usage: TokenUsage;
   costUsd?: number;
@@ -21,7 +21,7 @@ export type ChatMessageMetadata = {
   usage?: TokenUsage;
   /** Tokens the conversation occupied after this turn. */
   contextTokens?: number;
-  /** Subagents and context summaries, each priced by its own model. */
+  /** Subagents, context summaries and approval checks, each priced by its own model. */
   extraUsage?: ExtraUsage[];
   /** Whole turn, extras included. */
   costUsd?: number;

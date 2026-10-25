@@ -1,4 +1,5 @@
-export type BuiltInCommandId = "mcp" | "instructions" | "new" | "settings";
+export type BuiltInCommandId =
+  "mcp" | "instructions" | "new" | "settings" | "auto";
 
 export type SlashCommand =
   | {

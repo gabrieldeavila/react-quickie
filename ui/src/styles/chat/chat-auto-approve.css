@@ -1,0 +1,4 @@
+.auto-approve-chip--on {
+  color: var(--chat-warning-strong);
+  border-color: color-mix(in srgb, var(--chat-warning-strong) 45%, transparent);
+}

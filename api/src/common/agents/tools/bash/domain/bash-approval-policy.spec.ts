@@ -11,8 +11,15 @@ describe('createBashApprovalPolicy', () => {
     expect(policy({ command: 'ls -la' })).toEqual({ decision: 'never' });
   });
 
-  it('asks before commands that change files', () => {
-    expect(policy({ command: 'rm -rf dist' })).toEqual({ decision: 'ask' });
+  it('asks before commands that change files, with their risk', () => {
+    expect(policy({ command: 'rm -rf dist' })).toEqual({
+      decision: 'ask',
+      risk: 'destructive',
+    });
+    expect(policy({ command: 'mkdir tmp' })).toEqual({
+      decision: 'ask',
+      risk: 'changes',
+    });
   });
 
   it('denies blocked commands with the policy reason', () => {

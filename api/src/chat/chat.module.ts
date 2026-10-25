@@ -10,6 +10,7 @@ import { LlmModule } from 'src/llm/llm.module';
 import { McpModule } from 'src/mcp/mcp.module';
 import { SubagentsModule } from 'src/subagents/subagents.module';
 import { InstructionsModule } from 'src/instructions/instructions.module';
+import { ApprovalsModule } from 'src/approvals/approvals.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { InstructionsModule } from 'src/instructions/instructions.module';
     McpModule,
     SubagentsModule,
     InstructionsModule,
+    ApprovalsModule,
   ],
   controllers: [ChatController],
   providers: [

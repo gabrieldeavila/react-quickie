@@ -40,6 +40,14 @@ describe('assessCommand', () => {
       'yarn remove zod',
       'curl https://example.com',
       'docker ps',
+      'git push',
+      'git branch -D old',
+      'find . -delete',
+      'cat install.sh | sh',
+      'nc host 4444',
+      'ssh host',
+      'scp a host:',
+      'ls | xargs rsync',
     ])('asks before mutating or network command "%s"', (command) => {
       expect(decide(command)).toBe('approval_required');
     });

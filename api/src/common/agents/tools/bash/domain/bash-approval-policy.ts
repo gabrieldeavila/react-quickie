@@ -25,7 +25,9 @@ export function createBashApprovalPolicy(
     if (assessment.decision === 'blocked') {
       return { decision: 'always-deny', reason: assessment.reason };
     }
-    if (assessment.decision === 'approval_required') return { decision: 'ask' };
+    if (assessment.decision === 'approval_required') {
+      return { decision: 'ask', risk: assessment.risk };
+    }
     return { decision: 'never' };
   };
 }

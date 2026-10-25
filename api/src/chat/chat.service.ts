@@ -15,10 +15,16 @@ import { SubagentToolService } from 'src/subagents/data/subagent-tool.service';
 import { McpToolsService } from 'src/mcp/data/mcp-tools.service';
 import { McpSetupToolsService } from 'src/mcp/data/mcp-setup-tools.service';
 import { InstructionToolsService } from 'src/instructions/data/instruction-tools.service';
+import { ApprovalRulesRepository } from 'src/approvals/data/approval-rules.repository';
+import { IntentCheckService } from 'src/approvals/data/intent-check.service';
+import { applyApprovalRules } from 'src/approvals/domain/apply-approval-rules';
+import { applyAutoMode } from 'src/approvals/domain/apply-auto-mode';
 import {
   buildToolApprovalMap,
   type ToolApprovalMap,
 } from './domain/approval-policy';
+import type { ExtraUsage } from './domain/chat-message-metadata.types';
+import { createStorageApprovalPolicies } from './domain/storage-approval-policies';
 
 @Injectable()
 export class ChatService {
@@ -33,29 +39,41 @@ export class ChatService {
     private readonly mcpToolsService: McpToolsService,
     private readonly instructionToolsService: InstructionToolsService,
     private readonly mcpSetupToolsService: McpSetupToolsService,
+    private readonly approvalRulesRepository: ApprovalRulesRepository,
+    private readonly intentCheckService: IntentCheckService,
   ) {}
 
   /**
    * Tools and their `streamText({ toolApproval })` map for this request.
    * Built together because MCP tool names and policies come from one load.
    * Git tools are included whenever the root is a git repository.
+   * In auto mode, `approvalUsage` fills with the intent checks' usage.
    */
   async getToolkit(): Promise<{
     tools: ToolSet;
     toolApproval: ToolApprovalMap;
+    approvalUsage: readonly ExtraUsage[];
   }> {
     const root = this.contextService.get('root');
-    const [mcp, git, subagents] = await Promise.all([
+    const [mcp, git, subagents, approvalRules] = await Promise.all([
       root
         ? this.mcpToolsService.getToolkit(root)
         : { tools: {}, approvalPolicies: {} },
       this.gitToolsService.createToolkit(root),
       this.subagentToolService.createToolkit(root),
+      this.approvalRulesRepository.read(),
     ]);
     const instructions = this.instructionToolsService.createToolkit(root);
     const mcpSetup = root
       ? this.mcpSetupToolsService.createToolkit(root)
       : { tools: {}, approvalPolicies: {} };
+    const autoApprove = this.contextService.get('autoApprove') === true;
+    const approvalUsage: ExtraUsage[] = [];
+    const confirmIntent = autoApprove
+      ? this.intentCheckService.createConfirmer((usage) =>
+          approvalUsage.push({ source: 'approval', ...usage }),
+        )
+      : undefined;
 
     return {
       tools: {
@@ -67,15 +85,30 @@ export class ChatService {
         ...mcpSetup.tools,
       },
       // The subagent policy applies even without a root: a write-capable
-      // agent must never run unasked.
-      toolApproval: buildToolApprovalMap({
-        ...mcp.approvalPolicies,
-        ...(root ? this.bashToolsService.createApprovalPolicies(root) : {}),
-        ...git.approvalPolicies,
-        ...subagents.approvalPolicies,
-        ...instructions.approvalPolicies,
-        ...mcpSetup.approvalPolicies,
-      }),
+      // agent must never run unasked. User rules, then auto mode, only turn
+      // `ask` into `never`.
+      toolApproval: buildToolApprovalMap(
+        applyAutoMode(
+          applyApprovalRules(
+            {
+              ...mcp.approvalPolicies,
+              ...createStorageApprovalPolicies(),
+              ...(root
+                ? this.bashToolsService.createApprovalPolicies(root)
+                : {}),
+              ...git.approvalPolicies,
+              ...subagents.approvalPolicies,
+              ...instructions.approvalPolicies,
+              ...mcpSetup.approvalPolicies,
+            },
+            approvalRules.rules,
+            root ? this.approvalRulesRepository.projectKey(root) : undefined,
+          ),
+          { enabled: autoApprove },
+        ),
+        confirmIntent,
+      ),
+      approvalUsage,
     };
   }
 

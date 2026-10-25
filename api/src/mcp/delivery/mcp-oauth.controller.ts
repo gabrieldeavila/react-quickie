@@ -6,7 +6,6 @@ import {
   Get,
   Header,
   HttpCode,
-  Logger,
   Param,
   Post,
   Query,
@@ -15,7 +14,6 @@ import {
 import { Public } from 'src/auth/delivery/public.decorator';
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { ContextService } from 'src/common/context/context.service';
-import { renderOAuthCallbackPage } from '../domain/render-oauth-callback-page';
 import { McpOAuthError, McpOAuthService } from '../data/mcp-oauth.service';
 import { McpServerCatalogService } from '../data/mcp-server-catalog.service';
 
@@ -40,8 +38,6 @@ function readText(value: unknown): string | undefined {
 )
 @Controller('mcp')
 export class McpOAuthController {
-  private readonly logger = new Logger(McpOAuthController.name);
-
   constructor(
     private readonly oauth: McpOAuthService,
     private readonly catalog: McpServerCatalogService,
@@ -83,25 +79,13 @@ export class McpOAuthController {
   @Get('oauth/callback')
   @Header('Content-Type', 'text/html; charset=utf-8')
   @Header('Cache-Control', 'no-store')
-  async callback(@Query() query: CallbackQuery): Promise<string> {
-    try {
-      const serverName = await this.oauth.complete({
-        code: readText(query.code),
-        state: readText(query.state),
-        error: readText(query.error),
-        errorDescription: readText(query.error_description),
-      });
-      return renderOAuthCallbackPage({ ok: true, serverName });
-    } catch (error) {
-      const message =
-        error instanceof McpOAuthError
-          ? error.message
-          : 'Doty could not finish the sign-in.';
-      if (!(error instanceof McpOAuthError)) {
-        this.logger.warn(`MCP OAuth callback: ${String(error)}`);
-      }
-      return renderOAuthCallbackPage({ ok: false, message });
-    }
+  callback(@Query() query: CallbackQuery): Promise<string> {
+    return this.oauth.handleCallback({
+      code: readText(query.code),
+      state: readText(query.state),
+      error: readText(query.error),
+      errorDescription: readText(query.error_description),
+    });
   }
 
   /** Expected failures become 400s with their message. */

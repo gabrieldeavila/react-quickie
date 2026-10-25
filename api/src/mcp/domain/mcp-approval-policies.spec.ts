@@ -33,7 +33,10 @@ describe('createMcpApprovalPolicies', () => {
     );
 
     expect(policies.mcp__db__query({})).toEqual({ decision: 'never' });
-    expect(policies.mcp__gh__create({})).toEqual({ decision: 'ask' });
+    expect(policies.mcp__gh__create({})).toEqual({
+      decision: 'ask',
+      risk: 'changes',
+    });
     expect(policies.mcp__gh__read({})).toEqual({ decision: 'never' });
   });
 
@@ -42,6 +45,29 @@ describe('createMcpApprovalPolicies', () => {
       [{ name: 'mcp__x__t', server: 'x', tool: 't' }],
       {},
     );
-    expect(policies.mcp__x__t({})).toEqual({ decision: 'ask' });
+    expect(policies.mcp__x__t({})).toMatchObject({ decision: 'ask' });
+  });
+
+  it('rates an ask by its hints and name', () => {
+    const policies = createMcpApprovalPolicies(
+      [
+        {
+          name: 'mcp__d__list',
+          server: 'd',
+          tool: 'list',
+          annotations: { readOnlyHint: true },
+        },
+        { name: 'mcp__d__delete', server: 'd', tool: 'delete' },
+      ],
+      {},
+    );
+    expect(policies.mcp__d__list({})).toEqual({
+      decision: 'ask',
+      risk: 'changes',
+    });
+    expect(policies.mcp__d__delete({})).toEqual({
+      decision: 'ask',
+      risk: 'destructive',
+    });
   });
 });

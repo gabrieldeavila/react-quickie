@@ -1,5 +1,8 @@
 import type { UIMessage } from "@ai-sdk/react";
-import type { ChatConversation } from "./chat-db.interface";
+import type {
+  ChatConversation,
+  NewConversationFields,
+} from "./chat-db.interface";
 
 export interface UseChatHistoryResult {
   conversations: ChatConversation[];
@@ -8,7 +11,10 @@ export interface UseChatHistoryResult {
   setActiveConversationId: (conversationId: string | null) => void;
   historyMessages: UIMessage[];
   isHydrated: boolean;
-  createConversation: (firstUserMessage?: string) => Promise<string>;
+  createConversation: (
+    firstUserMessage?: string,
+    initial?: NewConversationFields,
+  ) => Promise<string>;
   persistUserMessage: (
     conversationId: string,
     content: string,

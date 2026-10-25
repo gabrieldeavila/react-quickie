@@ -12,6 +12,7 @@ import { ProviderRegistryService } from 'src/llm/data/provider-registry.service'
 import { applyCacheControl } from 'src/llm/domain/apply-cache-control';
 import type { SelectedModel } from 'src/llm/domain/find-model';
 import type { ToolApprovalMap } from '../domain/approval-policy';
+import type { ExtraUsage } from '../domain/chat-message-metadata.types';
 import { withSummaryInstruction } from '../domain/build-summary-prompt';
 import { describeStreamError } from '../domain/describe-stream-error';
 import { createMessageMetadataTracker } from '../domain/message-metadata-tracker';
@@ -28,6 +29,8 @@ type ChatStreamInput = {
   messages: ModelMessage[];
   tools: ToolSet;
   toolApproval: ToolApprovalMap;
+  /** Approval checks made while the stream runs, added to the turn's usage. */
+  approvalUsage?: readonly ExtraUsage[];
   /** Summary of turns the UI no longer sends (earlier compaction). */
   summary?: string;
   abortSignal: AbortSignal;
@@ -51,6 +54,7 @@ export class ChatStreamService {
     messages,
     tools,
     toolApproval,
+    approvalUsage,
     summary,
     abortSignal,
   }: ChatStreamInput) {
@@ -85,6 +89,7 @@ export class ChatStreamService {
           extraUsage: fitted.summaryUsage
             ? [{ source: 'compaction', ...fitted.summaryUsage }]
             : undefined,
+          lateUsage: approvalUsage,
         });
         if (fitted.compaction) {
           writer.write({

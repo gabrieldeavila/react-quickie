@@ -20,6 +20,9 @@ import { McpTrustRepository } from './mcp-trust.repository';
 /** The file hash the client last saw; null = "the file didn't exist". */
 type BaseHash = string | null | undefined;
 
+/** The server whose OAuth client was reused, for its masked secret. */
+export type OAuthSourceRef = { scope: McpConfigSource; name: string };
+
 export type McpServerPatch = {
   disabled?: boolean;
   toolApproval?: unknown;
@@ -45,12 +48,27 @@ export class McpConfigEditsService {
     name: string,
     config: unknown,
     baseHash: BaseHash,
+    oauthFrom?: OAuthSourceRef,
   ): Promise<void> {
+    const oauthSource = oauthFrom
+      ? await this.rawEntry(root, oauthFrom)
+      : undefined;
     await this.apply(root, scope, name, baseHash, (text) => {
       // Masked secrets come back unchanged; restore them from the same entry.
       const stored = readRawServers(text)[name];
-      return upsertMcpServer(text, name, mergeMaskedSecrets(config, stored));
+      return upsertMcpServer(
+        text,
+        name,
+        mergeMaskedSecrets(config, stored, oauthSource),
+      );
     });
+  }
+
+  private async rawEntry(root: string, ref: OAuthSourceRef): Promise<unknown> {
+    const file = await this.configRepository.read(
+      this.configRepository.pathFor(ref.scope, root),
+    );
+    return readRawServers(file?.text ?? null)[ref.name];
   }
 
   async remove(

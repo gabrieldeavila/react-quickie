@@ -27,6 +27,8 @@ export function createMcpTransport(
       args: config.args,
       env: config.env,
       cwd,
+      // Read by `watchServerOutput`, which echoes it and looks for login links.
+      stderr: 'pipe',
     });
   }
   return {

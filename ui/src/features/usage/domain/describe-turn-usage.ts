@@ -4,6 +4,7 @@ import type { ChatMessageMetadata, ExtraUsage } from "./message-usage.types";
 const SOURCE_LABELS: Record<ExtraUsage["source"], string> = {
   subagent: "Sub-agent",
   compaction: "Context summary",
+  approval: "Approval check",
 };
 
 /** The main model's cost: the turn total minus what the extras cost. */

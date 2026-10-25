@@ -3,6 +3,7 @@ import type { McpScope, McpTransport } from "../domain/mcp-server.types";
 import type { McpServerEditor } from "../hooks/useMcpServerEditor";
 import { ArgsEditor } from "./ArgsEditor";
 import { KeyValueEditor } from "./KeyValueEditor";
+import { OAuthFields } from "./OAuthFields";
 
 type Props = { editor: McpServerEditor };
 
@@ -130,6 +131,13 @@ export function McpServerForm({ editor }: Props) {
                 keyPlaceholder="Authorization"
                 onChange={(rows) => set("headers", rows)}
                 error={errors.headers}
+              />
+              <OAuthFields
+                oauth={values.oauth}
+                clients={editor.oauthClients}
+                error={errors.oauth}
+                onChange={(oauth) => set("oauth", oauth)}
+                onReuse={editor.reuseOAuth}
               />
             </>
           )}

@@ -33,6 +33,8 @@ const oauthSchema = z.object({
   clientId: z.string().min(1).optional(),
   clientSecret: z.string().optional(),
   scope: z.string().optional(),
+  /** Extra sign-in URL parameters, e.g. Google's `access_type: "offline"`. */
+  authorizationParams: z.record(z.string(), z.string()).optional(),
 });
 
 const httpServerSchema = z.object({

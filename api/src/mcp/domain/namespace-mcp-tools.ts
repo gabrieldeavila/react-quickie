@@ -1,5 +1,9 @@
 import type { Tool, ToolSet } from 'ai';
 import { assignMcpToolNames, type McpToolRef } from './mcp-tool-name';
+import {
+  readMcpAnnotations,
+  type McpToolAnnotations,
+} from './mcp-tool-annotations';
 
 export type McpServerTools = {
   server: string;
@@ -8,7 +12,10 @@ export type McpServerTools = {
   disabledTools?: string[];
 };
 
-export type NamespacedMcpTool = McpToolRef & { name: string };
+export type NamespacedMcpTool = McpToolRef & {
+  name: string;
+  annotations?: McpToolAnnotations;
+};
 
 export type NamespacedMcpTools = {
   tools: ToolSet;
@@ -40,10 +47,11 @@ export function namespaceMcpTools(
     tools: Object.fromEntries(
       kept.map(({ definition }, index) => [names[index], definition]),
     ),
-    entries: kept.map(({ server, tool }, index) => ({
+    entries: kept.map(({ server, tool, definition }, index) => ({
       name: names[index],
       server,
       tool,
+      annotations: readMcpAnnotations(definition),
     })),
   };
 }

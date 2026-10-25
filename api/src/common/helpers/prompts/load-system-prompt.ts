@@ -1,6 +1,7 @@
 import type { SystemModelMessage } from 'ai';
 import path from 'path';
 import { buildAgentIdentity } from './domain/build-agent-identity';
+import { buildAutoModeNotice } from './domain/build-auto-mode-notice';
 import { buildToolGuide } from './domain/build-tool-guide';
 import { formatProjectMemory } from './domain/format-project-memory';
 import {
@@ -20,6 +21,8 @@ export type SystemPromptInput = {
   /** One message per instruction the user selected. */
   selectedInstructions?: SystemModelMessage[];
   projectMemory?: Record<string, unknown>;
+  /** Auto mode is on for this conversation. */
+  autoApprove?: boolean;
   /** The per-request environment block (always last). */
   environment: SystemModelMessage;
 };
@@ -42,7 +45,7 @@ function projectMemoryMessage(
  * The system prompt of a request. Static parts first and per-request parts
  * last, so provider prompt caching keeps working: identity, behavior, tool
  * guide, project instructions (`AGENTS.md`, `.agents/`), selected
- * instructions, memory rules, project memory, environment.
+ * instructions, memory rules, project memory, auto mode, environment.
  */
 export async function loadSystemPrompt(
   input: SystemPromptInput,
@@ -61,6 +64,7 @@ export async function loadSystemPrompt(
       ? await loadSkillFile(read, path.join(skillsDir, 'memory.md'))
       : [],
     projectMemoryMessage(input.projectMemory),
+    buildAutoModeNotice(input.autoApprove === true, toolsAvailable),
     [input.environment],
   ];
   return groups.flat();

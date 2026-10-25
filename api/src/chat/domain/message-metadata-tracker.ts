@@ -19,6 +19,8 @@ type TrackedTurn = {
   carried?: CarriedUsage;
   /** Calls made before the stream started (a context summary). */
   extraUsage?: ExtraUsage[];
+  /** Filled while the stream runs (approval checks); read on `finish`. */
+  lateUsage?: readonly ExtraUsage[];
 };
 
 /**
@@ -32,12 +34,14 @@ export function createMessageMetadataTracker({
   pricing,
   carried,
   extraUsage = [],
+  lateUsage = [],
 }: TrackedTurn) {
   let lastStep: TokenUsage | undefined;
   const extras = [...extraUsage];
 
   const finish = (totalUsage: TokenUsage): ChatMessageMetadata => {
-    const allExtras = [...(carried?.extraUsage ?? []), ...extras];
+    const turnExtras = [...extras, ...lateUsage];
+    const allExtras = [...(carried?.extraUsage ?? []), ...turnExtras];
     return {
       model: ref,
       usage: carried ? addTokenUsage(carried.usage, totalUsage) : totalUsage,
@@ -49,7 +53,7 @@ export function createMessageMetadataTracker({
       costUsd: sumCosts([
         carried?.costUsd,
         estimateCost(totalUsage, pricing),
-        ...extras.map((extra) => extra.costUsd),
+        ...turnExtras.map((extra) => extra.costUsd),
       ]),
     };
   };

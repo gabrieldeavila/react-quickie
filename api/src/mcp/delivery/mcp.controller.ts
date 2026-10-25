@@ -4,7 +4,6 @@ import {
   ConflictException,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -18,16 +17,18 @@ import {
 import { BuildContextInterceptor } from 'src/common/context/context.interceptor';
 import { ContextService } from 'src/common/context/context.service';
 import { McpConfigConflictError } from '../domain/mcp-config-conflict.error';
-import { McpConfigUntrustedError } from '../domain/mcp-config-untrusted.error';
-import { McpConfigEditError } from '../domain/mcp-config-text';
 import {
   isUsableServer,
   type McpConfigSource,
 } from '../domain/mcp-server.types';
 import { McpClientPoolService } from '../data/mcp-client-pool.service';
-import { McpConfigEditsService } from '../data/mcp-config-edits.service';
+import {
+  McpConfigEditsService,
+  type OAuthSourceRef,
+} from '../data/mcp-config-edits.service';
 import { McpServersService } from '../data/mcp-servers.service';
 import { McpServerCatalogService } from '../data/mcp-server-catalog.service';
+import { toMcpEditHttpError } from './to-mcp-edit-http-error';
 
 type EditBody = {
   scope?: unknown;
@@ -35,6 +36,8 @@ type EditBody = {
   config?: unknown;
   disabled?: unknown;
   toolApproval?: unknown;
+  /** `{ scope, name }` of the server a reused OAuth client comes from. */
+  oauthFrom?: unknown;
 };
 
 @UseInterceptors(
@@ -64,7 +67,10 @@ export class McpController {
     return this.catalog.list(this.requireRoot());
   }
 
-  /** `PUT /mcp/servers/:name` `{ scope, config, baseHash }`: add or replace. */
+  /**
+   * `PUT /mcp/servers/:name` `{ scope, config, baseHash, oauthFrom? }`: add
+   * or replace.
+   */
   @Put('servers/:name')
   async upsert(@Param('name') name: string, @Body() body: EditBody) {
     const root = this.requireRoot();
@@ -76,6 +82,7 @@ export class McpController {
         name,
         body.config,
         this.readBaseHash(body.baseHash),
+        this.readOAuthFrom(body.oauthFrom),
       ),
     );
     return this.list();
@@ -169,21 +176,22 @@ export class McpController {
           ...(await this.list()),
         });
       }
-      if (error instanceof McpConfigUntrustedError) {
-        throw new ForbiddenException(error.message);
-      }
-      if (error instanceof McpConfigEditError) {
-        throw error.kind === 'not-found'
-          ? new NotFoundException(error.message)
-          : new BadRequestException(error.message);
-      }
-      throw error;
+      throw toMcpEditHttpError(error);
     }
   }
 
   private readScope(value: unknown): McpConfigSource {
     if (value === 'global' || value === 'project') return value;
     throw new BadRequestException('Scope must be "global" or "project".');
+  }
+
+  private readOAuthFrom(value: unknown): OAuthSourceRef | undefined {
+    if (value === undefined || value === null) return undefined;
+    const ref = value as Record<string, unknown>;
+    if (typeof ref.name !== 'string') {
+      throw new BadRequestException('"oauthFrom.name" must be a string.');
+    }
+    return { scope: this.readScope(ref.scope), name: ref.name };
   }
 
   /** Missing → no check; "" or null → the file must not exist yet. */
